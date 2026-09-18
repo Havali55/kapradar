@@ -125,28 +125,53 @@ altin_kume    (kap_id PRIMARY KEY REFERENCES bildirim, elle_dogrulanmis jsonb NO
 
 ## 6. Çıkarım şeması ve doğrulama kapısı
 
-```python
-class YeniIsIliskisi(BaseModel):
-    # --- olgular: hepsi Optional, çünkü KAP bildirimi gizleyebilir ---
-    tutar: float | None
-    para_birimi: Literal["TRY", "USD", "EUR", "DIGER"] | None
-    tutar_gizli: bool                       # "ticari sır niteliğindedir"
-    karsi_taraf: str | None
-    karsi_taraf_tipi: Literal["kamu", "ozel_yurtici", "yurtdisi",
-                              "iliskili_taraf"] | None
-    konu: str
-    baslangic: date | None
-    bitis: date | None
-    hap_ozet: list[str] = Field(min_length=3, max_length=3)
+**Revizyon 2026-09-18.** Adım 0'da şablonun yapılandırılmış olduğu görüldü
+(§9). Şema ikiye ayrıldı: KAP'ın kendi XBRL alanlarından **deterministik**
+gelenler ve LLM'in serbest metinden çıkarması gerekenler.
 
-    # --- kaynak izi: şemanın en kritik kısmı ---
-    tutar_alinti: str | None                # tutarın geldiği cümle, BİREBİR
-    karsi_taraf_alinti: str | None
+```python
+# --- A) KAP'ın yapılandırılmış alanları: LLM YOK, doğrudan ayrıştırma ---
+class KapAlanlari(BaseModel):
+    karsi_taraf: str | None          # oda_NameSurnameOrCompanyTitleOf...
+    karsi_taraf_niteligi: str | None # oda_NatureOfTheOtherParty... ("Müşteri")
+    baslangic: date | None           # oda_ExpectedStartingDateOf...
+    sozlesme_kosullari: str | None   # oda_IfExistSignificantProvisions...
+    sirket_etki_beyani: str | None   # oda_ImpactOfNewBusinessRelation...
+    guncelleme_mi: bool              # oda_UpdateAnnouncementFlag
+    duzeltme_mi: bool                # oda_CorrectionAnnouncementFlag
+    onceki_aciklama_tarihleri: list[date]  # oda_DateOfThePrevious...
+
+# --- B) LLM'in tek işi: serbest metindeki tutarlar ---
+class Tutar(BaseModel):
+    deger: float
+    para_birimi: Literal["TRY", "USD", "EUR", "DIGER"]
+    tip: Literal["ilave_siparis", "fiyat_farki",
+                 "toplam_sozlesme", "tek_seferlik"]
+    alinti: str                      # geldiği cümle, BİREBİR
+
+class TutarCikarimi(BaseModel):
+    tutarlar: list[Tutar]            # boş olabilir (tutar açıklanmamışsa)
+    tutar_gizli: bool                # "ticari sır niteliğindedir"
+    hap_ozet: list[str] = Field(min_length=3, max_length=3)
     guven: Literal["yuksek", "orta", "dusuk"]
 ```
 
+**Neden etiketli liste.** Gerçek bildirimler tek sayı içermiyor. `1665567`
+(ORGE) örneğinde ilave sipariş 863.000 EUR, fiyat farkı 44.645.758 TL,
+revize toplam sözleşme 10.842.903 EUR + 178.397.470 TL. Artış ile kümülatif
+bedel karıştırılırsa ciro oranı ~12 kat şişer. `tip` etiketi bu ayrımı
+şemaya taşıyor; hangi tipin skora gireceği §8'de **deterministik** kural.
+
+`karsi_taraf_tipi` (kamu/özel/yurtdışı/ilişkili) artık LLM'e sorulmuyor:
+KAP'ın `karsi_taraf_niteligi` alanı + şirket unvanı üzerinden kural tabanlı
+eşleme yapılır, belirsizse `bilinmiyor` kalır ve skorun o bileşeni düşer.
+
 **LLM aritmetik yapmaz.** Ciro oranı, TL çevrimi, skor şemada yok — hepsi §8'de
-deterministik kod. LLM'in tek işi metinden olgu çıkarmak.
+deterministik kod. LLM'in tek işi metinden tutar çıkarmak.
+
+**Dil ayrımı zorunlu.** `oda_ExplanationTextBlock` Türkçe ve İngilizce metni
+aynı blokta taşıyor. Ayrıştırıcı LLM'e **yalnızca Türkçe kısmı** vermeli;
+yoksa her rakam iki kez görünür ve alıntı kapısı yanlış eşleşir.
 
 `*_alinti` alanları doğruluk omurgası. Her sayı ve her isim için bildirimden
 birebir alıntı isteniyor, sonra programatik kapı çalışıyor:
@@ -155,14 +180,22 @@ Kapı iki aşamalı, çünkü bir kontrol §8 hesaplarına ihtiyaç duyuyor.
 
 **Aşama A — metin kapısı** (çıkarımdan hemen sonra, hesaplardan önce):
 
+Kapı artık **her `Tutar` kalemi için ayrı ayrı** koşar; bir kalem düşerse
+bildirimin tamamı düşer (§6 katı kapı kararı).
+
 | # | Kontrol | Sonuç |
 |---|---|---|
-| A1 | `tutar_alinti` normalize edilmiş `ham_metin` içinde geçiyor mu? | Geçmiyorsa halüsinasyon → **RED** |
-| A2 | Alıntıdaki sayı, `tutar` alanıyla uyuşuyor mu? | Uyuşmuyorsa → **RED** |
-| A3 | `karsi_taraf_alinti` ham metinde geçiyor mu? | Geçmiyorsa → **RED** |
-| A4 | `tutar_gizli=true` ama `tutar` dolu mu? | Çelişki → **RED** |
-| A5 | `tutar` dolu ama `para_birimi` boş mu? | Eksik → **RED** |
+| A1 | Kalemin `alinti`'sı normalize edilmiş **Türkçe** metinde geçiyor mu? | Geçmiyorsa halüsinasyon → **RED** |
+| A2 | Alıntıdaki sayı, kalemin `deger` alanıyla uyuşuyor mu? | Uyuşmuyorsa → **RED** |
+| A3 | Alıntıdaki para birimi, kalemin `para_birimi` alanıyla uyuşuyor mu? | Uyuşmuyorsa → **RED** |
+| A4 | `tutar_gizli=true` ama `tutarlar` dolu mu? | Çelişki → **RED** |
+| A5 | Aynı `(para_birimi, tip)` çiftinde birden çok kalem var mı? | Belirsiz → **RED** |
 | A6 | `guven == "dusuk"` mü? | **RED** |
+
+A3 eski şemadaki "karşı taraf alıntısı" kontrolünün yerini aldı: karşı taraf
+artık KAP'ın yapılandırılmış alanından geldiği için doğrulanacak bir
+halüsinasyon yok. Serbestleşen kontrol para birimi eşlemesine verildi —
+çok para birimli bildirimlerde asıl hata kaynağı orası.
 
 Aşama A'da RED → Katman 2'ye yükselt (§7). Katman 2 de RED verirse elle kuyruğa.
 
@@ -239,8 +272,31 @@ değil: `tcmb.gov.tr/kurlar/YYYYMM/DDMMYYYY.xml` — ücretsiz, resmî, arşivli
 Bildirim tatil/hafta sonu günündeyse önceki iş günü kuru. Backfill'de bu şart:
 2025'te imzalanmış bir sözleşmeyi 2026 kuruyla çevirmek rakamı şişirir.
 
+**Net tutar — hangi kalemler sayılır (revizyon 2026-09-18).** §6 artık
+etiketli `tutarlar` listesi veriyor. Skora giren büyüklük **yalnızca yeni
+olan iş**:
+
+```
+net_tutar_tl = Σ  tl_cevir(kalem)   for kalem in tutarlar
+               if kalem.tip in {"ilave_siparis", "fiyat_farki", "tek_seferlik"}
+```
+
+`toplam_sozlesme` kalemleri **skora girmez**; sayfada ayrı bir bağlam kartı
+olarak gösterilir ("projenin revize toplam bedeli"). Karıştırılırsa ORGE
+örneğinde ciro oranı ~12 kat şişerdi.
+
+Çok para birimli bildirimde her kalem **kendi** para biriminden, bildirim
+tarihli TCMB kuruyla TL'ye çevrilip toplanır. Tek bir "para_birimi" alanı
+yok; toplam her zaman TL cinsinden tek sayıdır.
+
 **Ciro oranı.** `net_tutar_tl / sirket.son_yillik_hasilat_tl`.
 `son_yillik_hasilat_tl` boşsa oran gösterilmez — tahmin edilmez.
+`tutarlar` boşsa (tutar açıklanmamış) oran hesaplanmaz, bildirim yine
+yayınlanabilir — skorun ciro bileşeni düşer, diğer bileşenler çalışır.
+
+**Güncelleme bildirimleri.** `guncelleme_mi = true` olan bildirimde ürün
+"yeni sözleşme" demez; başlık ve kart "mevcut işin güncellemesi" olarak
+kurulur. Ciro oranı yine ilave tutardan hesaplanır — doğru payda budur.
 
 **Etki skoru — kural tabanlı, LLM kanaati değil.** 0–5 arası:
 
@@ -292,20 +348,27 @@ uygulanır.
 
 | # | Adım | Maliyet | Not |
 |---|---|---|---|
-| 0 | **KAP erişim yüzeyini doğrula** | 0 | Aşağıdaki merdiven |
-| 1 | Postgres şeması + migration'lar | 0 | |
-| 2 | Çekici + idempotency testi | 0 | |
-| 3 | TCMB kur çekici + arşiv doldurma | 0 | |
-| 4 | yfinance fiyat batch + XU100 + CAR + testler | 0 | |
-| 5 | Şirket hasılat tablosu (KAP finansal raporlardan) | 0 | |
-| 6 | **Altın küme: 50 bildirim elle etiketle** | 0 | Referans gerçek |
-| 7 | Çıkarıcı arayüzü + doğrulama kapısı + testler | 0 | Sahte çıkarıcıyla |
-| 8 | Skor formülü + testler | 0 | |
-| 9 | Pillow görsel kart + Next.js sayfaları + X botu iskeleti | 0 | Elle etiketli veriyle |
-| 10 | **Pilot: 20 bildirim, Katman 1** | ~0.01 USD | **İZİN İSTENİR** |
-| 11 | Altın küme üzerinde doğruluk ölçümü | ~0.05 USD | **İZİN İSTENİR** |
-| 12 | Tam backfill (12 ay) | ~0.55 USD | **İZİN İSTENİR** |
-| 13 | Canlı poller'ı aç | ~0.10 USD/ay | **İZİN İSTENİR** |
+| 0 | ~~KAP erişim yüzeyini doğrula~~ | 0 | **BİTTİ** — aşağıdaki bulgular |
+| 1 | Postgres şeması + migration'lar | 0 | `tutarlar` listesi jsonb |
+| 2 | KAP istemcisi (ısıtma + başlıklar + hız sınırı + geri çekilme) | 0 | Liste + detay API |
+| 3 | Şablon ayrıştırıcısı: `oda-12000` XBRL alanları + TR/EN ayrımı | 0 | **LLM'siz, saf fonksiyon** |
+| 4 | Backfill: 12 ay liste + detay, kontrol noktalı | 0 | ~1.100 bildirim, ham veri diske |
+| 5 | TCMB kur çekici + arşiv doldurma | 0 | |
+| 6 | yfinance fiyat batch + XU100 + CAR + testler | 0 | |
+| 7 | Şirket hasılat tablosu (KAP finansal raporlardan) | 0 | |
+| 8 | **Altın küme: 50 bildirim elle etiketle** | 0 | ≥10'u ilave/toplam ayrımı içersin |
+| 9 | Çıkarıcı arayüzü + doğrulama kapısı + testler | 0 | Sahte çıkarıcıyla |
+| 10 | Skor formülü (w1=1.5/w2=0.7/w3=0.3) + testler | 0 | |
+| 11 | Pillow görsel kart + `/hisse/[ticker]` + `/kap/[id]` + X botu | 0 | Elle etiketli veriyle |
+| 12 | **Pilot: 20 bildirim, Katman 1** | ~0.01 USD | **İZİN İSTENİR** |
+| 13 | Altın küme üzerinde doğruluk ölçümü | ~0.05 USD | **İZİN İSTENİR** |
+| 14 | Tam backfill çıkarımı (~1.100 bildirim) | ~0.55 USD | **İZİN İSTENİR** |
+| 15 | Canlı poller'ı aç | ~0.10 USD/ay | **İZİN İSTENİR** |
+
+Adım 4 artık ücretsiz kısımda ve erken: ham veriyi bir kez çekip diske
+almak, sonraki her adımın ağa bağımlılığını bitiriyor. Adım 3 sayesinde
+karşı taraf/tarih/bayraklar LLM'e hiç uğramadan doluyor; LLM ilk kez
+Adım 12'de devreye giriyor.
 
 Adım 9'a kadar ürünün tamamı elle etiketlenmiş 50 bildirimle uçtan uca
 çalışıyor olacak. Yani sayfa, kart ve tweet görülebilir durumda olacak; LLM
@@ -421,13 +484,25 @@ güncellemesi**. Ürün vaadi ve skor formülü bunu ayırmak zorunda.
 
 50 bildirimlik altın küme, elle etiketli, `altin_kume` tablosunda. Ölçülen:
 
+Revizyon 2026-09-18: `karsi_taraf` ve `baslangic` artık KAP'ın
+yapılandırılmış alanlarından geldiği için **doğruluk ölçümünün konusu
+değil** — onlar ayrıştırıcı testiyle (birim test) doğrulanır, model
+ölçümüyle değil. Ölçüm yalnızca LLM'in yaptığı işi hedefler:
+
 | Metrik | Hedef |
 |---|---|
-| `tutar` tam eşleşme | ≥ %98 |
-| `para_birimi` doğruluk | ≥ %99 |
+| `tutarlar` kalem sayısı tam eşleşme | ≥ %95 |
+| Kalem `deger` tam eşleşme | ≥ %98 |
+| Kalem `para_birimi` doğruluk | ≥ %99 |
+| Kalem `tip` doğruluk (ilave vs toplam ayrımı) | ≥ %95 |
+| `net_tutar_tl` tam eşleşme (uçtan uca) | ≥ %95 |
 | `tutar_gizli` precision / recall | ≥ %95 / ≥ %95 |
-| `karsi_taraf` F1 | ≥ %90 |
 | Doğrulama kapısı yanlış-kabul oranı | %0 |
+
+`tip` doğruluğu yeni ve en riskli metrik: ilave sipariş ile revize toplam
+sözleşme bedelini karıştırmak sessizce yanlış bir ciro oranı üretir ve
+kapıdan geçer (her iki sayı da metinde gerçekten var, alıntı eşleşir).
+Altın kümede bu ayrımı içeren en az 10 örnek bulunmalı.
 
 Son satır en önemlisi: kapının yanlış bir çıkarımı yayına geçirmesi kabul
 edilemez. Yanlış-red (doğru çıkarımı reddetme) tolere edilir — maliyeti bir
