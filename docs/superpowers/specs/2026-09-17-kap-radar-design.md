@@ -311,18 +311,45 @@ Adım 9'a kadar ürünün tamamı elle etiketlenmiş 50 bildirimle uçtan uca
 çalışıyor olacak. Yani sayfa, kart ve tweet görülebilir durumda olacak; LLM
 sadece ölçeklendirme aracı.
 
-**Adım 0 — KAP erişim merdiveni.** KAP bir Angular SPA ve üçüncü taraflara
-push/webhook vermiyor. Erişim yüzeyi ampirik olarak doğrulanacak, sırayla:
+**Adım 0 — KAP erişim merdiveni. TAMAMLANDI (2026-09-18).**
 
-1. Sitenin kendi XHR uçları (DevTools/network trafiğinden okunacak) — JSON
-   dönerse en temizi
-2. RSS / bildirim akışı varsa
-3. Bildirim detay sayfasının HTML'i + `selectolax` ile ayrıştırma
-4. Son çare: Playwright (istenmiyor — yavaş ve kırılgan)
+Spec'in "KAP bir Angular SPA" varsayımı **yanlış çıktı**: site Next.js'e
+taşınmış (`/_next/static/chunks/`). Merdivenin denenen basamakları:
 
-Hangisi çıkarsa `cekici` onun arkasına yazılır; şemanın geri kalanı etkilenmez.
-Bu adım bitene kadar bildirim hacmi tahmini (~100/ay) doğrulanmamış sayılır ve
-maliyet tahminleri buna göre güncellenir.
+| Basamak | Sonuç |
+|---|---|
+| 1. XHR / JSON uçları | **Yok.** Tek route handler `/api/log-error` ve `/api/popup`. Veri Server Action ile geliyor; `/tr/api/disclosures` ve `/tr/api/memberDisclosureQuery` yanıt vermeden asılıyor. Gerçek backend `kapsitebackend.mkk.com.tr` ve **dışarıdan DNS'te çözülmüyor** (`serverBaseUrl`, iç ağ). |
+| 2. RSS / sitemap | **Yok.** `/rss`, `/tr/rss`, `/sitemap.xml` → 404. |
+| 3. **Detay sayfası HTML'i** | **ÇALIŞIYOR — seçilen yol.** |
+| 4. Playwright | **Gerekmiyor.** |
+
+**Seçilen erişim yolu:** `GET https://www.kap.org.tr/tr/Bildirim/{id}` —
+kimlik doğrulama yok, JS yok, düz sunucu render'lı HTML (~120–270 KB).
+Rota büyük/küçük harfe duyarlı: `/tr/Bildirim/` çalışır, `/tr/bildirim/` 404.
+
+**Kritik bulgu — `id` sıralı tamsayı.** 2026-09-18 itibarıyla üst sınır
+**~1.665.430** (ikili aramayla; ilk 404 ≤ 1.665.625). Bu yüzden **liste
+sayfasına hiç ihtiyaç yok**: poller `son_gorulen_id + 1`'i dener, 200 dönerse
+yeni bildirim var, 404 dönerse bekler. Liste kazımaktan hem daha basit hem
+daha sağlam — kırılacak bir DOM seçicisi yok, tek bir tamsayı var.
+
+**HTML'den doğrudan çıkan alanlar** (hepsi §5 şemasını karşılıyor):
+şirket unvanı ve ticker · `Gönderim Tarihi` (saniye hassasiyetinde — §8'deki
+`t0` seans kararı için birebir gerekli olan alan) · Bildirim Tipi (`ÖDA`) ·
+şablon adı · Özet Bilgi · ek dosya sayısı · İlgili Şirketler/Fonlar ·
+ve **XBRL alan kodları** (`oda_*`) TR+EN etiket ve değerleriyle.
+
+Ayrıştırma `oda_*` kodlarına bağlanacak, görünen etikete değil: kodlar XBRL
+taksonomisinden geliyor ve etiket metninden çok daha kararlı.
+
+`oda_UpdateAnnouncementFlag` ve `oda_CorrectionAnnouncementFlag` mükerrer
+ayıklama için zorunlu: KAP aynı konuyu güncelliyor (örnek `1665430`:
+güncelleme=Evet, önceki açıklama tarihleri `09.04.2026-20.04.2026-03.06.2026`).
+Aynı olayı üç kez yayınlamamak için `duzeltme_zinciri` alanı §5'e eklenecek.
+
+**Nezaket ve dayanıklılık:** sıralı id taraması ucuz ama istek üretiyor;
+seans içi 5 sn'de bir tek id denemesi (§12) yeterli. `User-Agent` dürüst
+(proje adı + iletişim), 404'te geri çekilme, ham HTML diskte saklanır.
 
 ## 10. Doğruluk ölçümü
 
