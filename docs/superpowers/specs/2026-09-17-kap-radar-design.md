@@ -311,71 +311,111 @@ Adım 9'a kadar ürünün tamamı elle etiketlenmiş 50 bildirimle uçtan uca
 çalışıyor olacak. Yani sayfa, kart ve tweet görülebilir durumda olacak; LLM
 sadece ölçeklendirme aracı.
 
-**Adım 0 — KAP erişim merdiveni. TAMAMLANDI (2026-09-18).**
+**Adım 0 — KAP erişim yüzeyi. TAMAMLANDI (2026-09-18).**
 
-Spec'in "KAP bir Angular SPA" varsayımı **yanlış çıktı**: site Next.js'e
-taşınmış (`/_next/static/chunks/`). Merdivenin denenen basamakları:
+Spec'in "KAP bir Angular SPA, JSON ucu yok" varsayımı **yanlış çıktı** iki
+ayrı biçimde: site Next.js'e taşınmış **ve** kimliksiz bir JSON API'si var.
 
-| Basamak | Sonuç |
+### Seçilen erişim yolu — JSON API
+
+Ampirik olarak doğrulandı (2026-09-18, gerçek yanıtlarla):
+
+**1. Liste:** `POST https://www.kap.org.tr/tr/api/disclosure/members/byCriteria`
+
+```json
+{"fromDate":"2026-09-17","toDate":"2026-09-18","mkkMemberOidList":[],"subjectList":[]}
+```
+
+Sarmalayıcısız JSON dizisi, **2.000 eleman üst sınırı**. Alanlar:
+`disclosureIndex` (detay anahtarı) · `publishDate` (`DD.MM.YYYY HH:MM:SS`) ·
+`subject` (şablon adı) · `stockCodes` · `disclosureClass` · `summary` ·
+`attachmentCount` · `modifyStatus` (düzeltmelerde dolu).
+
+**2. Detay:** `GET /tr/api/notification/attachment-detail/{disclosureIndex}`
+
+Tek elemanlı dizi: `disclosure.disclosureBasic` (künye) + `disclosureBody[0]`
+(şablonun HTML gövdesi) + `attachments[]`. `disclosureBasic.disclosureId`
+kararlı hex UUID — **upsert anahtarı bu olmalı**, `disclosureIndex` değil.
+`isChanged` ve `relatedDisclosureOid` düzeltme zincirini verir.
+
+**Zorunlu istek kuralları** (üçü de eksikse WAF bağlantıyı düşürür):
+
+1. **Oturum ısıtması:** API'den önce bir kez `GET /tr/bildirim-sorgu`
+   (çerez alınır — 4 çerez döndü)
+2. `Referer` başlığı: liste için `/tr/bildirim-sorgu`, detay için
+   `/tr/Bildirim/{index}`
+3. Dürüst `User-Agent` (proje adı + iletişim)
+
+Hız: **~2 istek/sn**, 2 günlük pencere <2 sn'de dönüyor.
+
+### Neden bu, sıralı id taramasından iyi
+
+İlk denemede `/tr/Bildirim/{id}` HTML'i ve ardışık id taraması seçilmişti.
+O yol **terk edildi**: 201 id'lik ardışık tarama ~79 istekten sonra WAF'a
+takıldı, sonraki 41 istek timeout aldı, tek istek 755 ms'de reddedildi.
+Blok kalıcı değildi — ısıtma + başlıklarla aynı IP'den API hemen çalıştı.
+Yani **engelin sebebi hız değil, eksik başlıklardı**. Yine de liste API'si
+her bakımdan üstün: tarih penceresiyle sorgulanıyor, 404 boşluklarını
+yoklamak gerekmiyor, backfill 12 ay için ~52 haftalık istek + bildirim
+başına 1 detay isteğine iniyor.
+
+### Doğrulanan hacim
+
+17–18 Eylül 2026 penceresi: **949 bildirim / 2 gün**. Şablon dağılımının
+tepesi Pay Bazında Devre Kesici (428), ÖDA Genel (104), Pay Alım Satım (63),
+**Payların Geri Alınması (50)**. Hedefimiz **"Yeni İş İlişkisi" 2 günde 6
+adet ≈ 3/gün ≈ 90/ay** — spec'in ~100/ay tahmini tutuyor, backfill ~1.100.
+
+Not: B sürümü için ayrılan Pay Geri Alım şablonu günde ~25 adet, yani
+MVP'nin 8 katı hacim. Sıraya alınırken bu bilinmeli.
+
+### En önemli bulgu — şablon yapılandırılmış, serbest metin değil
+
+Gövde HTML'i `tbl_oda-12000_New-Business-Relation` sınıfını taşıyor;
+**router Türkçe `subject` string'ine değil `oda-12000` koduna bağlanmalı.**
+
+Şablonun 15 XBRL alanı var ve §6 şemasının çoğu **LLM'siz, deterministik
+olarak** doluyor:
+
+| `oda_*` alanı | Şema karşılığı |
 |---|---|
-| 1. XHR / JSON uçları | **Yok.** Tek route handler `/api/log-error` ve `/api/popup`. Veri Server Action ile geliyor; `/tr/api/disclosures` ve `/tr/api/memberDisclosureQuery` yanıt vermeden asılıyor. Gerçek backend `kapsitebackend.mkk.com.tr` ve **dışarıdan DNS'te çözülmüyor** (`serverBaseUrl`, iç ağ). |
-| 2. RSS / sitemap | **Yok.** `/rss`, `/tr/rss`, `/sitemap.xml` → 404. |
-| 3. **Detay sayfası HTML'i** | **ÇALIŞIYOR — seçilen yol.** |
-| 4. Playwright | **Gerekmiyor.** |
+| `NatureOfTheOtherPartyWithWhichNewBusinessRelationWillStart` | `karsi_taraf_tipi` — "Müşteri (Customer)" gibi sabit küme |
+| `NameSurnameOrCompanyTitleOfCustomerOrSupplier` | `karsi_taraf` |
+| `ExpectedStartingDateOfNewBusinessRelation` | `baslangic` |
+| `IfExistSignificantProvisionsOfTheContractTextBlock` | sözleşme koşulları |
+| `ImpactOfNewBusinessRelationOnCompanyActivities` | şirketin kendi etki beyanı |
+| `UpdateAnnouncementFlag` / `CorrectionAnnouncementFlag` / `DateOfThePreviousNotificationAboutTheSameSubject` | düzeltme zinciri |
+| `ExplanationTextBlock` | **serbest metin — tutarın bulunduğu tek yer** |
 
-**Seçilen erişim yolu:** `GET https://www.kap.org.tr/tr/Bildirim/{id}` —
-kimlik doğrulama yok, JS yok, düz sunucu render'lı HTML (~120–270 KB).
-Rota büyük/küçük harfe duyarlı: `/tr/Bildirim/` çalışır, `/tr/bildirim/` 404.
+Sonuç: **LLM'in işi bire indi — tutarı serbest metinden çıkarmak.** Karşı
+taraf, tipi ve tarih için halüsinasyon riski tamamen ortadan kalkıyor,
+çünkü o alanlar KAP'ın kendi yapılandırılmış verisi. §7'nin katmanlı
+yönlendirmesi ve §6'nın alıntı kapısı yalnızca `tutar` için gerekli.
 
-**Kritik bulgu — `id` sıralı tamsayı.** 2026-09-18 itibarıyla üst sınır
-**~1.665.430** (ikili aramayla). Bu yüzden **liste sayfasına hiç ihtiyaç
-yok**: poller `son_gorulen_id + 1`'i dener, 200 dönerse yeni bildirim var,
-404 dönerse bekler. Liste kazımaktan hem daha basit hem daha sağlam —
-kırılacak bir DOM seçicisi yok, tek bir tamsayı var.
+### Çözülmemiş — `tutar` şeması yetersiz
 
-Uyarı: üst sınır rakamı **yaklaşıktır**. İkili arama sırasında hız sınırlama
-devredeyse bir timeout "yok" diye okunmuş olabilir. Kesin sınır, aşağıdaki
-hız kısıtına uyan bir çekiciyle yeniden ölçülecek.
+`1665567` (ORGE) gerçek örneği, §6'daki tek `tutar` + tek `para_birimi`
+alanının **bu şablonu temsil edemediğini** gösteriyor. Serbest metinde beş
+ayrı rakam var:
 
-**Kritik bulgu 2 — KAP sıralı erişimi hız sınırlıyor (WAF).** 201 id'lik
-ardışık tarama denendi: ilk ~79 istek yanıt verdi, sonrası tamamen düştü.
-Ardından 250 ms aralıklı 41 isteğin **hepsi** timeout aldı ve tek bir istek
-bile **755 ms'de reddedildi** — bu yavaş timeout değil, bağlantı seviyesinde
-engel. Yani blok IP bazlı ve bir süre kalıcı.
+- 863.000 EUR — ilave sipariş (asıl yeni tutar)
+- 44.645.758 TL — fiyat farkı
+- 9.979.903 EUR + 133.751.712 TL — **eski** sözleşme bedeli
+- 10.842.903 EUR + 178.397.470 TL — **revize** toplam sözleşme bedeli
 
-Bu, projenin en sert teknik kısıtı ve iki yeri birden etkiliyor:
+İki ayrı sorun: (a) tek bildirimde **iki para birimi birden**, (b) artış
+tutarı ile kümülatif sözleşme bedeli farklı şeyler ve karıştırılırsa ciro
+oranı 12 kat şişiyor. "En büyük sayıyı al" sezgisi burada yanlış cevap
+veriyor. Şema kararı gerekiyor — §6 revizyonu, Adım 6'dan önce.
 
-- **Backfill (Adım 12) yeniden tasarlanmalı.** 12 aylık geçmişi ardışık id
-  taramasıyla çekmek doğrudan bloka gider. Gereken: düşük sabit hız
-  (~1 istek / 2-5 sn), günlere yayılmış çalışma, `Retry-After`/429 varsa ona
-  uyma, üstel geri çekilme, kaldığı yerden devam edebilen kontrol noktası.
-  Ham HTML diskte saklandığı için yeniden çekim gerekmez — bir kez alınan
-  sayfa bir daha istenmez.
-- **Canlı poller (§12) kabul edilebilir.** Seans içi 5 sn'de **tek bir id**
-  denemesi, ardışık tarama değil; bu hız normal bir kullanıcı gezintisinin
-  altında. Yine de 429/timeout görülürse otomatik geri çekilme şart.
+İkinci incelik: `ExplanationTextBlock` **Türkçe ve İngilizce metni aynı
+blokta** taşıyor. Ayrıştırıcı önce dili bölmeli, yoksa her rakam LLM'e iki
+kez görünür ve alıntı kapısı yanlış eşleşir.
 
-Poller'ın tasarımı bu yüzden "id+1'i yokla" değil, **"id+1'i yokla, düşersen
-geri çekil ve son başarılı id'yi koru"** olmalı. Blok yendiğinde sistem veri
-kaybetmez, sadece gecikir.
-
-**HTML'den doğrudan çıkan alanlar** (hepsi §5 şemasını karşılıyor):
-şirket unvanı ve ticker · `Gönderim Tarihi` (saniye hassasiyetinde — §8'deki
-`t0` seans kararı için birebir gerekli olan alan) · Bildirim Tipi (`ÖDA`) ·
-şablon adı · Özet Bilgi · ek dosya sayısı · İlgili Şirketler/Fonlar ·
-ve **XBRL alan kodları** (`oda_*`) TR+EN etiket ve değerleriyle.
-
-Ayrıştırma `oda_*` kodlarına bağlanacak, görünen etikete değil: kodlar XBRL
-taksonomisinden geliyor ve etiket metninden çok daha kararlı.
-
-`oda_UpdateAnnouncementFlag` ve `oda_CorrectionAnnouncementFlag` mükerrer
-ayıklama için zorunlu: KAP aynı konuyu güncelliyor (örnek `1665430`:
-güncelleme=Evet, önceki açıklama tarihleri `09.04.2026-20.04.2026-03.06.2026`).
-Aynı olayı üç kez yayınlamamak için `duzeltme_zinciri` alanı §5'e eklenecek.
-
-**Nezaket ve dayanıklılık:** sıralı id taraması ucuz ama istek üretiyor;
-seans içi 5 sn'de bir tek id denemesi (§12) yeterli. `User-Agent` dürüst
-(proje adı + iletişim), 404'te geri çekilme, ham HTML diskte saklanır.
+Üçüncüsü: ORGE örneğinde `UpdateAnnouncementFlag = Evet`, önceki tarihler
+`10.05.2023, 14.06.2023, 03.01.2024, 07.02.2025`. Yani "Yeni İş İlişkisi"
+bildirimlerinin önemli bir kısmı **yeni sözleşme değil, mevcut sözleşmenin
+güncellemesi**. Ürün vaadi ve skor formülü bunu ayırmak zorunda.
 
 ## 10. Doğruluk ölçümü
 
