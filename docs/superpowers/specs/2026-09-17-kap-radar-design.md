@@ -328,10 +328,36 @@ kimlik doğrulama yok, JS yok, düz sunucu render'lı HTML (~120–270 KB).
 Rota büyük/küçük harfe duyarlı: `/tr/Bildirim/` çalışır, `/tr/bildirim/` 404.
 
 **Kritik bulgu — `id` sıralı tamsayı.** 2026-09-18 itibarıyla üst sınır
-**~1.665.430** (ikili aramayla; ilk 404 ≤ 1.665.625). Bu yüzden **liste
-sayfasına hiç ihtiyaç yok**: poller `son_gorulen_id + 1`'i dener, 200 dönerse
-yeni bildirim var, 404 dönerse bekler. Liste kazımaktan hem daha basit hem
-daha sağlam — kırılacak bir DOM seçicisi yok, tek bir tamsayı var.
+**~1.665.430** (ikili aramayla). Bu yüzden **liste sayfasına hiç ihtiyaç
+yok**: poller `son_gorulen_id + 1`'i dener, 200 dönerse yeni bildirim var,
+404 dönerse bekler. Liste kazımaktan hem daha basit hem daha sağlam —
+kırılacak bir DOM seçicisi yok, tek bir tamsayı var.
+
+Uyarı: üst sınır rakamı **yaklaşıktır**. İkili arama sırasında hız sınırlama
+devredeyse bir timeout "yok" diye okunmuş olabilir. Kesin sınır, aşağıdaki
+hız kısıtına uyan bir çekiciyle yeniden ölçülecek.
+
+**Kritik bulgu 2 — KAP sıralı erişimi hız sınırlıyor (WAF).** 201 id'lik
+ardışık tarama denendi: ilk ~79 istek yanıt verdi, sonrası tamamen düştü.
+Ardından 250 ms aralıklı 41 isteğin **hepsi** timeout aldı ve tek bir istek
+bile **755 ms'de reddedildi** — bu yavaş timeout değil, bağlantı seviyesinde
+engel. Yani blok IP bazlı ve bir süre kalıcı.
+
+Bu, projenin en sert teknik kısıtı ve iki yeri birden etkiliyor:
+
+- **Backfill (Adım 12) yeniden tasarlanmalı.** 12 aylık geçmişi ardışık id
+  taramasıyla çekmek doğrudan bloka gider. Gereken: düşük sabit hız
+  (~1 istek / 2-5 sn), günlere yayılmış çalışma, `Retry-After`/429 varsa ona
+  uyma, üstel geri çekilme, kaldığı yerden devam edebilen kontrol noktası.
+  Ham HTML diskte saklandığı için yeniden çekim gerekmez — bir kez alınan
+  sayfa bir daha istenmez.
+- **Canlı poller (§12) kabul edilebilir.** Seans içi 5 sn'de **tek bir id**
+  denemesi, ardışık tarama değil; bu hız normal bir kullanıcı gezintisinin
+  altında. Yine de 429/timeout görülürse otomatik geri çekilme şart.
+
+Poller'ın tasarımı bu yüzden "id+1'i yokla" değil, **"id+1'i yokla, düşersen
+geri çekil ve son başarılı id'yi koru"** olmalı. Blok yendiğinde sistem veri
+kaybetmez, sadece gecikir.
 
 **HTML'den doğrudan çıkan alanlar** (hepsi §5 şemasını karşılıyor):
 şirket unvanı ve ticker · `Gönderim Tarihi` (saniye hassasiyetinde — §8'deki
@@ -422,18 +448,27 @@ Katman 2'ye düşen bildirimde toplam ~12-15 sn olur; kabul ediliyor.
    çekici tek dosyada ayrık, ham HTML/metin diskte ve DB'de saklanır, site
    canlı kaynağa bağlı değil. Kırılınca site ayakta kalır, sadece yeni bildirim
    akmaz. Sağlık kontrolü: 4 saat boyunca yeni bildirim yoksa (seans içi) alarm.
-2. **SPK / lisanssız yatırım tavsiyesi.** Skor ve tepki istatistiği yayınlamak
+2. **KAP hız sınırlaması / IP bloku.** Adım 0'da ampirik olarak tetiklendi:
+   ardışık id taraması ~79 istekten sonra bağlantı seviyesinde reddedilmeye
+   başladı. Backfill'in tek gerçek darboğazı bu — LLM maliyeti değil, çekim
+   hızı. Karşı hamle: düşük sabit hız, kontrol noktalı ve kaldığı yerden
+   devam eden backfill, üstel geri çekilme, dürüst `User-Agent`, ham HTML'in
+   diskte saklanması (aynı sayfa iki kez istenmez). Blok kalıcı hale
+   gelirse VPS/Railway üzerinden farklı bir çıkış IP'si gerekir; bu bir
+   çözüm değil, sadece hızı düşürmenin alternatifi değil tamamlayıcısıdır.
+
+3. **SPK / lisanssız yatırım tavsiyesi.** Skor ve tepki istatistiği yayınlamak
    risk taşıyor; Hüseyin bu riski bilerek kabul etti. Azaltıcılar: skor
    deterministik formül ve kırılımı gösteriliyor, tepki geçmiş istatistik olarak
    sunuluyor (tahmin değil), her çıktıda künye + KAP kaynak linki, al/sat
    ifadesi hiç kullanılmıyor.
-3. **yfinance kırılganlığı / ToS.** Veri kendi DB'mizde saklandığı için
+4. **yfinance kırılganlığı / ToS.** Veri kendi DB'mizde saklandığı için
    bağımlılık tek seferlik; kaynak değiştirilebilir. B sürümünde ücretli bir
    sağlayıcıya (EODHD / Twelve Data) geçiş yolu açık bırakılıyor.
-4. **Hasılat verisi eksikliği.** `son_yillik_hasilat_tl` olmayan şirkette ciro
+5. **Hasılat verisi eksikliği.** `son_yillik_hasilat_tl` olmayan şirkette ciro
    oranı ve skorun bir bileşeni hesaplanamaz. Bu durumda oran **gösterilmez**,
    tahmin edilmez; bildirim yine yayınlanır, sadece o kart eksik.
-5. **Tespit gecikmesi rekabeti.** KAP'ın kendi uygulaması ve mevcut Telegram
+6. **Tespit gecikmesi rekabeti.** KAP'ın kendi uygulaması ve mevcut Telegram
    botları bildirimleri anlık aktarıyor. Bizim farkımız hız değil analiz;
    pazarlama mesajı buna göre kurulur, "en hızlı" iddiası edilmez.
 
