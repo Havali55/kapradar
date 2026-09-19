@@ -7,11 +7,15 @@ WAF'ı bağlantıyı düşürüyor.
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from datetime import date
+from typing import TypeVar
 
 import httpx
+
+T = TypeVar("T")
 
 KOK = "https://www.kap.org.tr"
 ISITMA_YOLU = "/tr/bildirim-sorgu"
@@ -67,12 +71,15 @@ class KapIstemcisi:
                 self._uyku(kalan)
         self._son_istek_zamani = self._saat()
 
-    def _dene(self, cagri: Callable[[], httpx.Response]) -> httpx.Response:
+    def _dene(self, cagri: Callable[[], T]) -> T:
         """Bir isteği üstel geri çekilmeyle yeniden dener.
 
         WAF bağlantıyı düşürdüğünde iş kaybolmamalı, sadece gecikmeli.
         Sabit aralıkla yeniden denemek bloklanmış bir WAF'ı açmaz; bekleme
         her denemede ikiye katlanır.
+
+        JSON çözümü de bu ağın içinde: WAF araya girdiğinde 200 ile HTML
+        sayfası dönüyor, yani hata HTTP katmanında değil gövdede görünüyor.
         """
         son_hata: Exception | None = None
 
@@ -82,7 +89,11 @@ class KapIstemcisi:
             self._hiz_sinirla()
             try:
                 return cagri()
-            except (httpx.TransportError, httpx.HTTPStatusError) as hata:
+            except (
+                httpx.TransportError,
+                httpx.HTTPStatusError,
+                json.JSONDecodeError,
+            ) as hata:
                 son_hata = hata
 
         raise KapErisimHatasi(
@@ -102,7 +113,7 @@ class KapIstemcisi:
         KAP 2.000 elemanda kesiyor; çağıran pencereyi yeterince dar tutmalı.
         """
         self._isit()
-        yanit = self._dene(
+        return self._dene(
             lambda: self._oturum.post(
                 LISTE_YOLU,
                 json={
@@ -115,9 +126,8 @@ class KapIstemcisi:
                     "Referer": f"{KOK}{ISITMA_YOLU}",
                     "Accept": "application/json",
                 },
-            )
+            ).json()
         )
-        return yanit.json()
 
     def detay(self, kap_index: int) -> dict:
         """Tek bir bildirimin künyesini, gövdesini ve eklerini döndürür.
@@ -126,16 +136,15 @@ class KapIstemcisi:
         çünkü ayrıştırıcıya boş sözlük vermek yanlış kayıt üretir.
         """
         self._isit()
-        yanit = self._dene(
+        govde = self._dene(
             lambda: self._oturum.get(
                 f"{DETAY_YOLU}/{kap_index}",
                 headers={
                     "Referer": f"{KOK}/tr/Bildirim/{kap_index}",
                     "Accept": "application/json",
                 },
-            )
+            ).json()
         )
-        govde = yanit.json()
         if not govde:
             raise KapErisimHatasi(f"{kap_index} için detay yanıtı boş döndü")
         return govde[0]

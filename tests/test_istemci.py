@@ -215,6 +215,20 @@ def test_detay_ucunu_dogru_referer_ile_cagirir():
     assert sonuc == {"disclosure": {}}
 
 
+def test_json_olmayan_yanit_erisim_hatasina_cevrilir():
+    """WAF araya girdiğinde JSON değil HTML sayfası döner.
+
+    Bu ham `JSONDecodeError` olarak dışarı sızarsa backfill'in hata
+    yakalama ağından kaçar ve 20 dakikalık çekimi ortasından keser.
+    """
+
+    def islevci(istek: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text="<html>Access Denied</html>")
+
+    with pytest.raises(KapErisimHatasi):
+        istemci_kur(islevci).liste(date(2026, 9, 17), date(2026, 9, 18))
+
+
 def test_bos_detay_yaniti_hata_verir():
     """Boş dizi dönen detay sessizce None'a dönüşmemeli."""
 
