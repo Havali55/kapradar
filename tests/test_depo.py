@@ -166,6 +166,46 @@ def test_kur_coz_uzak_gecmise_yurumez(depo):
 
 
 @canli_db
+def test_fiyat_serisi_yazilip_geri_okunur(depo):
+    """CAR hesabı seriyi DB'den okuyor; yazılan ile okunan aynı olmalı."""
+    kapanislar = {date(1999, 1, 8): Decimal("10.5"), date(1999, 1, 11): Decimal("11")}
+
+    depo.fiyat_kaydet("ORGE", kapanislar, {date(1999, 1, 8): 1234})
+
+    assert depo.fiyat_serisi("ORGE", date(1999, 1, 1), date(1999, 1, 31)) == kapanislar
+
+
+@canli_db
+def test_ayni_gunun_fiyati_iki_kez_yazilmaz(depo):
+    """Fiyat batch'i her gün koşuyor; geçmiş günleri tekrar yazmamalı."""
+    kapanislar = {date(1999, 1, 8): Decimal("10.5")}
+
+    assert depo.fiyat_kaydet("ORGE", kapanislar, {}) == 1
+    assert depo.fiyat_kaydet("ORGE", kapanislar, {}) == 0
+
+
+@canli_db
+def test_endeks_serisi_islem_takvimini_verir(depo):
+    """İşlem günleri ayrı bir tatil tablosundan değil endeks serisinden geliyor."""
+    depo.endeks_kaydet({date(1999, 1, 8): Decimal("1000"), date(1999, 1, 11): Decimal("1010")})
+
+    seri = depo.endeks_serisi(date(1999, 1, 1), date(1999, 1, 31))
+
+    assert sorted(seri) == [date(1999, 1, 8), date(1999, 1, 11)]
+
+
+@canli_db
+def test_tepki_yeniden_hesaplanirsa_guncellenir(depo):
+    """Fiyat/pencere değişince tepki tazelenmeli — bildirim gibi dondurulmaz."""
+    kap_id = "4028328ca09bee9001a0b53d7b914cac"  # yüklenmiş ORGE bildirimi
+
+    depo.tepki_kaydet(kap_id, t0=date(2026, 9, 21), car_3g=Decimal("0.02"))
+    depo.tepki_kaydet(kap_id, t0=date(2026, 9, 21), car_3g=Decimal("0.05"))
+
+    assert depo.tepki_oku(kap_id)["car_3g"] == Decimal("0.05")
+
+
+@canli_db
 def test_kontrol_noktasi_yazilip_okunur(depo):
     """Yükleme nerede kaldı — koşu kesilirse buradan devam edilir (spec §9)."""
     depo.kontrol_noktasi_yaz("test_backfill", son_islenen_index=1665567)

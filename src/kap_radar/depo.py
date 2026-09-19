@@ -63,6 +63,30 @@ KUR_UPSERT = (
     "on conflict do nothing returning tarih"
 )
 
+FIYAT_UPSERT = (
+    "insert into public.fiyat_gunluk (ticker, tarih, kapanis_duzeltilmis, hacim) "
+    "values (%(ticker)s, %(tarih)s, %(kapanis)s, %(hacim)s) "
+    "on conflict do nothing returning tarih"
+)
+
+ENDEKS_UPSERT = (
+    "insert into public.endeks_gunluk (tarih, xu100_kapanis) "
+    "values (%(tarih)s, %(kapanis)s) on conflict do nothing returning tarih"
+)
+
+# Tepki türetilmiş veri: fiyat serisi tamamlandıkça ya da pencere tanımı
+# değiştikçe tazelenmeli. Bildirimin aksine dondurulmuyor.
+TEPKI_UPSERT = (
+    "insert into public.tepki "
+    "(kap_id, t0, car_1g, car_3g, car_5g, pencere_basi, hesaplandi_at) "
+    "values (%(kap_id)s, %(t0)s, %(car_1g)s, %(car_3g)s, %(car_5g)s, "
+    "%(pencere_basi)s, now()) "
+    "on conflict (kap_id) do update set "
+    "t0 = excluded.t0, car_1g = excluded.car_1g, car_3g = excluded.car_3g, "
+    "car_5g = excluded.car_5g, pencere_basi = excluded.pencere_basi, "
+    "hesaplandi_at = now()"
+)
+
 # Kur çözümünde geriye yürüme sınırı. Uzun tatiller (9 günü bulabiliyor)
 # kapsansın, ama üç ay öncesine düşülmesin.
 AZAMI_GERI_GUN = 10
@@ -156,13 +180,7 @@ class Depo:
                 ],
                 returning=True,
             )
-            eklenen = 0
-            while True:
-                if imlec.fetchone() is not None:
-                    eklenen += 1
-                if not imlec.nextset():
-                    break
-        return eklenen
+            return self._eklenen_say(imlec)
 
     def kur_coz(
         self, tarih: date, para_birimi: str, azami_geri_gun: int = AZAMI_GERI_GUN
@@ -187,6 +205,130 @@ class Depo:
             )
             satir = imlec.fetchone()
         return (satir[0], satir[1]) if satir else None
+
+    def fiyat_kaydet(
+        self,
+        ticker: str,
+        kapanislar: dict[date, Decimal],
+        hacimler: dict[date, int] | None = None,
+    ) -> int:
+        """Bir hissenin günlük kapanışlarını yazar; olanlara dokunmaz.
+
+        Dönüş: eklenen satır sayısı. Fiyat batch'i her gün koşacağı için
+        geçmiş günlerin yeniden yazılmaması gerekiyor.
+        """
+        if not kapanislar:
+            return 0
+        hacimler = hacimler or {}
+
+        with self._baglanti.cursor() as imlec:
+            imlec.executemany(
+                FIYAT_UPSERT,
+                [
+                    {
+                        "ticker": ticker,
+                        "tarih": gun,
+                        "kapanis": kapanislar[gun],
+                        "hacim": hacimler.get(gun),
+                    }
+                    for gun in sorted(kapanislar)
+                ],
+                returning=True,
+            )
+            return self._eklenen_say(imlec)
+
+    def fiyat_serisi(
+        self, ticker: str, baslangic: date, bitis: date
+    ) -> dict[date, Decimal]:
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select tarih, kapanis_duzeltilmis from public.fiyat_gunluk "
+                "where ticker = %s and tarih between %s and %s",
+                (ticker, baslangic, bitis),
+            )
+            return {satir[0]: satir[1] for satir in imlec.fetchall()}
+
+    def endeks_kaydet(self, kapanislar: dict[date, Decimal]) -> int:
+        if not kapanislar:
+            return 0
+
+        with self._baglanti.cursor() as imlec:
+            imlec.executemany(
+                ENDEKS_UPSERT,
+                [
+                    {"tarih": gun, "kapanis": kapanislar[gun]}
+                    for gun in sorted(kapanislar)
+                ],
+                returning=True,
+            )
+            return self._eklenen_say(imlec)
+
+    def endeks_serisi(self, baslangic: date, bitis: date) -> dict[date, Decimal]:
+        """XU100 kapanışları — aynı zamanda BIST işlem takvimi.
+
+        Endeksin kapanışı olan gün seans var demektir; elle bakılan bir
+        tatil listesi eskir, bu seri kendini güncel tutar (spec §8).
+        """
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select tarih, xu100_kapanis from public.endeks_gunluk "
+                "where tarih between %s and %s",
+                (baslangic, bitis),
+            )
+            return {satir[0]: satir[1] for satir in imlec.fetchall()}
+
+    def tepki_kaydet(
+        self,
+        kap_id: str,
+        *,
+        t0: date,
+        car_1g: Decimal | None = None,
+        car_3g: Decimal | None = None,
+        car_5g: Decimal | None = None,
+        pencere_basi: int = 0,
+    ) -> None:
+        """Tepkiyi yazar; varsa günceller.
+
+        Bildirimin kendisi dondurulur ama tepki türetilmiş veri: fiyat
+        serisi tamamlandıkça ya da pencere tanımı değiştikçe tazelenir.
+        """
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                TEPKI_UPSERT,
+                {
+                    "kap_id": kap_id,
+                    "t0": t0,
+                    "car_1g": car_1g,
+                    "car_3g": car_3g,
+                    "car_5g": car_5g,
+                    "pencere_basi": pencere_basi,
+                },
+            )
+
+    def tepki_oku(self, kap_id: str) -> dict | None:
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select t0, car_1g, car_3g, car_5g, pencere_basi "
+                "from public.tepki where kap_id = %s",
+                (kap_id,),
+            )
+            satir = imlec.fetchone()
+        if satir is None:
+            return None
+        return dict(
+            zip(("t0", "car_1g", "car_3g", "car_5g", "pencere_basi"), satir)
+        )
+
+    @staticmethod
+    def _eklenen_say(imlec) -> int:
+        """`executemany(returning=True)` sonuç kümelerini sayar."""
+        eklenen = 0
+        while True:
+            if imlec.fetchone() is not None:
+                eklenen += 1
+            if not imlec.nextset():
+                break
+        return eklenen
 
     def kontrol_noktasi_yaz(
         self,

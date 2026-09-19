@@ -9,6 +9,7 @@ dependencies = [
     "selectolax>=0.4",
     "psycopg[binary]>=3.3",
     "python-dotenv>=1.2",
+    "yfinance>=1.7",
 ]
 
 [project.optional-dependencies]
