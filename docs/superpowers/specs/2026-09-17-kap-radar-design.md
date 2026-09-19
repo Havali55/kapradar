@@ -354,7 +354,7 @@ uygulanır.
 | 3 | Şablon ayrıştırıcısı: `oda-12000` XBRL alanları + TR/EN ayrımı | 0 | **LLM'siz, saf fonksiyon** |
 | 4 | ~~Backfill: 12 ay liste + detay, kontrol noktalı~~ | 0 | **BİTTİ** — 613 bildirim, arşivde ve DB'de |
 | 5 | ~~TCMB kur çekici + arşiv doldurma~~ | 0 | **BİTTİ** — 253 bülten, 5.610 kur satırı |
-| 6 | yfinance fiyat batch + XU100 + CAR + testler | 0 | |
+| 6 | ~~yfinance fiyat batch + XU100 + CAR + testler~~ | 0 | **BİTTİ** — 27.581 kapanış, 612 tepki |
 | 7 | Şirket hasılat tablosu (KAP finansal raporlardan) | 0 | |
 | 8 | **Altın küme: 50 bildirim elle etiketle** | 0 | ≥10'u ilave/toplam ayrımı içersin |
 | 9 | Çıkarıcı arayüzü + doğrulama kapısı + testler | 0 | Sahte çıkarıcıyla |
@@ -536,6 +536,42 @@ rakam üretirdi; bulunamayan kur §6'nın B2 kapısında elle incelemeye düşer
 Kapsama doğrulandı: bildirimlerin düştüğü **223 günün 223'ünde** hem USD
 hem EUR çözülüyor. 221'i aynı gün, 2'si bir gün geriden; en uzun geri
 yürüme **1 gün**, yani sınır bol bol yetiyor.
+
+**Adım 6 — fiyat serisi ve anormal getiri. TAMAMLANDI (2026-09-19).**
+
+111 hisse + XU100, 259 işlem günü, **27.581 kapanış satırı**. 613
+bildirimin **612'si** için tepki hesaplandı (biri serinin bittiği günden
+sonra düştü); `car_3g` 601'inde dolu.
+
+Ölçülen dağılım: ortalama **+%0,69**, medyan +%0,41, standart sapma
+%6,86, aralık −%30,2 … +%30,2. Yani "Yeni İş İlişkisi" bildirimleri
+ortalamada küçük ama pozitif bir anormal getiriyle karşılanıyor — ürünün
+"bu açıklama ne ifade ediyor" vaadinin sayısal karşılığı bu.
+
+**İşlem takvimi ayrı tabloda tutulmuyor, endeks serisinden geliyor.**
+XU100'ün kapanışı olan gün seans var demektir. §8 "tatil takvimi tabloda
+tutulur" diyordu; elle bakılan bir liste eskir, endeks serisi kendini
+güncel tutar. Koda gömülü tek zaman bilgisi seans kapanışı (18:10).
+
+**Pencere tanımı düzeltildi.** §8'in yazılı formülü `CAR(3G) =
+Σ anormal_getiri(t0+1 .. t0+3)` idi, ama aynı bölüm t0'ı "bildirim seans
+kapandıktan sonra düştüyse bir sonraki işlem günü" diye tanımlıyor. İkisi
+birleşince **asıl tepki günü pencerenin dışında kalıyordu**. Varsayılan
+pencere artık `t0` dahil üç işlem günü; `tepki.pencere_basi` sütunu hangi
+tanımla hesaplandığını taşıyor ve `--pencere-basi 1` eski tanıma döner.
+
+**`auto_adjust` BIST bedelsizlerini düzeltmiyor.** §8 bunun yeterli
+olduğunu varsayıyordu; gerçek veride üç seri kırık çıktı: HRKET
+87,9 → 6,15 (2026-09-09), MEGMT 47,3 → 4,90 (2026-09-09), CVKMD
+37,82 → 14,42 (2026-08-03). Böyle bir gün fiyat olarak "var" olduğu için
+eksik sayılmaz ama getirisi anlamsızdır; CAR bu tarihlere dokunan
+pencereleri tümden reddediyor. Eksik kapanış da aynı şekilde: pencere
+içinde tek gün eksikse sonuç NULL kalır — yanlış sayı yayınlamaktansa
+hiç yayınlamamak.
+
+İkincil bulgu: yfinance kapanışları float32 taşıyor (22,2 → 
+22.200000762939453). Kapanışlar dört ondalığa yuvarlanarak saklanıyor;
+fazlası olmayan bir hassasiyeti iddia etmek olurdu.
 
 ## 10. Doğruluk ölçümü
 
