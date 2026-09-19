@@ -10,7 +10,8 @@ odur. Şema bilgisi tek yerde kalsın diye sütun listesi de burada.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 from typing import Any
 
 from psycopg.types.json import Jsonb
@@ -53,6 +54,18 @@ SIRKET_UPSERT = (
     "insert into public.sirket (ticker, unvan, mkk_uye_oid) "
     "values (%(ticker)s, %(unvan)s, %(mkk_uye_oid)s) on conflict do nothing"
 )
+
+# Yayınlanmış bülten sonradan değişmiyor: çakışmada güncelleme değil,
+# dokunmama doğru davranış.
+KUR_UPSERT = (
+    "insert into public.kur_gunluk (tarih, para_birimi, tl_karsiligi) "
+    "values (%(tarih)s, %(para_birimi)s, %(tl)s) "
+    "on conflict do nothing returning tarih"
+)
+
+# Kur çözümünde geriye yürüme sınırı. Uzun tatiller (9 günü bulabiliyor)
+# kapsansın, ama üç ay öncesine düşülmesin.
+AZAMI_GERI_GUN = 10
 
 KONTROL_NOKTASI_UPSERT = (
     "insert into public.cekim_durumu "
@@ -124,6 +137,56 @@ class Depo:
                 "select 1 from public.sirket where ticker = %s", (ticker,)
             )
             return imlec.fetchone() is not None
+
+    def kur_kaydet(self, tarih: date, kurlar: dict[str, Decimal]) -> int:
+        """Bir günün kurlarını yazar; zaten varsa dokunmaz.
+
+        Dönüş: gerçekten eklenen satır sayısı. Yayınlanmış bir bülten
+        sonradan değişmediği için güncelleme yapılmıyor.
+        """
+        if not kurlar:
+            return 0
+
+        with self._baglanti.cursor() as imlec:
+            imlec.executemany(
+                KUR_UPSERT,
+                [
+                    {"tarih": tarih, "para_birimi": kod, "tl": deger}
+                    for kod, deger in sorted(kurlar.items())
+                ],
+                returning=True,
+            )
+            eklenen = 0
+            while True:
+                if imlec.fetchone() is not None:
+                    eklenen += 1
+                if not imlec.nextset():
+                    break
+        return eklenen
+
+    def kur_coz(
+        self, tarih: date, para_birimi: str, azami_geri_gun: int = AZAMI_GERI_GUN
+    ) -> tuple[date, Decimal] | None:
+        """Bildirim tarihli kuru verir; o gün yayın yoksa önceki iş gününü.
+
+        Spec §8'in kuralı burada tek yerde duruyor. Geri yürüme sınırlı:
+        üç ay önceki kurla çevirmek sessizce yanlış bir rakam üretir,
+        bulunamayan kur §6'nın B2 kapısında elle incelemeye düşer.
+        """
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select tarih, tl_karsiligi from public.kur_gunluk "
+                "where para_birimi = %(para_birimi)s "
+                "and tarih between %(alt)s and %(tarih)s "
+                "order by tarih desc limit 1",
+                {
+                    "para_birimi": para_birimi,
+                    "tarih": tarih,
+                    "alt": tarih - timedelta(days=azami_geri_gun),
+                },
+            )
+            satir = imlec.fetchone()
+        return (satir[0], satir[1]) if satir else None
 
     def kontrol_noktasi_yaz(
         self,

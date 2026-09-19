@@ -23,6 +23,7 @@ out/
 # Veri — ham KAP metinleri ve fiyat serileri repoya girmez
 data/ham/
 data/cache/
+*.log
 *.sqlite
 *.db
 

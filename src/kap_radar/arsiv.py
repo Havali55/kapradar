@@ -64,6 +64,51 @@ class HamArsiv:
             self.liste_yolu(baslangic, bitis).read_text(encoding="utf-8")
         )
 
+    # --------------------------------------------------------------- kur
+
+    # Yayın olmayan gün de bilgi: işaretlenmezse her koşu 100'den fazla
+    # tatil gününü TCMB'ye yeniden sorar.
+    KUR_KLASORU = "kur"
+    YOK_UZANTISI = ".yok"
+
+    def kur_yolu(self, tarih: date) -> Path:
+        return self._kok / self.KUR_KLASORU / f"{tarih.isoformat()}.xml"
+
+    def _kur_yok_yolu(self, tarih: date) -> Path:
+        return self.kur_yolu(tarih).with_suffix(self.YOK_UZANTISI)
+
+    def kur_var_mi(self, tarih: date) -> bool:
+        """O gün için soru sorulmuş mu — yanıt bülten de olabilir yokluk da."""
+        return self.kur_yolu(tarih).exists() or self._kur_yok_yolu(tarih).exists()
+
+    def kur_yaz(self, tarih: date, xml: str) -> Path:
+        yol = self.kur_yolu(tarih)
+        yol.parent.mkdir(parents=True, exist_ok=True)
+        gecici = yol.with_suffix(".xml.tmp")
+        gecici.write_text(xml, encoding="utf-8")
+        os.replace(gecici, yol)
+        return yol
+
+    def kur_yok_isaretle(self, tarih: date) -> Path:
+        yol = self._kur_yok_yolu(tarih)
+        yol.parent.mkdir(parents=True, exist_ok=True)
+        yol.write_text("", encoding="utf-8")
+        return yol
+
+    def kur_oku(self, tarih: date) -> str | None:
+        """Bülteni döndürür; o gün yayın yoksa None."""
+        yol = self.kur_yolu(tarih)
+        if not yol.exists():
+            return None
+        return yol.read_text(encoding="utf-8")
+
+    def kur_gunleri(self) -> list[date]:
+        """Arşivde bülteni olan günler, sırayla."""
+        klasor = self._kok / self.KUR_KLASORU
+        if not klasor.exists():
+            return []
+        return sorted(date.fromisoformat(yol.stem) for yol in klasor.glob("*.xml"))
+
     # ------------------------------------------------------------- ortak
 
     def _kaydet(self, yol: Path, veri: object) -> Path:

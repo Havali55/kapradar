@@ -71,6 +71,30 @@ def test_liste_penceresi_onbellege_alinir(tmp_path):
     assert arsiv.liste_oku(baslangic, bitis) == [{"disclosureIndex": 1665567}]
 
 
+def test_kur_bulteni_arsivden_geri_okunur(tmp_path):
+    """TCMB bülteni de ham veri: bir kez inince bir daha istenmez."""
+    arsiv = HamArsiv(tmp_path)
+
+    arsiv.kur_yaz(date(2026, 9, 18), "<Tarih_Date Tarih='18.09.2026'/>")
+
+    assert arsiv.kur_var_mi(date(2026, 9, 18)) is True
+    assert arsiv.kur_oku(date(2026, 9, 18)) == "<Tarih_Date Tarih='18.09.2026'/>"
+
+
+def test_yayin_olmayan_gun_isaretlenir(tmp_path):
+    """Hafta sonu ve tatilde yayın yok; bu da bilgi ve saklanmalı.
+
+    İşaretlenmezse her koşu 100'den fazla tatil gününü TCMB'ye yeniden
+    sorar — yoklukla veri eksikliği aynı şey değil.
+    """
+    arsiv = HamArsiv(tmp_path)
+
+    arsiv.kur_yok_isaretle(date(2026, 9, 20))
+
+    assert arsiv.kur_var_mi(date(2026, 9, 20)) is True
+    assert arsiv.kur_oku(date(2026, 9, 20)) is None
+
+
 def test_farkli_pencereler_ayri_dosyalara_yazilir(tmp_path):
     """Pencere anahtarı iki tarihi birden taşımalı, yoksa haftalar birbirini ezer."""
     arsiv = HamArsiv(tmp_path)

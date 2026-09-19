@@ -3,109 +3,50 @@
 Adım 0'da ampirik olarak öğrenilen kurallar (spec §9) burada uygulanır:
 oturum ısıtması, Referer başlığı ve dürüst User-Agent olmadan KAP'ın
 WAF'ı bağlantıyı düşürüyor.
+
+Hız sınırı ve yeniden deneme `http_temel.HizSinirliIstemci`'den geliyor;
+bu dosya yalnızca KAP'a özgü olanı tutuyor.
 """
 
 from __future__ import annotations
 
-import json
-import time
-from collections.abc import Callable
 from datetime import date
-from typing import TypeVar
+from typing import ClassVar
 
-import httpx
-
-T = TypeVar("T")
+from kap_radar.http_temel import (
+    VARSAYILAN_USER_AGENT,
+    ErisimHatasi,
+    HizSinirliIstemci,
+)
 
 KOK = "https://www.kap.org.tr"
 ISITMA_YOLU = "/tr/bildirim-sorgu"
 LISTE_YOLU = "/tr/api/disclosure/members/byCriteria"
 DETAY_YOLU = "/tr/api/notification/attachment-detail"
 
-VARSAYILAN_USER_AGENT = "kap-radar/0.1 (+iletisim: ornek@ornek.com)"
+__all__ = [
+    "KOK",
+    "VARSAYILAN_USER_AGENT",
+    "KapErisimHatasi",
+    "KapIstemcisi",
+]
 
 
-class KapErisimHatasi(RuntimeError):
+class KapErisimHatasi(ErisimHatasi):
     """KAP'a tüm denemelere rağmen ulaşılamadı."""
 
 
-class KapIstemcisi:
+class KapIstemcisi(HizSinirliIstemci):
     """KAP'ın kimliksiz JSON API'sine erişen istemci."""
 
-    def __init__(
-        self,
-        *,
-        transport: httpx.BaseTransport | None = None,
-        uyku: Callable[[float], None] = time.sleep,
-        saat: Callable[[], float] = time.monotonic,
-        user_agent: str = VARSAYILAN_USER_AGENT,
-        istek_araligi_sn: float = 0.5,
-        maks_deneme: int = 5,
-        geri_cekilme_tabani_sn: float = 2.0,
-    ) -> None:
-        self._uyku = uyku
-        self._saat = saat
-        self._istek_araligi_sn = istek_araligi_sn
-        self._maks_deneme = maks_deneme
-        self._geri_cekilme_tabani_sn = geri_cekilme_tabani_sn
-        self._son_istek_zamani: float | None = None
-        self._user_agent = user_agent
+    HATA_SINIFI: ClassVar[type[ErisimHatasi]] = KapErisimHatasi
+
+    def __init__(self, **kwargs) -> None:
+        kwargs.setdefault("kok", KOK)
+        super().__init__(**kwargs)
         self._isitildi = False
-        self._oturum = httpx.Client(
-            base_url=KOK,
-            transport=transport,
-            headers={"User-Agent": user_agent},
-            timeout=30.0,
-        )
 
-    def _hiz_sinirla(self) -> None:
-        """Ardışık istekler arasında sabit bir asgari boşluk bırakır.
-
-        Adım 0'da ardışık tarama WAF'a takıldığı için bu koda gömülü:
-        çağıran tarafın beklemeyi hatırlamasına bırakılmaz.
-        """
-        if self._son_istek_zamani is not None:
-            gecen = self._saat() - self._son_istek_zamani
-            kalan = self._istek_araligi_sn - gecen
-            if kalan > 0:
-                self._uyku(kalan)
-        self._son_istek_zamani = self._saat()
-
-    def _dene(self, cagri: Callable[[], T]) -> T:
-        """Bir isteği üstel geri çekilmeyle yeniden dener.
-
-        WAF bağlantıyı düşürdüğünde iş kaybolmamalı, sadece gecikmeli.
-        Sabit aralıkla yeniden denemek bloklanmış bir WAF'ı açmaz; bekleme
-        her denemede ikiye katlanır.
-
-        JSON çözümü de bu ağın içinde: WAF araya girdiğinde 200 ile HTML
-        sayfası dönüyor, yani hata HTTP katmanında değil gövdede görünüyor.
-        """
-        son_hata: Exception | None = None
-
-        for deneme in range(self._maks_deneme):
-            if deneme:
-                self._uyku(self._geri_cekilme_tabani_sn * 2 ** (deneme - 1))
-            try:
-                self._isit()
-                self._hiz_sinirla()
-                return cagri()
-            except (
-                httpx.TransportError,
-                httpx.HTTPStatusError,
-                json.JSONDecodeError,
-            ) as hata:
-                son_hata = hata
-                # Blok oturum seviyesinde: aynı çerezle beklemek açmıyor,
-                # yeniden ısıtmak açıyor (Adım 0 bulgusu). Sonraki deneme
-                # önce ısınsın diye oturum soğuk işaretleniyor.
-                self._isitildi = False
-
-        raise KapErisimHatasi(
-            f"KAP'a {self._maks_deneme} denemede ulaşılamadı"
-        ) from son_hata
-
-    def _isit(self) -> None:
+    def _istek_oncesi(self) -> None:
         """API'den önce normal sayfa çekip taze çerez alır.
 
         Çerezler önce temizleniyor: WAF'a takılmış bir oturumu aynı
@@ -117,6 +58,14 @@ class KapIstemcisi:
         self._hiz_sinirla()
         self._oturum.get(ISITMA_YOLU)
         self._isitildi = True
+
+    def _hata_sonrasi(self) -> None:
+        """Blok oturum seviyesinde: aynı çerezle beklemek açmıyor.
+
+        Adım 0 bulgusu bu; oturum soğuk işaretleniyor ki sonraki deneme
+        önce yeniden ısınsın.
+        """
+        self._isitildi = False
 
     def liste(self, baslangic: date, bitis: date) -> list[dict]:
         """Tarih aralığındaki bildirimleri döndürür.
@@ -157,6 +106,3 @@ class KapIstemcisi:
         if not govde:
             raise KapErisimHatasi(f"{kap_index} için detay yanıtı boş döndü")
         return govde[0]
-
-    def kapat(self) -> None:
-        self._oturum.close()

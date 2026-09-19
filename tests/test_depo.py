@@ -11,6 +11,7 @@ import json
 import os
 from dataclasses import replace
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -126,6 +127,42 @@ def test_bildirim_yazilirken_sirket_satiri_acilir(depo, sahte_bildirim):
     depo.bildirim_kaydet(sahte_bildirim)
 
     assert depo.sirket_var_mi("ZZTEST") is True
+
+
+@canli_db
+def test_kur_ayni_gun_icin_iki_kez_yazilmaz(depo):
+    """Kur çekici tekrar koşturulabilmeli; bülten yayınlandıktan sonra değişmez."""
+    kurlar = {"USD": Decimal("0.1234"), "EUR": Decimal("0.5678")}
+
+    assert depo.kur_kaydet(date(1999, 1, 8), kurlar) == 2
+    assert depo.kur_kaydet(date(1999, 1, 8), kurlar) == 0
+
+
+@canli_db
+def test_kur_coz_hafta_sonunda_onceki_is_gununu_verir(depo):
+    """Spec §8: bildirim tatil/hafta sonu gününde ise önceki iş günü kuru.
+
+    Kural tek yerde yaşamalı; her çağıran kendi geri yürümesini yazarsa
+    biri mutlaka bir gün kayar.
+    """
+    depo.kur_kaydet(date(1999, 1, 8), {"USD": Decimal("0.1234")})  # Cuma
+
+    assert depo.kur_coz(date(1999, 1, 10), "USD") == (
+        date(1999, 1, 8),
+        Decimal("0.1234"),
+    )
+
+
+@canli_db
+def test_kur_coz_uzak_gecmise_yurumez(depo):
+    """Üç ay önceki kurla çevirmek sessizce yanlış bir rakam üretir.
+
+    Bulunamadığında None dönüyor; §6'nın B2 kapısı bildirimi elle
+    incelemeye düşürecek.
+    """
+    depo.kur_kaydet(date(1999, 1, 8), {"USD": Decimal("0.1234")})
+
+    assert depo.kur_coz(date(1999, 3, 1), "USD") is None
 
 
 @canli_db
