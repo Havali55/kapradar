@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
@@ -88,22 +89,43 @@ def depo():
         baglanti.rollback()
 
 
+@pytest.fixture
+def sahte_bildirim(orge_bildirimi):
+    """Yüklenmiş gerçek veriyle çakışmayan bir kopya.
+
+    Backfill'in 613 bildirimi artık veritabanında duruyor; test kendi ön
+    koşulunu kuramazsa "ilk yazma" iddiası anlamını yitirir. `mkk_uye_oid`
+    de değişiyor: `sirket` tablosunda tekil ve gerçek ORGE satırıyla
+    çakışırsa şirket satırı hiç açılmaz.
+    """
+    return replace(
+        orge_bildirimi,
+        kap_id="zztest-kap-id",
+        kap_index=999_999_999,
+        ticker="ZZTEST",
+        sirket_unvani="DEPO TESTİ A.Ş.",
+        mkk_uye_oid="oid-zztest",
+    )
+
+
 @canli_db
-def test_ayni_bildirim_iki_kez_yazilmaz(depo, orge_bildirimi):
+def test_ayni_bildirim_iki_kez_yazilmaz(depo, sahte_bildirim):
     """Backfill canlı poller'la çakışsa bile mükerrer kayıt oluşmamalı (spec §5)."""
-    assert depo.bildirim_kaydet(orge_bildirimi) is True
-    assert depo.bildirim_kaydet(orge_bildirimi) is False
+    assert depo.bildirim_kaydet(sahte_bildirim) is True
+    assert depo.bildirim_kaydet(sahte_bildirim) is False
 
 
 @canli_db
-def test_bildirim_yazilirken_sirket_satiri_acilir(depo, orge_bildirimi):
+def test_bildirim_yazilirken_sirket_satiri_acilir(depo, sahte_bildirim):
     """`bildirim.ticker` yabancı anahtar; şirket yoksa yazma düşer.
 
     Hasılat Adım 7'de dolacak, ama satırın kendisi ilk bildirimde açılır.
     """
-    depo.bildirim_kaydet(orge_bildirimi)
+    assert depo.sirket_var_mi("ZZTEST") is False
 
-    assert depo.sirket_var_mi("ORGE") is True
+    depo.bildirim_kaydet(sahte_bildirim)
+
+    assert depo.sirket_var_mi("ZZTEST") is True
 
 
 @canli_db
