@@ -353,7 +353,7 @@ uygulanır.
 | 2 | KAP istemcisi (ısıtma + başlıklar + hız sınırı + geri çekilme) | 0 | Liste + detay API |
 | 3 | Şablon ayrıştırıcısı: `oda-12000` XBRL alanları + TR/EN ayrımı | 0 | **LLM'siz, saf fonksiyon** |
 | 4 | ~~Backfill: 12 ay liste + detay, kontrol noktalı~~ | 0 | **BİTTİ** — 613 bildirim, arşivde ve DB'de |
-| 5 | TCMB kur çekici + arşiv doldurma | 0 | |
+| 5 | ~~TCMB kur çekici + arşiv doldurma~~ | 0 | **BİTTİ** — 253 bülten, 5.610 kur satırı |
 | 6 | yfinance fiyat batch + XU100 + CAR + testler | 0 | |
 | 7 | Şirket hasılat tablosu (KAP finansal raporlardan) | 0 | |
 | 8 | **Altın küme: 50 bildirim elle etiketle** | 0 | ≥10'u ilave/toplam ayrımı içersin |
@@ -509,6 +509,33 @@ bulgusundan: başarısız denemeden sonra oturum soğuk işaretleniyor,
 sonraki deneme çerezleri temizleyip yeniden ısıtıyor. Kontrol noktası
 diskte olduğu için ilk koşunun 502 bildirimi korunmuştu; ikinci koşu
 kalan 111'ini 2 dk 49 sn'de tamamladı.
+
+**Adım 5 — TCMB kur arşivi. TAMAMLANDI (2026-09-19).**
+
+2025-09-12 → 2026-09-18 arası **253 bülten**, 23 para birimi, **5.610 kur
+satırı**. 115 gün yayın yok (hafta sonu + resmî tatil) ve bu da arşivde
+işaretli — aksi hâlde her koşu o günleri TCMB'ye yeniden sorardı.
+
+Üç karar yazıya geçti:
+
+1. **Döviz alış (`ForexBuying`)** kullanılıyor. Şirketler hasılatlarını bu
+   kurla çeviriyor; ciro oranının payı ile paydası aynı mantıkla
+   hesaplanmış oluyor. Alış-satış farkı ~%0.2, ama hangisi olduğunun
+   sabit olması önemli.
+2. **`Unit` indirgemesi zorunlu.** JPY kuru 100 birim üzerinden
+   yayınlanıyor; indirgenmezse yen cinsli bir sözleşme 100 kat büyük
+   görünür. Alış kuru boş gelen para birimi atlanıyor — boşu sıfır saymak
+   çarpımı sessizce sıfırlar.
+3. **404 hata değil, veri yokluğu.** Tatilde TCMB dosya yayınlamıyor;
+   yeniden denemek anlamsız. 5xx ise geçici sayılıp yeniden deneniyor.
+
+"Önceki iş günü" kuralı tek yerde yaşıyor: `depo.kur_coz`. Geri yürüme
+**10 günle sınırlı** — üç ay önceki kurla çevirmek sessizce yanlış bir
+rakam üretirdi; bulunamayan kur §6'nın B2 kapısında elle incelemeye düşer.
+
+Kapsama doğrulandı: bildirimlerin düştüğü **223 günün 223'ünde** hem USD
+hem EUR çözülüyor. 221'i aynı gün, 2'si bir gün geriden; en uzun geri
+yürüme **1 gün**, yani sınır bol bol yetiyor.
 
 ## 10. Doğruluk ölçümü
 
