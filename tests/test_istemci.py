@@ -161,6 +161,29 @@ def test_gecici_hatada_yeniden_dener_ve_sonucu_dondurur():
     assert sonuc == [{"disclosureIndex": 1665567}]
 
 
+def test_hatadan_sonra_oturumu_yeniden_isitir():
+    """Adım 0 bulgusu: blok kalıcı değil, ısıtma sonrası aynı IP'den API açılıyor.
+
+    Sadece bekleyip aynı çerezle tekrar denemek bloğu açmıyor; 12 aylık
+    backfill 2026-07-07'de tam olarak burada düştü.
+    """
+    yollar: list[str] = []
+    sayac = {"n": 0}
+
+    def islevci(istek: httpx.Request) -> httpx.Response:
+        yollar.append(istek.url.path)
+        if istek.url.path != LISTE_YOLU:
+            return httpx.Response(200, text="<html></html>")
+        sayac["n"] += 1
+        if sayac["n"] == 1:
+            raise httpx.ConnectTimeout("WAF baglantiyi dusurdu")
+        return httpx.Response(200, json=[])
+
+    istemci_kur(islevci).liste(date(2026, 7, 8), date(2026, 7, 10))
+
+    assert yollar.count(ISITMA_YOLU) == 2
+
+
 def test_geri_cekilme_ustel_olarak_buyur():
     """Sabit aralıkla yeniden denemek bloklanmış bir WAF'ı açmaz."""
     islevci, _ = dusen_sonra_basaran(3, [])

@@ -59,23 +59,30 @@ def main() -> int:
     ayristirici.add_argument("--bitis", type=tarih_coz)
     ayristirici.add_argument("--pencere", type=int, default=VARSAYILAN_PENCERE_GUN)
     ayristirici.add_argument("--arsiv", type=Path, default=VARSAYILAN_ARSIV)
+    ayristirici.add_argument(
+        "--hiz-ms", type=int, help="istekler arası bekleme; .env değerini ezer"
+    )
+    ayristirici.add_argument(
+        "--deneme", type=int, help="bir istek için azami deneme; .env değerini ezer"
+    )
     secenek = ayristirici.parse_args()
 
     bitis = secenek.bitis or date.today()
     baslangic = secenek.baslangic or bitis - timedelta(days=secenek.gun_sayisi - 1)
 
     env = env_oku(KOK / ".env")
-    aralik_ms = int(env.get("KAP_ISTEK_ARALIGI_MS", "500"))
+    aralik_ms = secenek.hiz_ms or int(env.get("KAP_ISTEK_ARALIGI_MS", "500"))
+    deneme = secenek.deneme or int(env.get("KAP_MAKS_YENIDEN_DENEME", "5"))
     istemci = KapIstemcisi(
         user_agent=env.get("KAP_USER_AGENT") or VARSAYILAN_USER_AGENT,
         istek_araligi_sn=aralik_ms / 1000,
-        maks_deneme=int(env.get("KAP_MAKS_YENIDEN_DENEME", "5")),
+        maks_deneme=deneme,
     )
 
     print(f"aralik   : {baslangic} — {bitis}")
     print(f"pencere  : {secenek.pencere} gün")
     print(f"arsiv    : {secenek.arsiv}")
-    print(f"hiz      : {aralik_ms} ms/istek\n", flush=True)
+    print(f"hiz      : {aralik_ms} ms/istek, {deneme} deneme\n", flush=True)
 
     baslangic_an = datetime.now()
     try:

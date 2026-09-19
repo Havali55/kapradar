@@ -220,18 +220,35 @@ _ALAN_ESLEMESI: dict[str, tuple[str, Callable[[str], object] | None]] = {
 }
 
 
+KAP_BILDIRIM_URL = "https://www.kap.org.tr/tr/Bildirim/{kap_index}"
+
+
 @dataclass(frozen=True)
 class Bildirim:
-    """Bir KAP bildiriminin veritabanına yazılabilir hâli."""
+    """Bir KAP bildiriminin veritabanına yazılabilir hâli.
+
+    Alan kümesi `bildirim` tablosuyla birebir: yükleyici detay yanıtını
+    bir daha açmaz, şema bilgisi tek yerde kalır.
+    """
 
     kap_id: str
     kap_index: int
     ticker: str | None
+    sirket_unvani: str
+    mkk_uye_oid: str | None
     sablon_kodu: str | None
+    sablon_adi: str
     yayin_zamani: datetime | None
+    ozet: str | None
+    ham_govde_html: str
+    ham_metin_tr: str
+    ham_metin_en: str
+    kaynak_url: str
+    ek_sayisi: int
     guncelleme_mi: bool
     duzeltme_mi: bool
     onceki_aciklama_tarihleri: list[date]
+    ilgili_kap_id: str | None
     kap_alanlari: dict[str, object]
 
 
@@ -246,6 +263,8 @@ def bildirim_ayristir(detay: dict) -> Bildirim:
     govde_listesi = detay.get("disclosureBody") or [""]
     govde = govde_listesi[0]
     alanlar = xbrl_alanlari(govde)
+    kap_index = int(kunye["disclosureIndex"])
+    metin = aciklama_metinleri(govde)
 
     kap_alanlari: dict[str, object] = {}
     for bizim_ad, (oda_kodu, cozucu) in _ALAN_ESLEMESI.items():
@@ -257,10 +276,20 @@ def bildirim_ayristir(detay: dict) -> Bildirim:
 
     return Bildirim(
         kap_id=kunye["disclosureId"],
-        kap_index=int(kunye["disclosureIndex"]),
+        kap_index=kap_index,
         ticker=_temiz(kunye.get("stockCode")),
+        sirket_unvani=kunye.get("companyTitle") or "",
+        mkk_uye_oid=_temiz(kunye.get("mkkMemberOid")),
         sablon_kodu=sablon_kodu_bul(govde),
+        sablon_adi=kunye.get("title") or "",
         yayin_zamani=yayin_zamani_coz(kunye.get("publishDate", "")),
+        ozet=_temiz(kunye.get("summary")),
+        ham_govde_html=govde,
+        ham_metin_tr=metin.tr,
+        ham_metin_en=metin.en,
+        kaynak_url=KAP_BILDIRIM_URL.format(kap_index=kap_index),
+        ek_sayisi=int(kunye.get("attachmentCount") or 0),
+        ilgili_kap_id=_temiz(kunye.get("relatedDisclosureOid")),
         guncelleme_mi=bool(evet_hayir_coz(alanlar.get("oda_UpdateAnnouncementFlag", ""))),
         duzeltme_mi=bool(
             evet_hayir_coz(alanlar.get("oda_CorrectionAnnouncementFlag", ""))

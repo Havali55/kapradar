@@ -86,8 +86,9 @@ class KapIstemcisi:
         for deneme in range(self._maks_deneme):
             if deneme:
                 self._uyku(self._geri_cekilme_tabani_sn * 2 ** (deneme - 1))
-            self._hiz_sinirla()
             try:
+                self._isit()
+                self._hiz_sinirla()
                 return cagri()
             except (
                 httpx.TransportError,
@@ -95,16 +96,26 @@ class KapIstemcisi:
                 json.JSONDecodeError,
             ) as hata:
                 son_hata = hata
+                # Blok oturum seviyesinde: aynı çerezle beklemek açmıyor,
+                # yeniden ısıtmak açıyor (Adım 0 bulgusu). Sonraki deneme
+                # önce ısınsın diye oturum soğuk işaretleniyor.
+                self._isitildi = False
 
         raise KapErisimHatasi(
             f"KAP'a {self._maks_deneme} denemede ulaşılamadı"
         ) from son_hata
 
     def _isit(self) -> None:
-        """API'den önce bir kez normal sayfa çekip çerez alır."""
+        """API'den önce normal sayfa çekip taze çerez alır.
+
+        Çerezler önce temizleniyor: WAF'a takılmış bir oturumu aynı
+        çerezlerle tazelemek bloğu taşır.
+        """
         if self._isitildi:
             return
-        self._dene(lambda: self._oturum.get(ISITMA_YOLU))
+        self._oturum.cookies.clear()
+        self._hiz_sinirla()
+        self._oturum.get(ISITMA_YOLU)
         self._isitildi = True
 
     def liste(self, baslangic: date, bitis: date) -> list[dict]:
@@ -112,7 +123,6 @@ class KapIstemcisi:
 
         KAP 2.000 elemanda kesiyor; çağıran pencereyi yeterince dar tutmalı.
         """
-        self._isit()
         return self._dene(
             lambda: self._oturum.post(
                 LISTE_YOLU,
@@ -135,7 +145,6 @@ class KapIstemcisi:
         Yanıt tek elemanlı bir dizi; boş dönerse bu sessizce yutulmaz,
         çünkü ayrıştırıcıya boş sözlük vermek yanlış kayıt üretir.
         """
-        self._isit()
         govde = self._dene(
             lambda: self._oturum.get(
                 f"{DETAY_YOLU}/{kap_index}",

@@ -153,6 +153,36 @@ def test_bildirim_kap_alanlarini_llmsiz_doldurur(orge):
     assert bildirim.kap_alanlari["baslangic"] == date(2023, 5, 10)
 
 
+def test_bildirim_veritabani_kunyesini_tasir(orge):
+    """`bildirim` tablosunda NOT NULL olan her alan ayrıştırmadan gelmeli.
+
+    Yükleyici detay yanıtını bir daha açmamalı: ayrıştırıcı ne ürettiyse
+    satır odur. Aksi halde şema bilgisi iki yere dağılır.
+    """
+    bildirim = bildirim_ayristir(orge)
+
+    assert bildirim.sirket_unvani == "ORGE ENERJİ ELEKTRİK TAAHHÜT A.Ş."
+    assert bildirim.sablon_adi == "Yeni İş İlişkisi"
+    assert bildirim.kaynak_url == "https://www.kap.org.tr/tr/Bildirim/1665567"
+    assert bildirim.mkk_uye_oid == "4028e4a140ee35c00140ee3971130009"
+    assert bildirim.ozet.startswith("Pendik-Fevzi Çakmak Metro Projesine")
+    assert bildirim.ek_sayisi == 0
+    assert bildirim.ilgili_kap_id is None
+
+
+def test_bildirim_ham_govdeyi_ve_dil_ayrimini_tasir(orge):
+    """Ham gövde arşivden yeniden üretilebilir olsa da DB'de duruyor (spec §13).
+
+    TR/EN ayrımı satıra burada giriyor; LLM'e yalnızca Türkçesi verilecek.
+    """
+    bildirim = bildirim_ayristir(orge)
+
+    assert "tbl_oda-12000_New-Business-Relation" in bildirim.ham_govde_html
+    assert "863.000 EUR+KDV tutarında ilave sipariş" in bildirim.ham_metin_tr
+    assert "EUR 863,000" not in bildirim.ham_metin_tr
+    assert "EUR 863,000" in bildirim.ham_metin_en
+
+
 def test_ilk_aciklamada_guncelleme_bayragi_kapali(ardyz):
     """ARDYZ bildirimi ilk açıklama — zincir boş olmalı."""
     bildirim = bildirim_ayristir(ardyz)
