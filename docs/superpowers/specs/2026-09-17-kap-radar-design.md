@@ -33,7 +33,7 @@ Tek bildirimi ChatGPT'ye yapıştırıp özet istemek mümkün. Yapamadığı ü
 
 **İçinde:**
 - Tek şablon: **Yeni İş İlişkisi**
-- 12 aylık geçmiş backfill (~1.200 bildirim tahmini)
+- 12 aylık geçmiş backfill (**gerçekleşen: 613 bildirim**, Adım 4)
 - Çıkarım hattı + doğrulama kapısı + katmanlı model yönlendirme
 - Günlük kapanış fiyat batch'i + CAR (anormal getiri) hesabı
 - Bildirim sayfası + hisse sayfası (Next.js, ISR)
@@ -249,10 +249,10 @@ class Cikarici(Protocol):
 Sağlayıcı değiştirmek tek dosya. Şema, doğrulama kapısı, skor formülü ve CAR
 hesabı sağlayıcıdan bağımsız.
 
-**Tahmini maliyet** (~1.200 bildirim, prompt caching + Batch API %50 dahil):
+**Tahmini maliyet** (613 bildirim — Adım 4'te ölçüldü, prompt caching + Batch API %50 dahil):
 
 ```
-Backfill (tek seferlik)  ≈ 0.55 USD
+Backfill (tek seferlik)  ≈ 0.30 USD
 Canlı işletme            ≈ 0.10 USD / ay
 ```
 
@@ -352,7 +352,7 @@ uygulanır.
 | 1 | Postgres şeması + migration'lar | 0 | `tutarlar` listesi jsonb |
 | 2 | KAP istemcisi (ısıtma + başlıklar + hız sınırı + geri çekilme) | 0 | Liste + detay API |
 | 3 | Şablon ayrıştırıcısı: `oda-12000` XBRL alanları + TR/EN ayrımı | 0 | **LLM'siz, saf fonksiyon** |
-| 4 | Backfill: 12 ay liste + detay, kontrol noktalı | 0 | ~1.100 bildirim, ham veri diske |
+| 4 | ~~Backfill: 12 ay liste + detay, kontrol noktalı~~ | 0 | **BİTTİ** — 613 bildirim, arşivde ve DB'de |
 | 5 | TCMB kur çekici + arşiv doldurma | 0 | |
 | 6 | yfinance fiyat batch + XU100 + CAR + testler | 0 | |
 | 7 | Şirket hasılat tablosu (KAP finansal raporlardan) | 0 | |
@@ -362,7 +362,7 @@ uygulanır.
 | 11 | Pillow görsel kart + `/hisse/[ticker]` + `/kap/[id]` + X botu | 0 | Elle etiketli veriyle |
 | 12 | **Pilot: 20 bildirim, Katman 1** | ~0.01 USD | **İZİN İSTENİR** |
 | 13 | Altın küme üzerinde doğruluk ölçümü | ~0.05 USD | **İZİN İSTENİR** |
-| 14 | Tam backfill çıkarımı (~1.100 bildirim) | ~0.55 USD | **İZİN İSTENİR** |
+| 14 | Tam backfill çıkarımı (613 bildirim) | ~0.30 USD | **İZİN İSTENİR** |
 | 15 | Canlı poller'ı aç | ~0.10 USD/ay | **İZİN İSTENİR** |
 
 Adım 4 artık ücretsiz kısımda ve erken: ham veriyi bir kez çekip diske
@@ -479,6 +479,36 @@ kez görünür ve alıntı kapısı yanlış eşleşir.
 `10.05.2023, 14.06.2023, 03.01.2024, 07.02.2025`. Yani "Yeni İş İlişkisi"
 bildirimlerinin önemli bir kısmı **yeni sözleşme değil, mevcut sözleşmenin
 güncellemesi**. Ürün vaadi ve skor formülü bunu ayırmak zorunda.
+
+**Adım 4 — 12 aylık backfill. TAMAMLANDI (2026-09-19).**
+
+2025-09-22 → 2026-09-18 arası **613 "Yeni İş İlişkisi"** bildirimi, 111
+şirket. Arşiv `data/ham/` altında, tamamı `bildirim` tablosunda.
+
+Üç varsayım gerçek veriyle düzeldi:
+
+1. **Hacim tahmini ~%45 yüksekti.** ~1.100 bekleniyordu, 613 çıktı
+   (~1,7/gün). Tahmin iki günlük yoğun bir örnekten çıkarılmıştı. §7'nin
+   backfill maliyeti aynı oranda düşüyor.
+2. **Haftalık pencere çalışmaz.** KAP listeyi 2.000 kayıtta kesiyor,
+   günde ~475 bildirim düşüyor; haftalık pencere ~3.300 eder ve fazlası
+   **sessizce** kaybolurdu. Koşucu 3 günlük pencere kullanıyor, sınıra
+   dayanan pencereyi ikiye bölüp yeniden soruyor, bölünemiyorsa özette
+   bildiriyor.
+3. **`karsi_taraf` bildirimlerin %36,5'inde boş** (224/613) — KAP karşı
+   tarafı gizlemeye izin veriyor. §8'deki skorun `w2` bileşeni bu
+   kayıtlarda "bilinmiyor"a düşer; Adım 10 kalibrasyonu bunu hesaba
+   katmalı, çünkü etkilenen küme azınlık değil.
+
+Ön eleme doğrulandı: liste kaydındaki `subject == "Yeni İş İlişkisi"`
+olan 613 bildirimin **613'ü de** `oda-12000` çıktı.
+
+WAF riski (§13, risk 2) ampirik olarak gerçekleşti: ilk koşu 12 ayın
+%85'inde düştü, beş yeniden deneme de aynı çerezle gitti. Çare Adım 0
+bulgusundan: başarısız denemeden sonra oturum soğuk işaretleniyor,
+sonraki deneme çerezleri temizleyip yeniden ısıtıyor. Kontrol noktası
+diskte olduğu için ilk koşunun 502 bildirimi korunmuştu; ikinci koşu
+kalan 111'ini 2 dk 49 sn'de tamamladı.
 
 ## 10. Doğruluk ölçümü
 
