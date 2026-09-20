@@ -1,0 +1,253 @@
+"""Etki skoru, tepki paneli ve tahta bayrağı — deterministik hesaplar.
+
+Kaynak: `docs/arastirma/2026-09-19-skor-formulu-onerisi.md` (onaylandı
+2026-09-20). Spec §8'in eski toplamsal formülü
+(`2.5 + w1·f(ciro) + w2·g(karşı taraf) + w3·h(süre)`) kanıt taramasından
+sonra bırakıldı. Üç değişiklik:
+
+1. **2,5 tabanı kalktı.** Tutarı açıklanmamış bildirim otomatik "orta
+   etki" almıyor; tutar ya da hasılat yoksa skor hiç gösterilmiyor.
+2. **Süre bileşeni düştü.** KAP yalnız başlangıç tarihini veriyor ve
+   sürenin önemli olduğuna dair kanıt yok.
+3. **Devre kesici skora girmiyor.** En güçlü istatistiksel sinyal o
+   (−2,48 puan) ama bildirimin değil *hissenin* özelliği: skora
+   katılsaydı "neden 3,2?" sorusunun cevabı "çünkü hisse spekülatif"
+   olurdu. Ayrı bayrak olarak yanında duruyor.
+
+Skor bir **getiri tahmini değil**. Kanıt taraması tepkinin
+öngörülemediğini gösterdi (tüm sinyaller 3 günlük CAR'ın %6,4'ünü
+açıklıyor). Burada üretilen sayı bildirimin *büyüklüğü*; geçmiş tepki
+ayrı ve betimleyici bir panelde duruyor.
+
+Modülün tamamı saf fonksiyon: aynı girdi → aynı skor, LLM kanaati yok.
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
+from enum import Enum
+from typing import Callable, Sequence
+
+from kap_radar.cikarim import Tutar
+
+__all__ = [
+    "Agirliklar",
+    "TahtaBayragi",
+    "TepkiPaneli",
+    "VARSAYILAN_AGIRLIKLAR",
+    "buyukluk_skoru",
+    "f_oran",
+    "guvenilirlik",
+    "net_tutar_tl",
+    "tahta_bayragi",
+    "tepki_paneli",
+]
+
+
+@dataclass(frozen=True)
+class Agirliklar:
+    """Skorun ayarlanabilir sabitleri.
+
+    Kodda gömülü değil: altın küme büyüdükçe yeniden kalibre edilecek
+    ve aynı girdinin hangi ayarla hangi skoru verdiği izlenebilir olmalı.
+    """
+
+    azami: Decimal = Decimal("5")
+    taban_oran: Decimal = Decimal("0.01")  # %1 altı: olay değil
+    tavan_oran: Decimal = Decimal("1.00")  # %100 üstü: daha fazla ayrım yok
+
+    # K — güvenilirlik çarpanı. Kanıt taramasındaki 2×2 tablodan:
+    # açık+ilk +%1,23 (n=327) · açık+güncelleme +%0,68 (n=55)
+    # gizli+ilk +%0,02 (n=213) · gizli+güncelleme −%5,18 (n=6)
+    k_acik_ilk: Decimal = Decimal("1.00")
+    k_acik_guncelleme: Decimal = Decimal("0.85")
+    k_gizli_ilk: Decimal = Decimal("0.70")
+    k_gizli_guncelleme: Decimal = Decimal("0.50")
+
+
+VARSAYILAN_AGIRLIKLAR = Agirliklar()
+
+# Skora giren tipler. `toplam_sozlesme` projenin kümülatif bedeli —
+# yeni iş değil; karıştırılırsa ORGE örneğinde oran ~12 kat şişer.
+SKORA_GIREN_TIPLER = frozenset({"ilave_siparis", "fiyat_farki", "tek_seferlik"})
+
+_IKI_HANE = Decimal("0.01")
+
+
+def _yuvarla(deger: Decimal) -> Decimal:
+    return deger.quantize(_IKI_HANE, rounding=ROUND_HALF_UP)
+
+
+# ---------------------------------------------------------------- f(r)
+
+
+def f_oran(
+    oran: Decimal, agirliklar: Agirliklar = VARSAYILAN_AGIRLIKLAR
+) -> Decimal:
+    """Ciro oranını 0–1 aralığına logaritmik olarak taşır.
+
+    Neden logaritmik: materyallik çarpımsaldır — %1'den %2'ye çıkmak ile
+    %10'dan %20'ye çıkmak aynı şeyi söyler. Doğrusal ölçek aralığın
+    tamamını dev sözleşmelere harcar ve asıl ayrımın olduğu %1–%20
+    bandını ezer.
+    """
+    if oran <= agirliklar.taban_oran:
+        return Decimal("0")
+    if oran >= agirliklar.tavan_oran:
+        return Decimal("1")
+
+    taban = math.log10(float(agirliklar.taban_oran))
+    tavan = math.log10(float(agirliklar.tavan_oran))
+    konum = (math.log10(float(oran)) - taban) / (tavan - taban)
+    return Decimal(str(konum))
+
+
+def guvenilirlik(
+    *,
+    karsi_taraf_acik: bool,
+    guncelleme_mi: bool,
+    agirliklar: Agirliklar = VARSAYILAN_AGIRLIKLAR,
+) -> Decimal:
+    """K — büyüklüğü ezmeyen, onu ölçekleyen güvenilirlik çarpanı.
+
+    Çarpımsal, toplamsal değil: karşı tarafı gizli dev bir sözleşme hâlâ
+    büyüktür, sadece daha az güvenilirdir.
+    """
+    if karsi_taraf_acik:
+        return (
+            agirliklar.k_acik_guncelleme if guncelleme_mi else agirliklar.k_acik_ilk
+        )
+    return agirliklar.k_gizli_guncelleme if guncelleme_mi else agirliklar.k_gizli_ilk
+
+
+# ----------------------------------------------------------- net tutar
+
+
+def net_tutar_tl(
+    tutarlar: Sequence[Tutar],
+    kur_coz: Callable[[str], Decimal | None],
+) -> Decimal | None:
+    """Skora giren kalemleri bildirim tarihli kurla TL'ye çevirip toplar.
+
+    `kur_coz` bir para birimi kodu alıp o günün TCMB alış kurunu verir;
+    bulamazsa None. Eksik kuru sıfır saymak toplamı sessizce küçültürdü,
+    bu yüzden tek eksik kur tüm sonucu None yapar (§6 kapısı B2 bunu
+    elle incelemeye düşürür).
+    """
+    skora_girenler = [t for t in tutarlar if t.tip in SKORA_GIREN_TIPLER]
+    if not skora_girenler:
+        return None
+
+    toplam = Decimal("0")
+    for kalem in skora_girenler:
+        kur = kur_coz(kalem.para_birimi)
+        if kur is None:
+            return None
+        toplam += kalem.deger * kur
+    return _yuvarla(toplam)
+
+
+# --------------------------------------------------------------- skor
+
+
+def buyukluk_skoru(
+    *,
+    net_tutar_tl: Decimal | None,
+    ttm_hasilat: Decimal | None,
+    karsi_taraf_acik: bool,
+    guncelleme_mi: bool,
+    agirliklar: Agirliklar = VARSAYILAN_AGIRLIKLAR,
+) -> Decimal | None:
+    """`S = clamp(5 · f(r) · K, 0, 5)` — bildirimin büyüklüğü.
+
+    Tutar ya da hasılat yoksa None: skor gösterilmez, yerine etiket
+    konur. Bildirimlerin ~%15'i skorsuz kalıyor ve bu kabul edilmiş bir
+    sonuç — uydurulmuş bir payda ile üretilen skor, skorsuzluktan kötü.
+    """
+    if not net_tutar_tl or not ttm_hasilat or ttm_hasilat <= 0:
+        return None
+
+    oran = net_tutar_tl / ttm_hasilat
+    ham = (
+        agirliklar.azami
+        * f_oran(oran, agirliklar)
+        * guvenilirlik(
+            karsi_taraf_acik=karsi_taraf_acik,
+            guncelleme_mi=guncelleme_mi,
+            agirliklar=agirliklar,
+        )
+    )
+    return _yuvarla(max(Decimal("0"), min(agirliklar.azami, ham)))
+
+
+# -------------------------------------------------------- tepki paneli
+
+
+@dataclass(frozen=True)
+class TepkiPaneli:
+    """Benzer bildirimlerin geçmiş tepkisi — tahmin değil, betimleme."""
+
+    n: int
+    medyan: Decimal
+    alt_ceyrek: Decimal
+    ust_ceyrek: Decimal
+    pozitif_orani: Decimal
+
+
+def tepki_paneli(carlar: Sequence[Decimal]) -> TepkiPaneli | None:
+    """Anormal getiri kümesini medyan ve çeyrekliklerle özetler.
+
+    Ortalama bilerek yok: 20 günlük ortalamalarımız (+%2,82) medyanlarla
+    (+%2,13 / −%2,51) çelişiyor, yani birkaç uç gözleme ait. Ortalamayı
+    yayınlamak tipik bir yatırımcının göreceği şeyi yanlış anlatır.
+    """
+    if not carlar:
+        return None
+
+    sirali = sorted(carlar)
+    pozitif = sum(1 for c in sirali if c > 0)
+    return TepkiPaneli(
+        n=len(sirali),
+        medyan=_yuzdelik(sirali, Decimal("0.50")),
+        alt_ceyrek=_yuzdelik(sirali, Decimal("0.25")),
+        ust_ceyrek=_yuzdelik(sirali, Decimal("0.75")),
+        pozitif_orani=Decimal(pozitif) / Decimal(len(sirali)),
+    )
+
+
+def _yuzdelik(sirali: Sequence[Decimal], oran: Decimal) -> Decimal:
+    """En yakın sıra istatistiği; ara değer üretmiyor.
+
+    Gerçekte gözlenmiş bir getiriyi göstermek, iki gözlem arasında
+    hiç yaşanmamış bir sayı uydurmaktan dürüst.
+    """
+    indeks = int(oran * (len(sirali) - 1))
+    return sirali[indeks]
+
+
+# ------------------------------------------------------- tahta bayrağı
+
+
+class TahtaBayragi(Enum):
+    """Hissenin tahta kalitesi — bildirimin değil, hissenin özelliği."""
+
+    TEMIZ = "temiz"
+    HAREKETLI = "hareketli"
+    TEDBIRLI = "tedbirli"
+
+
+def tahta_bayragi(*, v90: int, v5: int) -> TahtaBayragi:
+    """Son 90 gün ve son 5 gündeki VBTS/devre kesici sayısına bakar.
+
+    Eşikler formül önerisinden. Sıra tersten kuruldu — en ağır durum
+    önce: `v90=3, v5=2` hem 'hareketli' hem 'tedbirli' eşiğini
+    karşılıyor, iki devre kesici gören bir tahtayı 'hareketli' diye
+    yayınlamak yanıltıcı olurdu.
+    """
+    if v90 > 6 or v5 >= 2:
+        return TahtaBayragi.TEDBIRLI
+    if v90 <= 2 and v5 == 0:
+        return TahtaBayragi.TEMIZ
+    return TahtaBayragi.HAREKETLI

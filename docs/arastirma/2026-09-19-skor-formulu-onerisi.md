@@ -1,7 +1,10 @@
-# Skor formülü — öneri (ONAY BEKLİYOR)
+# Skor formülü — ONAYLANDI
 
-Tarih: 2026-09-19 · Durum: **Hüseyin onaylamadı**, dört açık soru aşağıda
+Tarih: 2026-09-19 · **Onay: Hüseyin, 2026-09-20** (dört sorunun dördü de
+önerildiği gibi kabul edildi: K ölçeklemesi, %1/%100 çapaları, "tutar
+yoksa skor yok", w3'ün düşmesi)
 Dayanak: `2026-09-19-skor-kanit-taramasi.md`
+Uygulama: `src/kap_radar/skor.py`, testler `tests/test_skor.py`
 
 Spec §8'in formülü (`skor = 2,5 + w1·f(ciro) + w2·g(karşı taraf) + w3·h(süre)`)
 kanıt taramasından sonra bu hâle geldi.
@@ -97,10 +100,23 @@ değil. Skor da öyle diyor.
 
 ---
 
-## Onay bekleyen dört soru
+## Onaylanan dört karar (2026-09-20)
 
-1. **K değerleri** (1,00 / 0,85 / 0,70 / 0,50) — 2×2 tablodan türetildi ama
-   ölçeklemesi yargı. Gizli karşı taraf 0,5'e kadar düşsün mü?
+1. **K değerleri** 1,00 / 0,85 / 0,70 / 0,50 — önerildiği gibi.
 2. **Çapalar**: %1 taban / %100 tavan.
-3. **"Tutar yoksa skor yok"** kabul mü? (~%15 bildirim skorsuz görünür.)
-4. **w3'ün düşmesi.**
+3. **"Tutar yoksa skor yok"** — ~%15 bildirim skorsuz görünecek, kabul.
+4. **w3 (süre) düştü.**
+
+---
+
+## Uygulamada ortaya çıkan iki ayrıntı (2026-09-20)
+
+**Tahta bayrağında sıra tersten kuruldu.** Yazıldığı gibi okunursa
+`v90=3, v5=2` hem "hareketli" (v90≤6) hem "tedbirli" (v5≥2) eşiğini
+karşılıyor. En ağır durum önce denetleniyor: bildirimden hemen önce iki
+devre kesici görmüş bir tahtayı "hareketli" diye yayınlamak yanıltıcı
+olurdu.
+
+**Çeyreklikler ara değer üretmiyor.** Panel gerçekten gözlenmiş bir
+getiriyi gösteriyor (en yakın sıra istatistiği), iki gözlem arasında hiç
+yaşanmamış bir sayı hesaplamıyor. n küçükken fark görünür oluyor.
