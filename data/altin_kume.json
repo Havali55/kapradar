@@ -1,0 +1,550 @@
+{
+  "surum": "1",
+  "etiketleyen": "claude-opus-5 (elle okuma, 2026-09-20)",
+  "kurallar": [
+    "Yeni imzalanan sözleşmenin/siparişin toplam bedeli -> tek_seferlik",
+    "Mevcut işe eklenen sipariş ('ilave', 'ek sipariş') -> ilave_siparis",
+    "Fiyat farkı anlaşması -> fiyat_farki",
+    "Projenin revize edilmiş kümülatif bedeli -> toplam_sozlesme (skora girmez)",
+    "Opsiyon tutarları etiketlenmez: kesinleşmiş iş değil",
+    "Şirketin parantez içinde verdiği kendi TL çevrimi ayrı kalem DEĞİL",
+    "Şirketin ödediği bedel (devir ücreti vb.) gelir değil, etiketlenmez",
+    "Hedef/beklenti tutarları ('hedeflenmektedir') etiketlenmez",
+    "hap_ozet ve guven altın kümede yok: doğrulanabilir alan değiller"
+  ],
+  "kayitlar": [
+    {
+      "kap_id": "4028328c998ee9d50199bf03976551c1",
+      "kap_index": 1498996,
+      "ticker": "ODINE",
+      "tabaka": "ilave_toplam",
+      "not": "3 yıllık uzatma sözleşmesi; parantezdeki 26.596.778 TL şirketin kendi çevirisi, ayrı kalem değil.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "639000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "toplam sözleşme bedeli 639.000 Amerikan Doları"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d7019a71880f27120e",
+      "kap_index": 1515178,
+      "ticker": "ASELS",
+      "tabaka": "ilave_toplam",
+      "not": "Devam eden seri üretime 'ilave olarak' imzalanan yeni sözleşmeler.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1122139260", "para_birimi": "EUR", "tip": "ilave_siparis", "alinti": "ilave olarak toplam tutarı 1.122.139.260 Avro olan yeni sözleşmeler"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9aaa2bf9019ad98a02b533c4",
+      "kap_index": 1521650,
+      "ticker": "ONRYT",
+      "tabaka": "ilave_toplam",
+      "not": "391.620 USD opsiyon; kesinleşmediği için etiketlenmedi.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "9600000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "toplam tutarı 9.600.000 ABD Doları"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9aaa2bfa019adf378d11665b",
+      "kap_index": 1522327,
+      "ticker": "LINK",
+      "tabaka": "ilave_toplam",
+      "not": "KDV dahil bedel; şema KDV ayrımı tutmuyor, metinde ne yazıyorsa o.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2031840", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "işin toplam bedeli KDV dâhil 2.031.840 TL"}
+      ]
+    },
+    {
+      "kap_id": "4028328d9cc9d32c019cdd7ca99068f5",
+      "kap_index": 1571457,
+      "ticker": "ODINE",
+      "tabaka": "ilave_toplam",
+      "not": "Önceki sözleşmeyi yürürlükten kaldıran yeni 2 yıllık sözleşme.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "875400", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "toplam sözleşme bedeli 875.400 Amerikan Doları"}
+      ]
+    },
+    {
+      "kap_id": "4028328d9cc9d32b019cf4f89ceb6be3",
+      "kap_index": 1572732,
+      "ticker": "ASELS",
+      "tabaka": "ilave_toplam",
+      "not": "İKİ ayrı sözleşme, ikisi de USD ve tek_seferlik. A5 kapısı bunu mükerrer sanıp reddedecek — bilinen ve kabul edilmiş yanlış-red.",
+      "beklenen_kapi": "A5",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "111850000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "toplam tutarı 111.850.000 ABD Doları olan sözleşme"},
+        {"deger": "54600000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "toplam tutarı 54.600.000 ABD Doları olan ihracat sözleşmesi"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9cc9d175019d238bc4816900",
+      "kap_index": 1575338,
+      "ticker": "YEOTK",
+      "tabaka": "ilave_toplam",
+      "not": "31.146.246 USD'ye kadar artırım opsiyonu var; etiketlenmedi.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "15938617", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "15.938.617 ABD Doları tutarında sözleşme"}
+      ]
+    },
+    {
+      "kap_id": "4028328d9d7b24c8019dbff9c30733f8",
+      "kap_index": 1597191,
+      "ticker": "BVSAN",
+      "tabaka": "ilave_toplam",
+      "not": "Bağlı ortaklık sözleşmesi; karşı taraf gizli.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "883793", "para_birimi": "EUR", "tip": "tek_seferlik", "alinti": "toplam bedeli KDV hariç 883.793 Avro"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9d7b22d3019df389a62e1c9d",
+      "kap_index": 1600703,
+      "ticker": "ORGE",
+      "tabaka": "ilave_toplam",
+      "not": "Skora yalnız 940.002 USD ilave sipariş girer; üç para birimli kümülatif bedel toplam_sozlesme. 531.631.075 TL kümülatifin çevrimi, ayrı kalem değil.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "940002", "para_birimi": "USD", "tip": "ilave_siparis", "alinti": "940.002 USD+KDV tutarında ilave sipariş alınmıştır"},
+        {"deger": "6954845", "para_birimi": "EUR", "tip": "toplam_sozlesme", "alinti": "toplam sözleşme büyüklüğümüz 6.954.845 EUR+KDV"},
+        {"deger": "121046594", "para_birimi": "TRY", "tip": "toplam_sozlesme", "alinti": "121.046.594 TL+KDV"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9e9b8d9c019eb7b587902e35",
+      "kap_index": 1616478,
+      "ticker": "VBTYZ",
+      "tabaka": "ilave_toplam",
+      "not": "Ondalık virgüllü TL tutarı.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "439880000.00", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "Sözleşme bedeli KDV hariç 439.880.000,00 TL"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9f0a085a019f4afee9b83f3f",
+      "kap_index": 1631439,
+      "ticker": "ASELS",
+      "tabaka": "ilave_toplam",
+      "not": "Ondalık virgüllü EUR tutarı, 'ilave olarak' ifadesiyle.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1470500012.38", "para_birimi": "EUR", "tip": "ilave_siparis", "alinti": "ilave olarak toplam tutarı 1.470.500.012,38 Avro olan sözleşme"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9f52dc40019fb84e50ae4da7",
+      "kap_index": 1642563,
+      "ticker": "ODINE",
+      "tabaka": "ilave_toplam",
+      "not": "Parantezdeki 87.518.875 TL şirketin kendi çevirisi.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1850000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "sözleşmenin toplam bedeli KDV hariç 1.850.000 ABD Doları"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9aaa2bf9019ae07538b67324",
+      "kap_index": 1522450,
+      "ticker": "ARDYZ",
+      "tabaka": "mukerrer_cevrim",
+      "not": "'122,400' İNGİLİZCE binlik virgülü = 122.400. TL karşılığı ayrı kalem değil.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "122400", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "122,400 USD (5.193.885 TL) (KDV dahil) bedel"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9aaa2bfa019adf6411e469a2",
+      "kap_index": 1522460,
+      "ticker": "ARDYZ",
+      "tabaka": "mukerrer_cevrim",
+      "not": "TL karşılığı parantezde; iki kalem sayılırsa net tutar ikiye katlanır.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2816640", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "KDV Dahil 2.816.640 USD (119.520.457 TL) bedelle"}
+      ]
+    },
+    {
+      "kap_id": "4028328c9af2405e019af98edd7103b1",
+      "kap_index": 1524175,
+      "ticker": "ARDYZ",
+      "tabaka": "mukerrer_cevrim",
+      "not": "TL karşılığı parantezde.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2490000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "2.490.000 USD (105.667.881 TL) KDV dahil bedelle"}
+      ]
+    },
+    {
+      "kap_id": "4028328d9af24264019b5a4c600d0ace",
+      "kap_index": 1530189,
+      "ticker": "ARDYZ",
+      "tabaka": "mukerrer_cevrim",
+      "not": "TL karşılığı parantezde.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "6720600", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "6.720.600 USD (287.927.978 TL) (KDV dahil) bedelle"}
+      ]
+    },
+    {
+      "kap_id": "4028328d9b827483019b85480fe30151",
+      "kap_index": 1532576,
+      "ticker": "ARDYZ",
+      "tabaka": "mukerrer_cevrim",
+      "not": "TL karşılığı parantezde.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1902000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "1.902.000 USD (81.706.496 TL) (KDV dahil) bedelle"}
+      ]
+    },
+    {
+      "kap_id": "4028328d992f6f66019976526a39528b",
+      "kap_index": 1492092,
+      "ticker": "ALVES",
+      "tabaka": "cok_para",
+      "not": "Burada asıl para birimi TL; USD ve 'Kur: 41,30' şirketin çevrimi. Ters yöndeki mükerrer çevrim örneği.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "152914982.00", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "toplam değeri 152.914.982,00 TL"}
+      ]
+    },
+    {
+      "kap_id": "4028328d992f6f66019976da4f923fc1",
+      "kap_index": 1492195,
+      "ticker": "OZATD",
+      "tabaka": "cok_para",
+      "not": "Güncelleme: ilk 2.750.000 USD, nihai 3.575.000 USD. Geçerli olan nihai tutar; ikisi de alınırsa iş iki kez sayılır.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "3575000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "nihai tutar 3.575.000 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe80199b9cc9ac77692",
+      "kap_index": 1497679,
+      "ticker": "CWENE",
+      "tabaka": "cok_para",
+      "not": "TL karşılığı satır sonlarıyla bölünmüş; ayrı kalem değil.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1586694.00", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "KDV Hariç 1.586.694,00 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d50199c2cce78f6f19",
+      "kap_index": 1499298,
+      "ticker": "GESAN",
+      "tabaka": "cok_para",
+      "not": "Tutar '-USD' biçiminde tireyle bitişik yazılmış.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "19488609.59", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "vergiler hariç 19.488.609,59 -USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d50199c385a4052c46",
+      "kap_index": 1500598,
+      "ticker": "CWENE",
+      "tabaka": "cok_para",
+      "not": "TL karşılığı parantezde.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "9600000.00", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "KDV Hariç 9.600.000,00 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d70199bebd05231e66",
+      "kap_index": 1501538,
+      "ticker": "OZYSR",
+      "tabaka": "cok_para",
+      "not": "Gerçekten iki para birimli: EUR ve USD siparişler ayrı ayrı sayılmalı. Mükerrer çevrim DEĞİL.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "5550000", "para_birimi": "EUR", "tip": "tek_seferlik", "alinti": "5.550.000 EUR ve 2.690.000 USD yeni sipariş"},
+        {"deger": "2690000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "5.550.000 EUR ve 2.690.000 USD yeni sipariş"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe80199ceb092344973",
+      "kap_index": 1502587,
+      "ticker": "CWENE",
+      "tabaka": "cok_para",
+      "not": "DİKKAT: bu bildirimdeki 400.443.840,00 TL rakamı YANLIŞ (önceki bildirimden kopyalanmış); şirket 1502725 ile düzeltti. Şirketin kendi çevrimine güvenilemeyeceğinin kanıtı — TL çevrimi bizim TCMB kurumuzla yapılmalı.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2974771.80", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "KDV Hariç 2.974.771,80 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d50199dc064e9339b3",
+      "kap_index": 1502725,
+      "ticker": "CWENE",
+      "tabaka": "cok_para",
+      "not": "1502587'nin düzeltmesi; tutar aynı, yalnız TL karşılığı düzeltilmiş. Sayıya bitişik 'USD' yazımı.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2974771.80", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "KDV hariç 2.974.771,80USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d501999a0ac6cf3044",
+      "kap_index": 1494067,
+      "ticker": "CVKMD",
+      "tabaka": "tutarsiz",
+      "not": "Tabaka yanlış: tutar VAR ama 'milyon' sözcüğüyle yazıldığı için regex ön elemesi görmedi. Çarpan sözcüğü kapısının gerçek örneği.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "25020000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "25,02 milyon ABD Doları"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d70199bd38d2c1039d",
+      "kap_index": 1497592,
+      "ticker": "ALKA",
+      "tabaka": "tutarsiz",
+      "not": "Yalnız tonaj açıklanmış (5000 ton), parasal tutar yok. Ticari sır denmediği için tutar_gizli=false.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328c998ee9d50199c275eba10f54",
+      "kap_index": 1501452,
+      "ticker": "YIGIT",
+      "tabaka": "tutarsiz",
+      "not": "İş birliği protokolü; MW kapasitesi var, tutar yok.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328d998eebe80199c9921a942340",
+      "kap_index": 1501749,
+      "ticker": "SUWEN",
+      "tabaka": "tutarsiz",
+      "not": "Bayilik sözleşmesi; mağaza sayısı var, tutar yok.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328d998eebe80199ce31c31b711f",
+      "kap_index": 1502580,
+      "ticker": "ONCSM",
+      "tabaka": "tutarsiz",
+      "not": "GBP -> DIGER. İki tutar da ŞİRKETİN geliri değil: 115 milyon GBP tüm tedarikçileri kapsayan çerçeve ihale bütçesi, 25 milyon GBP ilk yıl planlanan toplam alım. Bu yüzden ikisi de toplam_sozlesme; A5 mükerrer görüp elle kuyruğa atacak ve doğru sonuç da bu.",
+      "beklenen_kapi": "A5",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "115000000", "para_birimi": "DIGER", "tip": "toplam_sozlesme", "alinti": "Toplam ihale bütçesi 115 milyon GBP"},
+        {"deger": "25000000", "para_birimi": "DIGER", "tip": "toplam_sozlesme", "alinti": "ilk yıl için yaklaşık 25 milyon GBP"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe80199dce2b1ce6465",
+      "kap_index": 1502944,
+      "ticker": "ALKLC",
+      "tabaka": "tutarsiz",
+      "not": "İhracat anlaşması; tutar yok.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328d992f6f6601995bf9f7b846a9",
+      "kap_index": 1491549,
+      "ticker": "DGATE",
+      "tabaka": "guncelleme",
+      "not": "EN ZOR VAKA. Metindeki iki tutarın ikisi de gelir değil: 8.000.000 USD sözleşme devri için ŞİRKETİN ÖDEDİĞİ bedel, 300 milyon USD ise 'hedeflenmektedir' denen yıllık iş hacmi beklentisi. Doğru çıkarım boş liste.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328d992f6f66019971f8f688391e",
+      "kap_index": 1491880,
+      "ticker": "ONRYT",
+      "tabaka": "guncelleme",
+      "not": "Sözleşme görüşmesi durum güncellemesi; tutar yok.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328d992f6f66019971ff0c6e3aab",
+      "kap_index": 1491882,
+      "ticker": "ONRYT",
+      "tabaka": "guncelleme",
+      "not": "Aynı gün ikinci durum güncellemesi; tutar yok.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328c998ee9d50199be966ab0467c",
+      "kap_index": 1499028,
+      "ticker": "ONCSM",
+      "tabaka": "guncelleme",
+      "not": "Tutar satır sonlarıyla bölünmüş; normalizasyon olmadan alıntı eşleşmez.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "46151759.28", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "46.151.759,28 TL bedelle imzalanmıştır"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe80199cef2246c4ddf",
+      "kap_index": 1502649,
+      "ticker": "LINK",
+      "tabaka": "guncelleme",
+      "not": "İhale sonucunun sözleşmeye dönüşmesi.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "3495000", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "KDV hariç 3.495.000 TL bedelli sözleşme"}
+      ]
+    },
+    {
+      "kap_id": "4028328c998ee9d70199ebb55bc36324",
+      "kap_index": 1504875,
+      "ticker": "ONCSM",
+      "tabaka": "guncelleme",
+      "not": "24 aylık hizmet sözleşmesi.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "43438729.50", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "43.438.729,50 TL bedelle imzalanmıştır"}
+      ]
+    },
+    {
+      "kap_id": "4028328d992f6f6601997006c9b208b8",
+      "kap_index": 1491691,
+      "ticker": "SDTTR",
+      "tabaka": "gizli_karsi_taraf",
+      "not": "Bağlı ortaklık siparişi; karşı taraf 'yurt içi bir müşteri'.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1259750", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "toplam tutarı 1.259.750 ABD doları olan sipariş"}
+      ]
+    },
+    {
+      "kap_id": "4028328d992f6f6601997a7b36d06396",
+      "kap_index": 1492474,
+      "ticker": "BURVA",
+      "tabaka": "gizli_karsi_taraf",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "355500.00", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "355.500,00 USD tutarlı"}
+      ]
+    },
+    {
+      "kap_id": "4028328c992f6d560199865cc4152d48",
+      "kap_index": 1493402,
+      "ticker": "BVSAN",
+      "tabaka": "gizli_karsi_taraf",
+      "not": "Metinde çift boşluk var; normalizasyon daraltıyor.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2120800", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "2.120.800 USD (KDV Hariç) tutarında bir sözleşme"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe801999963842532a2",
+      "kap_index": 1493982,
+      "ticker": "EMKEL",
+      "tabaka": "gizli_karsi_taraf",
+      "not": "İki sipariş (433.015 + 190.725) ve toplamı aynı metinde. Doğru kalem toplam; üçü birden alınırsa iş iki kez sayılır.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "623740", "para_birimi": "EUR", "tip": "tek_seferlik", "alinti": "Bu siparişlerin toplam tutarı 623.740 Euro"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe801999c094dd461b4",
+      "kap_index": 1494496,
+      "ticker": "LINK",
+      "tabaka": "gizli_karsi_taraf",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "123896617.28", "para_birimi": "TRY", "tip": "tek_seferlik", "alinti": "toplam KDV Dahil 123.896.617,28 TL tutarında satış anlaşması"}
+      ]
+    },
+    {
+      "kap_id": "4028328d998eebe801999ee141d46a5a",
+      "kap_index": 1494683,
+      "ticker": "BVSAN",
+      "tabaka": "gizli_karsi_taraf",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "732000", "para_birimi": "EUR", "tip": "tek_seferlik", "alinti": "toplam 732.000 Avro (KDV Hariç) tutarında bir sözleşme"}
+      ]
+    },
+    {
+      "kap_id": "4028328c992f6d57019970390757344e",
+      "kap_index": 1491582,
+      "ticker": "HRKET",
+      "tabaka": "sade",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "3258259", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "sözleşmenin toplam bedeli 3.258.259 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c992f6d560199705313aa0886",
+      "kap_index": 1491611,
+      "ticker": "FORTE",
+      "tabaka": "sade",
+      "not": "Tutar ayrıca yazıyla da veriliyor; yazılı hâl ayrı kalem değil.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "2999015.00", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "Sözleşme bedeli 2.999.015,00 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328c992f6d5601997053b5c708c2",
+      "kap_index": 1491676,
+      "ticker": "FORTE",
+      "tabaka": "sade",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "1186485.00", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "Sözleşme bedeli 1.186.485,00 USD"}
+      ]
+    },
+    {
+      "kap_id": "4028328d992f6f660199712b8d1b2b96",
+      "kap_index": 1491815,
+      "ticker": "SMRTG",
+      "tabaka": "sade",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "42770000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "KDV Hariç 42.770.000 ABD doları tutarlı"}
+      ]
+    },
+    {
+      "kap_id": "4028328c992f6d57019976c2694f5e17",
+      "kap_index": 1492432,
+      "ticker": "ALKLC",
+      "tabaka": "sade",
+      "not": "Perakende zinciri anlaşması; '13.000 şube' sayı ama tutar değil. LLM'in bunu tutar sanması muhtemel.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328d998eebe8019994f626420f06",
+      "kap_index": 1493959,
+      "ticker": "ODINE",
+      "tabaka": "sade",
+      "not": "Çerçeve sözleşme; '23.000 çalışan' ve '100 ülke' sayı ama tutar değil.",
+      "tutar_gizli": false,
+      "tutarlar": []
+    },
+    {
+      "kap_id": "4028328c998ee9d70199a02d9bf57440",
+      "kap_index": 1495023,
+      "ticker": "HRKET",
+      "tabaka": "sade",
+      "not": "'240 MW' ve '36 adet türbin' sayı ama tutar değil.",
+      "tutar_gizli": false,
+      "tutarlar": [
+        {"deger": "8445000", "para_birimi": "USD", "tip": "tek_seferlik", "alinti": "imzalanan sözleşmenin toplam bedeli 8.445.000 USD"}
+      ]
+    }
+  ]
+}

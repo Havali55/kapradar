@@ -23,6 +23,9 @@ out/
 # Veri — ham KAP metinleri ve fiyat serileri repoya girmez
 data/ham/
 data/cache/
+# Altın küme için üretilen okuma dökümü; scripts/altin_kume_sec.py yeniden üretir.
+# Etiketlerin kendisi (data/altin_kume.json) repoda kalır.
+data/altin_kume_ham.txt
 *.log
 *.sqlite
 *.db
