@@ -30,7 +30,7 @@ sys.path.insert(0, str(KOK / "src"))
 import psycopg  # noqa: E402
 
 from kap_radar.depo import Depo  # noqa: E402
-from kap_radar.tepki import car_hesapla, t0_bul  # noqa: E402
+from kap_radar.tepki import car_hesapla  # noqa: E402
 
 LISTE_KLASORU = KOK / "data" / "ham" / "liste"
 CIKTI = KOK / "data" / "ozellikler.csv"
@@ -156,7 +156,6 @@ def main() -> int:
             bildirimler = imlec.fetchall()
 
         endeks = depo.endeks_serisi(ilk, son)
-        islem_gunleri = sorted(endeks)
         seriler: dict[str, dict] = {}
         cirolar: dict[str, float] = {}
 

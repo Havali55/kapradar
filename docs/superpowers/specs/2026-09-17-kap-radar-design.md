@@ -298,7 +298,29 @@ yayınlanabilir — skorun ciro bileşeni düşer, diğer bileşenler çalışı
 "yeni sözleşme" demez; başlık ve kart "mevcut işin güncellemesi" olarak
 kurulur. Ciro oranı yine ilave tutardan hesaplanır — doğru payda budur.
 
-**Etki skoru — kural tabanlı, LLM kanaati değil.** 0–5 arası:
+**Etki skoru — kural tabanlı, LLM kanaati değil.** 0–5 arası.
+
+> **REVİZYON 2026-09-20 — formül değişti.** Aşağıdaki toplamsal formül
+> (`2.5 + w1·f(ciro) + w2·g(karşı taraf) + w3·h(süre)`) 2026-09-19 kanıt
+> taramasından sonra bırakıldı. Yürürlükteki formül:
+> `docs/arastirma/2026-09-19-skor-formulu-onerisi.md` (Hüseyin 2026-09-20'de
+> onayladı), uygulaması `src/kap_radar/skor.py`. Özet:
+>
+> ```
+> S = clamp(5 · f(r) · K, 0, 5)
+> f(r) = clamp((log10(r) + 2) / 2, 0, 1)      # %1 taban, %100 tavan
+> K    = 1,00 (açık+ilk) · 0,85 (açık+güncelleme)
+>        0,70 (gizli+ilk) · 0,50 (gizli+güncelleme)
+> ```
+>
+> Üç fark: **2,5 tabanı kalktı** (tutar ya da hasılat yoksa skor hiç
+> gösterilmez, ~%15 bildirim skorsuz), **w3 (süre) düştü** (KAP süre
+> vermiyor, kanıt yok), **devre kesici skora girmiyor** (bildirimin değil
+> hissenin özelliği → ayrı tahta bayrağı). Skor bir **getiri tahmini
+> değil**: tüm sinyaller 3 günlük CAR'ın yalnız %6,4'ünü açıklıyor.
+> Geçmiş tepki ayrı ve betimleyici bir panelde (medyan + çeyreklik + n).
+
+Eski formül (tarihsel kayıt):
 
 ```
 skor = 2.5
@@ -307,15 +329,11 @@ skor = 2.5
      + w3 * h(sure)               # tek seferlik vs yıllara yayılı
 ```
 
-**Başlangıç ağırlıkları (karar 2026-09-18): `w1 = 1.5`, `w2 = 0.7`,
-`w3 = 0.3`.** Ciro oranı baskın sürücü; karşı taraf tipi ikincil; süre ince
-ayar. Altın küme (Adım 6) etiketlendikten sonra bu değerler gerçek dağılıma
-göre yeniden kalibre edilir — o yüzden config'te, kodda değil.
-
-Ağırlıklar konfigürasyonda, kodda gömülü değil. Aynı girdi → aynı skor.
-Sayfada skorun bileşen kırılımı gösterilir ("neden 4.1"). LLM'e sorulsa
-tekrarlanamaz ve açıklanamaz olurdu; ayrıca "şu formülle hesaplanmış büyüklük
-göstergesi" demek "AI'ya göre çok olumlu" demekten savunulabilir.
+Değişmeyen karar: ağırlıklar konfigürasyonda (`skor.Agirliklar`), kodda
+gömülü değil. Aynı girdi → aynı skor. Sayfada skorun bileşen kırılımı
+gösterilir ("neden 4.1"). LLM'e sorulsa tekrarlanamaz ve açıklanamaz
+olurdu; ayrıca "şu formülle hesaplanmış büyüklük göstergesi" demek
+"AI'ya göre çok olumlu" demekten savunulabilir.
 
 **CAR — anormal getiri.** Yayınlanan tepki metriği ham getiri değil:
 
@@ -355,10 +373,10 @@ uygulanır.
 | 4 | ~~Backfill: 12 ay liste + detay, kontrol noktalı~~ | 0 | **BİTTİ** — 613 bildirim, arşivde ve DB'de |
 | 5 | ~~TCMB kur çekici + arşiv doldurma~~ | 0 | **BİTTİ** — 253 bülten, 5.610 kur satırı |
 | 6 | ~~yfinance fiyat batch + XU100 + CAR + testler~~ | 0 | **BİTTİ** — 27.581 kapanış, 612 tepki |
-| 7 | Şirket hasılat tablosu (KAP finansal raporlardan) | 0 | |
-| 8 | **Altın küme: 50 bildirim elle etiketle** | 0 | ≥10'u ilave/toplam ayrımı içersin |
-| 9 | Çıkarıcı arayüzü + doğrulama kapısı + testler | 0 | Sahte çıkarıcıyla |
-| 10 | Skor formülü (w1=1.5/w2=0.7/w3=0.3) + testler | 0 | |
+| 7 | ~~Şirket hasılat tablosu (KAP finansal raporlardan)~~ | 0 | **BİTTİ** — `finansal_donem`, point-in-time TTM |
+| 8 | ~~**Altın küme: 50 bildirim elle etiketle**~~ | 0 | **BİTTİ** — 12'si ilave/toplam ayrımı |
+| 9 | ~~Çıkarıcı arayüzü + doğrulama kapısı + testler~~ | 0 | **BİTTİ** — sahte çıkarıcıyla, LLM yok |
+| 10 | ~~Skor formülü + testler~~ | 0 | **BİTTİ** — onaylanan logaritmik formül |
 | 11 | Pillow görsel kart + `/hisse/[ticker]` + `/kap/[id]` + X botu | 0 | Elle etiketli veriyle |
 | 12 | **Pilot: 20 bildirim, Katman 1** | ~0.01 USD | **İZİN İSTENİR** |
 | 13 | Altın küme üzerinde doğruluk ölçümü | ~0.05 USD | **İZİN İSTENİR** |
@@ -572,6 +590,189 @@ hiç yayınlamamak.
 İkincil bulgu: yfinance kapanışları float32 taşıyor (22,2 → 
 22.200000762939453). Kapanışlar dört ondalığa yuvarlanarak saklanıyor;
 fazlası olmayan bir hassasiyeti iddia etmek olurdu.
+
+**Adım 7 — şirket hasılat tablosu. TAMAMLANDI (2026-09-20).**
+
+Skorun paydası. İki şart baştan konmuştu: **TTM** (son dört çeyrek, tek
+çeyrek değil) ve **point-in-time** (bildirim anında piyasada hangi
+bilanço açıksa o).
+
+**Sonuç: 613 bildirimin 597'sinde (%97,4) o bildirimin yayınlandığı
+andaki TTM hasılat çözülüyor** (492'si YTD köprüsüyle, 105'i doğrudan
+yıllık rapordan). Çözülemeyen 16 bildirim 8 şirkete ait ve hepsi yeni
+halka açılmış: geçmiş rapor yok, uydurulacak bir payda da yok.
+935 rapor arşivde (19 MB), 111 şirket, 2024-09 → 2026-09.
+
+Gelir tablosu KAP'ın finansal rapor detayında `disclosureBody` içinde
+`3100xx` rol ailesiyle işaretli parçada. Parça sırası şirkete göre
+değiştiği için indekse değil role bakılıyor. Hasılat etiketi
+`ifrs-full_Revenue`, bankalar ve finans kuruluşlarında
+`kap-fr_RevenueFromFinanceSectorOperations`.
+
+**Rol tek bir sabit değil — bu ilk koşuda pahalıya patladı.** IFRS gelir
+tablosunu iki türlü sunmaya izin veriyor ve KAP taksonomiyi şirket
+tipine göre de ayırıyor:
+
+| rol | kim kullanıyor |
+|---|---|
+| `tbl_general_role_310000` | fonksiyon esaslı (ORGE) |
+| `tbl_general_role_310003` | çeşit esaslı (NETAS, ARDYZ, FONET, SAFKR) |
+| `tbl_holding_role_310030` | holding taksonomisi (TCELL) |
+
+Yalnız `310000` arandığında 935 raporun **577'si** "gelir tablosu yok"
+diye sessizce atlandı. Kalıp `tbl_[a-z]+_role_3100\d*` yapıldıktan
+sonra 935'in 935'i indi. Bu hatanın görünür olmasının tek sebebi
+çekicinin gelir tablosu bulunamayan raporu **özete yazması**; sessizce
+atlasaydı o şirketlerin hepsi kalıcı olarak paydasız kalırdı.
+
+**Sunum birimi para birimi değil.** `Sunum Para Birimi` alanı "TL"
+olabildiği gibi "1.000 TL" ya da "1.000.000 TL" de olabiliyor: 935
+raporun 78'i bin TL, 1'i milyon TL cinsinden. Çarpan uygulanmazsa TOASO,
+DOAS ve AKENR'in hasılatı bin kat küçük okunur ve her ciro oranı bin kat
+büyür — 500 milyonluk bir sipariş Tofaş'ın cirosunun %156'sı gibi
+görünürdü (gerçekte %0,16). Çarpan **ayrıştırma anında** uygulanıyor:
+tabloda saklanan hasılat her zaman mutlak tutar, `birim_carpani` sütunu
+yalnız izlenebilirlik için. Okuma anına bırakılsa bir yerde unutulurdu.
+
+**Beyan da yanlış olabiliyor.** İki şirket sunum birimini hatalı yazmış:
+ONCSM 2025 yıllığında "1.000.000 TL" demiş ama rakam sade TL serisinin
+doğal devamı; ALTNY 6A2026'da "1.000 TL" demiş, sonra **aynı rakamla
+düzeltilmiş raporu yeniden yayınlamış** (1650534 → 1652196). Bu yüzden
+beyana körü körüne uyulmuyor: yüklemeden önce her şirketin kendi serisi
+içinde yıllıklandırılmış hasılat medyanına bakılıyor, yüz katı aşan
+sapma ölçek hatasıdır ve o rapor yüklenmeyip bildiriliyor. ALTNY
+örneğinde kontrol, şirketin kendi düzeltmesiyle aynı sonuca vardı.
+
+**Sütun seçimi tek gerçek tuzak.** Ara dönem raporunda dört sütun var:
+cari YTD, önceki yıl YTD, cari 3 aylık, önceki yıl 3 aylık. Türkçe
+etiketlere ("Cari Dönem 3 Aylık") değil sütun başlığındaki tarih
+aralığına bakılıyor — en geç biten ve en uzun olan cari YTD'dir. 3
+aylık sütunu YTD sanmak paydayı yarıya indirir, yani her ciro oranını
+iki katına çıkarır.
+
+TTM köprüsü: `TTM = FY(önceki hesap dönemi) + YTD(cari) − YTD(geçen yıl
+aynı dönem)`. Ara dönem raporu köprünün iki bileşenini birden taşıyor,
+çünkü geçen yılın aynı dönemi karşılaştırma sütununda duruyor. Köprünün
+yıllık bacağı **dönem başıyla** eşleştiriliyor (`FY.donem_sonu ==
+R.donem_basi − 1 gün`), takvim yılıyla değil: özel hesap dönemi
+kullanan şirkette takvim yılı yanlış rapora bağlar.
+
+Point-in-time seçim: `an`dan sonra yayınlanmış rapor hiç görünmez; kalan
+raporlar arasından **en güncel DÖNEM** kazanır, en son yayın değil (eski
+bir dönemin revizyonu yeni yayınlanmış olabilir); aynı dönemde son yayın
+kazanır. Köprünün yıllık bacağı da o anda açıklanmış olmalı — eksikse
+TTM üretilmez ve ciro oranı gösterilmez. Yarım veriyle TTM uydurmak
+sessizce yanlış bir skor üretir.
+
+Yeni tablo `finansal_donem` (bir satır = bir rapor): `kap_index`,
+`ticker`, `yayin_zamani`, `donem_basi`, `donem_sonu`, `ay_sayisi`,
+`hasilat`, `onceki_yil_hasilat`, `para_birimi`, `konsolide`.
+`sirket.son_yillik_hasilat_tl` duruyor ama artık yalnızca sitenin
+göstereceği **önbellek**; skorun paydası oradan okumuyor.
+
+**Para birimi saklanıyor, çevrilmiyor.** USD raporlayan şirkette hasılat
+TL sanılırsa ~40 kat hata olur. TL çevrimi skor anında, bildirim tarihli
+TCMB kuruyla yapılıyor — payla paydanın aynı mantıkta olması için.
+
+Çekim: liste arşivi 2024-09-01'e kadar geriye uzatıldı (en eski bildirim
+2025-09-22; onun paydası için FY2024'ün Şubat–Nisan 2025'teki yayınını
+görmek gerekiyor). Ön eleme `subject == "Finansal Rapor"` + hedef
+ticker: `disclosureClass == "FR"` yetmiyor, aynı sınıfta sorumluluk
+beyanı ve faaliyet raporu da var ve onlarda gelir tablosu yok.
+
+**Arşiv kırpılarak saklanıyor.** Tam rapor beş parça ve ~2 MB; 900 rapor
+~2 GB eder. Dördü (bilanço, nakit akış, özkaynak, dipnotlar) bu projede
+hiç açılmıyor. Saklanan yalnız künye + gelir tablosu, o da gzip'li:
+rapor başına ~10 KB. Bilanço gerekirse KAP'tan yeniden çekilir.
+
+**Koşu sırasında bulunan kusur:** liste penceresi hatası tüm çekimi
+kesiyordu (detay hataları baştan beri tolere ediliyordu). 250 pencerelik
+ilk koşu WAF'a takılıp düştü ve o ana kadar inen 151 rapor özetsiz
+kaldı. Artık düşen pencere özete yazılıp geçiliyor, ikinci koşu onları
+yeniden deniyor.
+
+**Adım 8 — altın küme. TAMAMLANDI (2026-09-20).**
+
+50 bildirim elle etiketlendi. Rastgele 50 yanlış olurdu: doğruluk
+ölçümünün işe yaraması için örnek **zor olanı** temsil etmeli. Tabakalar
+gerçek hatalardan çıkarıldı ve kotalar buna göre kondu: `ilave_toplam`
+12, `mukerrer_cevrim` 5, `cok_para` 8, `tutarsiz` 6, `guncelleme` 6,
+`gizli_karsi_taraf` 6, `sade` 7.
+
+Etiketlerin tamamı §6'nın metin kapısından geçirilerek doğrulandı —
+model çıktısı gibi. 48'i kapıdan geçiyor, 2'si **bilinçli** A5 reddi,
+0 hatalı alıntı. Elle yazılmış bir alıntının ham metinde birebir
+geçmediği fark edilmezse ölçüm modeli değil etiketi cezalandırırdı.
+
+Etiketlerken çıkan ve prompt'a yazılan kurallar (her biri gerçek bir
+bildirimden):
+- Şirketin parantez içinde verdiği kendi TL çevrimi **ayrı kalem değil**
+  (ARDYZ 1664397: "1.040.400 USD (50.613.963 TL)"). İkisi de sayılırsa
+  net tutar tam iki katına çıkar ve A5 bunu görmez — para birimleri
+  farklı. Bunun için B3 kontrolü eklendi.
+- Opsiyon tutarları etiketlenmez (ONRYT 1521650, YEOTK 1575338):
+  kesinleşmiş iş değil.
+- Şirketin **ödediği** bedel gelir değil (DGATE 1491549: 8.000.000 USD
+  sözleşme devir ücreti). Aynı bildirimdeki "yıllık 300 milyon USD ek iş
+  hacmi hedeflenmektedir" de bir beklenti. Doğru çıkarım: boş liste.
+- Alt siparişler ve toplamı birlikte veriliyorsa yalnız toplam (EMKEL
+  1493982: 433.015 + 190.725 = 623.740 EUR).
+- Güncellemede yalnız nihai tutar (OZATD 1492195: 2.750.000 → 3.575.000).
+- **Şirketin kendi TL çevrimine güvenilmez:** CWENE 1502587'deki TL
+  rakamı bir önceki bildirimden kopyalanmış, yanlıştı; şirket 1502725
+  ile düzeltti. TL çevrimi kendi TCMB kurumuzla yapılmalı.
+
+Bilinen yanlış-red: A5, aynı para biriminde iki **ayrı gerçek** sözleşme
+olan bildirimleri de reddediyor (ASELS 1572732: 111.850.000 + 54.600.000
+USD). Katı kapı kararı gereği elle kuyruğa düşüyor; küme bunu belgelemek
+için içeriyor.
+
+**Adım 9 — çıkarıcı arayüzü ve doğrulama kapısı. TAMAMLANDI (2026-09-20).**
+
+LLM yok; sahte çıkarıcıyla uçtan uca test edildi. `Cikarici` protokolü,
+pydantic şeması, A1–A6 metin kapısı, B1–B3 tutarlılık kapısı ve katmanlı
+yönlendirme (`katmanli_cikar`) hazır. Prompt `prompt_kur` içinde,
+sürümü `cikarim` tablosuna yazılıyor.
+
+Gerçek metinlerle çalışırken kapının üç yerinde eksik bulundu:
+- **Çarpan sözcükleri.** "25,02 milyon ABD Doları" (CVKMD 1494067)
+  A2'den dönüyordu. `bin|milyon|milyar|trilyon` artık çözülüyor.
+- **Çekim ekleri.** Şirketler "USD" yerine sık sık "Amerikan Doları"
+  yazıyor; `\bdolar\b` "doları"yı tutmuyordu. Sözlük `\w*` kuyruğu aldı.
+- **Sayıya bitişik kod.** "2.974.771,80USD" (CWENE 1502725) A3'ten
+  dönüyordu. Para kodlarının sınırı artık kelime karakterine değil
+  **harfe** göre: hem bunu geçiriyor hem "atlanmıştır" içindeki "tl"
+  dizisini eliyor.
+
+Üçü de yakalanmasaydı kapı gerçek çıkarımları halüsinasyon sanıp
+reddedecek ve yanlış-red oranını sessizce şişirecekti.
+
+**Adım 10 — skor. TAMAMLANDI (2026-09-20).**
+
+Onaylanan formül `src/kap_radar/skor.py` içinde; ayrıntı §8'in revizyon
+kutusunda ve `docs/arastirma/2026-09-19-skor-formulu-onerisi.md`'de.
+Yanında iki parça daha var: betimleyici **tepki paneli** (medyan,
+%25–%75, n, pozitif oranı — ortalama bilerek yok) ve **tahta bayrağı**
+(temiz / hareketli / tedbirli).
+
+**Uçtan uca doğrulama (`scripts/skor_dogrula.py`).** Altın kümenin 50
+bildirimi gerçek veriyle baştan sona koşturuldu — LLM'e hiç uğramadan,
+çünkü tutarlar elle etiketli. Zincirin tamamı bağlandı: TCMB kuru
+(Adım 5) → point-in-time TTM (Adım 7) → kapı (Adım 9) → skor (Adım 10).
+
+```
+skorlu               40
+tutar yok -> skorsuz 10        (altın kümedeki boş listelerin tamamı)
+elle kuyruğa          0
+skor: en düşük 0,00 · medyan 1,41 · en yüksek 4,07
+```
+
+Tek tek bakıldığında sayılar da tutuyor: ASELS'in 1,12 milyar avroluk
+sözleşmesi cironun %42'si (skor 4,06), LINK'in 2 milyon TL'lik işi
+%0,12 ile taban altında (skor 0,00), ORGE'nin 940 bin dolarlık ilave
+siparişi %1,21 (skor 0,18). CWENE'nin iki bildirimi aynı 2.974.771,80
+USD'yi farklı günlerin kuruyla 123,9 ve 124,1 milyon TL veriyor —
+şirketin yanlış yazdığı 400 milyonluk rakam hiçbir yerde görünmüyor.
 
 ## 10. Doğruluk ölçümü
 

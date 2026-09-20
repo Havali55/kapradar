@@ -13,7 +13,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=9.0"]
+# pyflakes: testler `scripts/` altını koşturmuyor ve 2026-09-20'de orada
+# tanımsız bir ad (yarım kalmış bir düzenleme) 221 testin hiçbirine
+# takılmadan durdu. `python -m pyflakes scripts src` bunu saniyede görür.
+dev = ["pytest>=9.0", "pyflakes>=3.4"]
 
 [build-system]
 requires = ["setuptools>=69"]

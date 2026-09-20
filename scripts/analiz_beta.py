@@ -20,7 +20,6 @@ Bu betik iki modeli yan yana koyuyor:
 
 from __future__ import annotations
 
-import math
 import sys
 from datetime import date
 from pathlib import Path
@@ -33,7 +32,6 @@ sys.path.insert(0, str(KOK / "src"))
 import psycopg  # noqa: E402
 
 from kap_radar.depo import Depo  # noqa: E402
-from kap_radar.tepki import t0_bul  # noqa: E402
 
 # Piyasa çapında stres günü eşiği: endeksin günlük mutlak getirisi.
 STRES_ESIGI = 0.03
