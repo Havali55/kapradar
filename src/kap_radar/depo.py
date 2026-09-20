@@ -17,6 +17,8 @@ from typing import Any
 from psycopg.types.json import Jsonb
 
 from kap_radar.ayristirici import Bildirim
+from kap_radar.cikarim import CikarimMeta, TutarCikarimi
+from kap_radar.finansal import DonemHasilat
 
 BILDIRIM_SUTUNLARI: tuple[str, ...] = (
     "kap_id",
@@ -85,6 +87,61 @@ TEPKI_UPSERT = (
     "t0 = excluded.t0, car_1g = excluded.car_1g, car_3g = excluded.car_3g, "
     "car_5g = excluded.car_5g, pencere_basi = excluded.pencere_basi, "
     "hesaplandi_at = now()"
+)
+
+# Yayınlanmış finansal rapor değişmez; düzeltilmiş rapor KAP'a yeni bir
+# indeksle düşer. Dolayısıyla çakışmada güncelleme değil dokunmama doğru.
+FINANSAL_SUTUNLARI: tuple[str, ...] = (
+    "kap_index",
+    "ticker",
+    "yayin_zamani",
+    "donem_basi",
+    "donem_sonu",
+    "ay_sayisi",
+    "hasilat",
+    "onceki_yil_hasilat",
+    "onceki_donem_sonu",
+    "para_birimi",
+    "konsolide",
+    "birim_carpani",
+)
+
+FINANSAL_UPSERT = (
+    f"insert into public.finansal_donem ({', '.join(FINANSAL_SUTUNLARI)}) "
+    f"values ({', '.join('%(' + s + ')s' for s in FINANSAL_SUTUNLARI)}) "
+    "on conflict (kap_index) do nothing returning kap_index"
+)
+
+SIRKET_HASILAT_GUNCELLE = (
+    "update public.sirket set son_yillik_hasilat_tl = %(hasilat_tl)s, "
+    "hasilat_donemi = %(donem)s, hasilat_kaynak = %(kaynak)s, "
+    "guncellendi_at = now() where ticker = %(ticker)s"
+)
+
+# `cikarim` APPEND-ONLY (spec §5): prompt ya da şema değişince yeni satır
+# yazılır, eski silinmez. "Bu sayfadaki sayıyı hangi model, hangi prompt,
+# hangi şema üretti" her zaman cevaplanabilir kalmalı.
+CIKARIM_SUTUNLARI: tuple[str, ...] = (
+    "kap_id",
+    "model",
+    "katman",
+    "prompt_versiyon",
+    "sema_versiyon",
+    "veri",
+    "guven",
+    "yayina_hazir",
+    "red_nedeni",
+    "net_tutar_tl",
+    "ciro_orani",
+    "etki_skoru",
+    "girdi_token",
+    "cikti_token",
+)
+
+CIKARIM_EKLE = (
+    f"insert into public.cikarim ({', '.join(CIKARIM_SUTUNLARI)}) "
+    f"values ({', '.join('%(' + s + ')s' for s in CIKARIM_SUTUNLARI)}) "
+    "returning id"
 )
 
 # Kur çözümünde geriye yürüme sınırı. Uzun tatiller (9 günü bulabiliyor)
@@ -318,6 +375,158 @@ class Depo:
         return dict(
             zip(("t0", "car_1g", "car_3g", "car_5g", "pencere_basi"), satir)
         )
+
+    # ------------------------------------------------------------ çıkarım
+
+    def cikarim_kaydet(
+        self,
+        kap_id: str,
+        *,
+        cikarim: TutarCikarimi,
+        meta: CikarimMeta,
+        yayina_hazir: bool,
+        red_nedeni: str | None = None,
+        net_tutar_tl: Decimal | None = None,
+        ciro_orani: Decimal | None = None,
+        etki_skoru: Decimal | None = None,
+    ) -> int:
+        """Bir çıkarımı yazar. Hiçbir zaman güncellemez, hep ekler.
+
+        §8 hesapları da satıra yazılıyor: hasılat sonradan güncellense
+        bile sayfanın o gün neyi neden gösterdiği izlenebilir kalır.
+        """
+        satir = {
+            "kap_id": kap_id,
+            "model": meta.model,
+            "katman": meta.katman,
+            "prompt_versiyon": meta.prompt_versiyon,
+            "sema_versiyon": meta.sema_versiyon,
+            "veri": Jsonb(cikarim.model_dump(mode="json")),
+            "guven": cikarim.guven,
+            "yayina_hazir": yayina_hazir,
+            "red_nedeni": red_nedeni,
+            "net_tutar_tl": net_tutar_tl,
+            "ciro_orani": ciro_orani,
+            "etki_skoru": etki_skoru,
+            "girdi_token": meta.girdi_token,
+            "cikti_token": meta.cikti_token,
+        }
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(CIKARIM_EKLE, satir)
+            return imlec.fetchone()[0]
+
+    def cikarim_sayisi(self, kap_id: str) -> int:
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select count(*) from public.cikarim where kap_id = %s", (kap_id,)
+            )
+            return imlec.fetchone()[0]
+
+    def son_yayina_hazir(self, kap_id: str) -> dict | None:
+        """Yayında olan çıkarım: `yayina_hazir=true` olan en son satır (spec §5)."""
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select id, model, katman, veri, net_tutar_tl, ciro_orani, etki_skoru "
+                "from public.cikarim where kap_id = %s and yayina_hazir "
+                "order by olusturuldu_at desc, id desc limit 1",
+                (kap_id,),
+            )
+            satir = imlec.fetchone()
+        if satir is None:
+            return None
+        return dict(
+            zip(
+                (
+                    "id",
+                    "model",
+                    "katman",
+                    "veri",
+                    "net_tutar_tl",
+                    "ciro_orani",
+                    "etki_skoru",
+                ),
+                satir,
+            )
+        )
+
+    # ------------------------------------------------------- finansal dönem
+
+    def finansal_kaydet(self, donem: DonemHasilat) -> bool:
+        """Bir finansal raporun hasılat satırını yazar; varsa dokunmaz.
+
+        Dönüş: satır gerçekten eklendiyse True. Çekim tekrar koşturulabilir
+        olsun diye idempotent.
+        """
+        satir = {sutun: getattr(donem, sutun) for sutun in FINANSAL_SUTUNLARI}
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(FINANSAL_UPSERT, satir)
+            return imlec.fetchone() is not None
+
+    def donem_hasilatlari(self, ticker: str) -> list[DonemHasilat]:
+        """Bir şirketin tüm dönem hasılatları.
+
+        Point-in-time süzme burada değil `finansal.ttm_coz` içinde: o saf
+        fonksiyon, testi ağ ve veritabanı olmadan koşuyor. Depo yalnız
+        satırları veriyor.
+        """
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                f"select {', '.join(FINANSAL_SUTUNLARI)} "
+                "from public.finansal_donem where ticker = %s "
+                "order by donem_sonu, yayin_zamani",
+                (ticker,),
+            )
+            return [
+                DonemHasilat(**dict(zip(FINANSAL_SUTUNLARI, satir)))
+                for satir in imlec.fetchall()
+            ]
+
+    def sirket_hasilat_guncelle(
+        self,
+        ticker: str,
+        *,
+        hasilat_tl: Decimal | None,
+        donem: str | None,
+        kaynak: str | None,
+    ) -> None:
+        """`sirket` üzerindeki tek satırlık TTM önbelleğini tazeler.
+
+        Sitenin "son yıllık hasılat" alanı burayı okuyor; skorun paydası
+        okumuyor (spec §8 — o point-in-time olmak zorunda).
+        """
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                SIRKET_HASILAT_GUNCELLE,
+                {
+                    "ticker": ticker,
+                    "hasilat_tl": hasilat_tl,
+                    "donem": donem,
+                    "kaynak": kaynak,
+                },
+            )
+
+    def sirket_hasilati(self, ticker: str) -> dict | None:
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select son_yillik_hasilat_tl, hasilat_donemi, hasilat_kaynak "
+                "from public.sirket where ticker = %s",
+                (ticker,),
+            )
+            satir = imlec.fetchone()
+        if satir is None:
+            return None
+        return dict(
+            zip(("son_yillik_hasilat_tl", "hasilat_donemi", "hasilat_kaynak"), satir)
+        )
+
+    def tickerlar(self) -> list[str]:
+        """Bildirimi olan şirketlerin ticker'ları."""
+        with self._baglanti.cursor() as imlec:
+            imlec.execute(
+                "select distinct ticker from public.sirket "
+                "where ticker is not null order by ticker"
+            )
+            return [satir[0] for satir in imlec.fetchall()]
 
     @staticmethod
     def _eklenen_say(imlec) -> int:

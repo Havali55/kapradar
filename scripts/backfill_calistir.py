@@ -108,10 +108,14 @@ def main() -> int:
     if ozet.hatalar:
         print(f"HATA ALAN {len(ozet.hatalar)} bildirim: {ozet.hatalar}")
         print("Aynı komutu tekrar çalıştırmak yalnızca bunları dener.")
+    if ozet.hatali_pencereler:
+        print(f"CEKILEMEYEN {len(ozet.hatali_pencereler)} pencere (WAF): {ozet.hatali_pencereler}")
+        print("Aynı komutu tekrar çalıştırmak yalnızca bunları dener.")
     if ozet.tasan_pencereler:
         print(f"SINIRA DAYANAN pencereler (veri eksik olabilir): {ozet.tasan_pencereler}")
 
-    return 1 if ozet.hatalar or ozet.tasan_pencereler else 0
+    eksik = ozet.hatalar or ozet.tasan_pencereler or ozet.hatali_pencereler
+    return 1 if eksik else 0
 
 
 if __name__ == "__main__":

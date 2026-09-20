@@ -14,7 +14,13 @@ from pathlib import Path
 import httpx
 
 from kap_radar.arsiv import HamArsiv
-from kap_radar.backfill import LISTE_SINIRI, backfill, haftalik_pencereler
+from kap_radar.backfill import (
+    LISTE_SINIRI,
+    backfill,
+    finansal_adaylari,
+    finansal_backfill,
+    haftalik_pencereler,
+)
 from kap_radar.istemci import KapIstemcisi
 
 FIXTURE = Path(__file__).parent / "fixtures"
@@ -283,3 +289,143 @@ def test_bolunemeyen_dolu_pencere_ozette_bildirilir(tmp_path):
     )
 
     assert ozet.tasan_pencereler == [(date(2026, 1, 1), date(2026, 1, 1))]
+
+
+# -------------------------------------------------------- finansal raporlar
+
+
+def fr_kaydi(indeks: int, kodlar: str, konu: str = "Finansal Rapor") -> dict:
+    return {
+        "disclosureIndex": indeks,
+        "subject": konu,
+        "stockCodes": kodlar,
+        "disclosureClass": "FR",
+    }
+
+
+def test_finansal_adaylari_yalniz_hedef_sirketleri_secer():
+    """111 şirketimiz var, BIST'te 550'den fazla; gerisi indirilmemeli."""
+    kayitlar = [fr_kaydi(1, "ORGE"), fr_kaydi(2, "THYAO")]
+
+    assert finansal_adaylari(kayitlar, {"ORGE"}) == [1]
+
+
+def test_finansal_adaylari_sorumluluk_beyanini_almaz():
+    """Aynı FR sınıfında rapor dışı bildirimler de var; gelir tablosu taşımazlar."""
+    kayitlar = [fr_kaydi(1, "ORGE", konu="Sorumluluk Beyanı (Konsolide)")]
+
+    assert finansal_adaylari(kayitlar, {"ORGE"}) == []
+
+
+def test_finansal_adaylari_cok_kodlu_kayitta_her_kodu_dener():
+    """KAP çift paylı şirketleri 'MRBAS, MRS' diye tek alanda veriyor."""
+    kayitlar = [fr_kaydi(1, "MRBAS, MRS")]
+
+    assert finansal_adaylari(kayitlar, {"MRS"}) == [1]
+
+
+def _fr_detayi(indeks: int) -> httpx.Response:
+    return httpx.Response(
+        200,
+        json=[
+            {
+                "disclosure": {"disclosureBasic": {"disclosureIndex": indeks}},
+                "disclosureBody": [
+                    "<table class='tbl_general_role_210015'>bilanço</table>",
+                    "<table class='tbl_general_role_310000'>gelir tablosu</table>",
+                    "<table class='tbl_general_role_610000'>dipnotlar</table>",
+                ],
+            }
+        ],
+    )
+
+
+def test_finansal_backfill_yalniz_gelir_tablosunu_arsivler(tmp_path):
+    """Raporun beş parçasının dördü hiç açılmıyor; hepsini saklamak ~2 GB eder."""
+    arsiv = HamArsiv(tmp_path)
+    islevci, _ = sahte_kap([fr_kaydi(1649471, "ORGE")], detay_islevci=_fr_detayi)
+
+    finansal_backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 8, 13),
+        bitis=date(2026, 8, 13),
+        tickerlar={"ORGE"},
+    )
+
+    kayit = arsiv.finansal_oku(1649471)
+    assert "gelir tablosu" in kayit["gelirTablosu"]
+    assert "dipnotlar" not in kayit["gelirTablosu"]
+
+
+def test_finansal_backfill_arsivdekini_yeniden_cekmez(tmp_path):
+    """İkinci koşu ücretsiz olmalı: 900 raporluk çekim yarıda kalabilir."""
+    arsiv = HamArsiv(tmp_path)
+    islevci, istekler = sahte_kap([fr_kaydi(1649471, "ORGE")], detay_islevci=_fr_detayi)
+    args = dict(
+        arsiv=arsiv,
+        baslangic=date(2026, 8, 13),
+        bitis=date(2026, 8, 13),
+        tickerlar={"ORGE"},
+    )
+
+    finansal_backfill(istemci=istemci_kur(islevci), **args)
+    finansal_backfill(istemci=istemci_kur(islevci), **args)
+
+    assert detay_istekleri(istekler) == [1649471]
+
+
+def test_finansal_backfill_gelir_tablosuz_raporu_ozette_bildirir(tmp_path):
+    """Sessizce atlanırsa o şirketin paydası sebepsiz boş kalır."""
+
+    def gelir_tablosuz(indeks: int) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json=[
+                {
+                    "disclosure": {"disclosureBasic": {"disclosureIndex": indeks}},
+                    "disclosureBody": ["<table class='tbl_general_role_210015'>x</table>"],
+                }
+            ],
+        )
+
+    islevci, _ = sahte_kap([fr_kaydi(1, "ORGE")], detay_islevci=gelir_tablosuz)
+
+    ozet = finansal_backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=HamArsiv(tmp_path),
+        baslangic=date(2026, 8, 13),
+        bitis=date(2026, 8, 13),
+        tickerlar={"ORGE"},
+    )
+
+    assert ozet.gelir_tablosuz == [1]
+
+
+def test_liste_penceresi_dusse_bile_kosu_devam_eder(tmp_path):
+    """WAF tek bir pencerede ısırdı diye 20 dakikalık çekim çöpe gitmemeli.
+
+    Detay hataları zaten tolere ediliyordu; liste hatası koşuyu
+    ortasından kesiyordu ve o noktaya kadar indirilen her şey özetsiz
+    kalıyordu. Eksik pencere özete yazılır, ikinci koşu onu tekrar dener.
+    """
+    dusen = {"2026-01-04"}
+
+    def islevci(istek: httpx.Request) -> httpx.Response:
+        if istek.url.path != LISTE_YOLU:
+            return httpx.Response(200, text="<html></html>")
+        govde = json.loads(istek.content)
+        if govde["fromDate"] in dusen:
+            return httpx.Response(503)
+        return httpx.Response(200, json=[])
+
+    ozet = backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=HamArsiv(tmp_path),
+        baslangic=date(2026, 1, 1),
+        bitis=date(2026, 1, 9),
+        pencere_gun=3,
+    )
+
+    assert ozet.hatali_pencereler == [(date(2026, 1, 4), date(2026, 1, 6))]
+    assert ozet.pencere == 3  # kalan pencereler işlendi

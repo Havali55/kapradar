@@ -101,3 +101,32 @@ def test_farkli_pencereler_ayri_dosyalara_yazilir(tmp_path):
     arsiv.liste_yaz(date(2026, 9, 14), date(2026, 9, 20), [{"disclosureIndex": 1}])
 
     assert arsiv.liste_var_mi(date(2026, 9, 21), date(2026, 9, 27)) is False
+
+
+# ----------------------------------------------------------- finansal rapor
+
+
+def test_finansal_kayit_sikistirilmis_yazilip_geri_okunur(tmp_path):
+    """Tam rapor ~2 MB; 900 rapor diske sığmasın diye gzip'li saklanıyor."""
+    arsiv = HamArsiv(tmp_path)
+    kayit = {
+        "disclosure": {"disclosureBasic": {"stockCode": "ORGE"}},
+        "gelirTablosu": "<table>Hasılat 2.597.519.683</table>",
+    }
+
+    arsiv.finansal_yaz(1649471, kayit)
+
+    assert arsiv.finansal_var_mi(1649471) is True
+    assert arsiv.finansal_oku(1649471) == kayit
+
+
+def test_cekilmemis_finansal_rapor_var_gorunmez(tmp_path):
+    assert HamArsiv(tmp_path).finansal_var_mi(1649471) is False
+
+
+def test_finansal_indeksler_arsivdekileri_sirayla_verir(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    for indeks in (1649471, 1557898):
+        arsiv.finansal_yaz(indeks, {"disclosure": {}, "gelirTablosu": ""})
+
+    assert arsiv.finansal_indeksler() == [1557898, 1649471]

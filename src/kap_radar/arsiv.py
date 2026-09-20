@@ -12,6 +12,7 @@ saklar. Şema veya ayrıştırıcı değişirse arşivden yeniden üretilir, ağ
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 from datetime import date
@@ -108,6 +109,40 @@ class HamArsiv:
         if not klasor.exists():
             return []
         return sorted(date.fromisoformat(yol.stem) for yol in klasor.glob("*.xml"))
+
+    # -------------------------------------------------------- finansal rapor
+
+    # Tam finansal rapor beş parça ve ~2 MB; 900 rapor 2 GB eder. Dördü
+    # (bilanço, nakit akış, özkaynak, dipnotlar) hiç açılmıyor — saklanan
+    # yalnız künye ve gelir tablosu, o da gzip'li. Bilanço gerekirse
+    # KAP'tan yeniden çekilir; ham liste arşivi zaten indeksleri tutuyor.
+    FINANSAL_KLASORU = "finansal"
+
+    def finansal_yolu(self, kap_index: int) -> Path:
+        return self._kok / self.FINANSAL_KLASORU / f"{kap_index}.json.gz"
+
+    def finansal_var_mi(self, kap_index: int) -> bool:
+        return self.finansal_yolu(kap_index).exists()
+
+    def finansal_yaz(self, kap_index: int, kayit: dict) -> Path:
+        yol = self.finansal_yolu(kap_index)
+        yol.parent.mkdir(parents=True, exist_ok=True)
+        gecici = yol.with_suffix(".gz.tmp")
+        gecici.write_bytes(
+            gzip.compress(json.dumps(kayit, ensure_ascii=False).encode("utf-8"))
+        )
+        os.replace(gecici, yol)
+        return yol
+
+    def finansal_oku(self, kap_index: int) -> dict:
+        ham = gzip.decompress(self.finansal_yolu(kap_index).read_bytes())
+        return json.loads(ham.decode("utf-8"))
+
+    def finansal_indeksler(self) -> list[int]:
+        klasor = self._kok / self.FINANSAL_KLASORU
+        if not klasor.exists():
+            return []
+        return sorted(int(yol.name.split(".", 1)[0]) for yol in klasor.glob("*.json.gz"))
 
     # ------------------------------------------------------------- ortak
 

@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from kap_radar.arsiv import HamArsiv
+from kap_radar.finansal import gelir_tablosu_govdesi
 from kap_radar.istemci import KapErisimHatasi, KapIstemcisi
 
 # Hedef şablonun liste yanıtındaki Türkçe adı. Şablonun makine kodu
@@ -41,6 +42,12 @@ class BackfillOzeti:
     atlandi: int = 0
     hatalar: list[int] = field(default_factory=list)
     tasan_pencereler: list[tuple[date, date]] = field(default_factory=list)
+    # Liste isteği tüm denemelere rağmen düştü (WAF). Koşuyu kesmiyor;
+    # o noktaya kadar inen her şey korunuyor, ikinci koşu bunları dener.
+    hatali_pencereler: list[tuple[date, date]] = field(default_factory=list)
+    # Finansal raporda gelir tablosu parçası bulunamadı. Sessizce
+    # atlanırsa o şirketin paydası sebepsiz boş kalır.
+    gelir_tablosuz: list[int] = field(default_factory=list)
 
 
 def haftalik_pencereler(
@@ -61,7 +68,7 @@ def haftalik_pencereler(
     return pencereler
 
 
-def _pencere_kayitlari(
+def pencere_kayitlari(
     istemci: KapIstemcisi,
     arsiv: HamArsiv,
     baslangic: date,
@@ -85,14 +92,36 @@ def _pencere_kayitlari(
             ozet.tasan_pencereler.append((baslangic, bitis))
         else:
             orta = baslangic + (bitis - baslangic) // 2
-            return _pencere_kayitlari(
+            return pencere_kayitlari(
                 istemci, arsiv, baslangic, orta, ozet
-            ) + _pencere_kayitlari(
+            ) + pencere_kayitlari(
                 istemci, arsiv, orta + timedelta(days=1), bitis, ozet
             )
 
     arsiv.liste_yaz(baslangic, bitis, kayitlar)
     return kayitlar
+
+
+def _guvenli_pencere(
+    istemci: KapIstemcisi,
+    arsiv: HamArsiv,
+    baslangic: date,
+    bitis: date,
+    ozet: BackfillOzeti,
+    yaz: Callable[[str], None],
+) -> list[dict] | None:
+    """Pencereyi çeker; WAF ısırırsa koşuyu kesmeden özete yazar.
+
+    Detay hataları baştan beri tolere ediliyordu ama liste hatası koşuyu
+    ortasından kesiyordu: 2026-09-20'de 250 pencerelik finansal çekim
+    tam da böyle düştü ve o ana kadar inen 151 rapor özetsiz kaldı.
+    """
+    try:
+        return pencere_kayitlari(istemci, arsiv, baslangic, bitis, ozet)
+    except KapErisimHatasi as hata:
+        ozet.hatali_pencereler.append((baslangic, bitis))
+        yaz(f"  PENCERE HATASI {baslangic} — {bitis}: {hata}")
+        return None
 
 
 def backfill(
@@ -118,7 +147,11 @@ def backfill(
         baslangic, bitis, pencere_gun
     ):
         ozet.pencere += 1
-        kayitlar = _pencere_kayitlari(istemci, arsiv, pencere_basi, pencere_sonu, ozet)
+        kayitlar = _guvenli_pencere(
+            istemci, arsiv, pencere_basi, pencere_sonu, ozet, yaz
+        )
+        if kayitlar is None:
+            continue
         adaylar = [k for k in kayitlar if k.get("subject") == konu]
         ozet.aday += len(adaylar)
         yaz(
@@ -139,6 +172,95 @@ def backfill(
                 ozet.hatalar.append(indeks)
                 yaz(f"  HATA {indeks}: {hata}")
                 continue
+            ozet.cekildi += 1
+
+    return ozet
+
+
+# ------------------------------------------------------- finansal raporlar
+
+# Liste yanıtındaki konu adı. `disclosureClass == "FR"` yetmiyor: aynı
+# sınıfta sorumluluk beyanı ve faaliyet raporu da var, onlarda gelir
+# tablosu yok.
+FINANSAL_RAPOR = "Finansal Rapor"
+
+
+def finansal_adaylari(kayitlar: list[dict], tickerlar: set[str]) -> list[int]:
+    """Hedef şirketlerin finansal rapor indekslerini süzer.
+
+    BIST'te 550'den fazla şirket var, bizim 111'imiz; ön eleme olmasa
+    çekim beş katına çıkardı. `stockCodes` çift paylı şirketlerde
+    'MRBAS, MRS' gibi tek alanda geliyor, bu yüzden bölünüyor.
+    """
+    adaylar: list[int] = []
+    for kayit in kayitlar:
+        if kayit.get("subject") != FINANSAL_RAPOR:
+            continue
+        kodlar = {
+            kod.strip() for kod in (kayit.get("stockCodes") or "").split(",")
+        }
+        if kodlar & tickerlar:
+            adaylar.append(int(kayit["disclosureIndex"]))
+    return adaylar
+
+
+def finansal_backfill(
+    *,
+    istemci: KapIstemcisi,
+    arsiv: HamArsiv,
+    baslangic: date,
+    bitis: date,
+    tickerlar: set[str],
+    pencere_gun: int = 3,
+    gunluk: Callable[[str], None] | None = None,
+) -> BackfillOzeti:
+    """Hedef şirketlerin finansal raporlarını arşive indirir (Adım 7).
+
+    Arşive yalnızca künye ve gelir tablosu yazılıyor: tam rapor ~2 MB ve
+    beş parçanın dördü (bilanço, nakit akış, özkaynak, dipnotlar) bu
+    projede hiç açılmıyor.
+    """
+    yaz = gunluk or (lambda mesaj: None)
+    ozet = BackfillOzeti()
+
+    for pencere_basi, pencere_sonu in haftalik_pencereler(
+        baslangic, bitis, pencere_gun
+    ):
+        ozet.pencere += 1
+        kayitlar = _guvenli_pencere(
+            istemci, arsiv, pencere_basi, pencere_sonu, ozet, yaz
+        )
+        if kayitlar is None:
+            continue
+        adaylar = finansal_adaylari(kayitlar, tickerlar)
+        ozet.aday += len(adaylar)
+        yaz(
+            f"{pencere_basi} — {pencere_sonu}: {len(kayitlar)} bildirim, "
+            f"{len(adaylar)} rapor"
+        )
+
+        for indeks in adaylar:
+            if arsiv.finansal_var_mi(indeks):
+                ozet.atlandi += 1
+                continue
+            try:
+                detay = istemci.detay(indeks)
+            except KapErisimHatasi as hata:
+                ozet.hatalar.append(indeks)
+                yaz(f"  HATA {indeks}: {hata}")
+                continue
+
+            govde = gelir_tablosu_govdesi(detay)
+            if govde is None:
+                # Bankalar ve bazı yatırım ortaklıkları farklı taksonomi
+                # kullanıyor olabilir; sessizce atlanırsa o şirketin
+                # paydası sebepsiz boş kalır.
+                ozet.gelir_tablosuz.append(indeks)
+                continue
+
+            arsiv.finansal_yaz(
+                indeks, {"disclosure": detay["disclosure"], "gelirTablosu": govde}
+            )
             ozet.cekildi += 1
 
     return ozet

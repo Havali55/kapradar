@@ -10,14 +10,19 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import replace
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 
 from kap_radar.ayristirici import bildirim_ayristir
 from kap_radar.depo import BILDIRIM_SUTUNLARI, Depo, bildirim_satiri
+from kap_radar.cikarim import CikarimMeta, TutarCikarimi
+from kap_radar.finansal import DonemHasilat, ttm_coz
+
+ISTANBUL = ZoneInfo("Europe/Istanbul")
 
 FIXTURE = Path(__file__).parent / "fixtures"
 
@@ -213,3 +218,149 @@ def test_kontrol_noktasi_yazilip_okunur(depo):
     durum = depo.kontrol_noktasi_oku("test_backfill")
 
     assert durum["son_islenen_index"] == 1665567
+
+
+# ----------------------------------------------------------- finansal dönem
+
+
+def sahte_donem(**degisiklik) -> DonemHasilat:
+    varsayilan = dict(
+        ticker="ZZTEST",
+        kap_index=999_000_001,
+        yayin_zamani=datetime(2026, 2, 17, 20, 21, 19, tzinfo=ISTANBUL),
+        donem_basi=date(2025, 1, 1),
+        donem_sonu=date(2025, 12, 31),
+        ay_sayisi=12,
+        hasilat=Decimal("3495512127"),
+        onceki_yil_hasilat=Decimal("4488280980"),
+        onceki_donem_sonu=date(2024, 12, 31),
+        para_birimi="TL",
+        konsolide=True,
+    )
+    return DonemHasilat(**{**varsayilan, **degisiklik})
+
+
+@canli_db
+def test_ayni_finansal_rapor_iki_kez_yazilmaz(depo, sahte_bildirim):
+    """Yayınlanmış rapor değişmez; revizyon yeni bir kap_index'le gelir."""
+    depo.bildirim_kaydet(sahte_bildirim)  # ZZTEST şirket satırını açar
+
+    assert depo.finansal_kaydet(sahte_donem()) is True
+    assert depo.finansal_kaydet(sahte_donem()) is False
+
+
+@canli_db
+def test_donemler_yazilip_ttm_olarak_geri_okunur(depo, sahte_bildirim):
+    """Uçtan uca: iki rapor yazılır, point-in-time TTM köprüsü kurulur.
+
+    Beklenen 4.023.377.103 — ORGE'nin gerçek paydası (spec §8 doğrulaması).
+    """
+    depo.bildirim_kaydet(sahte_bildirim)
+    depo.finansal_kaydet(sahte_donem())
+    depo.finansal_kaydet(
+        sahte_donem(
+            kap_index=999_000_002,
+            yayin_zamani=datetime(2026, 8, 13, 18, 34, 45, tzinfo=ISTANBUL),
+            donem_basi=date(2026, 1, 1),
+            donem_sonu=date(2026, 6, 30),
+            ay_sayisi=6,
+            hasilat=Decimal("2597519683"),
+            onceki_yil_hasilat=Decimal("2069654707"),
+            onceki_donem_sonu=date(2025, 6, 30),
+        )
+    )
+
+    donemler = depo.donem_hasilatlari("ZZTEST")
+    ttm = ttm_coz(donemler, datetime(2026, 9, 18, 18, 58, tzinfo=ISTANBUL))
+
+    assert ttm.hasilat == Decimal("4023377103")
+    assert ttm.yontem == "ytd_koprusu"
+
+
+@canli_db
+def test_sirketin_son_hasilati_guncellenir(depo, sahte_bildirim):
+    """Site tek satırda 'son yıllık hasılat' istiyor; point-in-time yol ayrı."""
+    depo.bildirim_kaydet(sahte_bildirim)
+
+    depo.sirket_hasilat_guncelle(
+        "ZZTEST",
+        hasilat_tl=Decimal("4023377103"),
+        donem="2026/06",
+        kaynak="https://www.kap.org.tr/tr/Bildirim/1649471",
+    )
+
+    assert depo.sirket_hasilati("ZZTEST")["son_yillik_hasilat_tl"] == Decimal(
+        "4023377103"
+    )
+
+
+# ---------------------------------------------------------------- çıkarım
+
+
+@canli_db
+def test_cikarim_append_only_yazilir(depo, sahte_bildirim):
+    """Aynı bildirime ikinci çıkarım eskisini silmez, yanına yazılır (spec §5).
+
+    Prompt ya da şema değişince 'bu sayfadaki sayıyı hangi model, hangi
+    prompt üretti' sorusu cevaplanabilir kalmalı.
+    """
+    depo.bildirim_kaydet(sahte_bildirim)
+    meta = CikarimMeta(
+        model="gemini-3.1-flash-lite",
+        katman=1,
+        prompt_versiyon="v1",
+        sema_versiyon="v1",
+        girdi_token=812,
+        cikti_token=118,
+    )
+    cikarim = TutarCikarimi(
+        tutarlar=[],
+        tutar_gizli=False,
+        hap_ozet=["a", "b", "c"],
+        guven="yuksek",
+    )
+
+    ilk = depo.cikarim_kaydet(
+        "zztest-kap-id", cikarim=cikarim, meta=meta, yayina_hazir=True
+    )
+    ikinci = depo.cikarim_kaydet(
+        "zztest-kap-id", cikarim=cikarim, meta=meta, yayina_hazir=False,
+        red_nedeni="A6: guven dusuk",
+    )
+
+    assert ikinci > ilk
+    assert depo.cikarim_sayisi("zztest-kap-id") == 2
+
+
+@canli_db
+def test_son_yayina_hazir_cikarim_okunur(depo, sahte_bildirim):
+    """Yayında olan = yayina_hazir=true olan EN SON satır (spec §5)."""
+    depo.bildirim_kaydet(sahte_bildirim)
+    meta = CikarimMeta(
+        model="m", katman=1, prompt_versiyon="v1", sema_versiyon="v1"
+    )
+    temel = dict(tutar_gizli=False, hap_ozet=["a", "b", "c"], guven="yuksek")
+
+    depo.cikarim_kaydet(
+        "zztest-kap-id",
+        cikarim=TutarCikarimi(tutarlar=[], **temel),
+        meta=meta,
+        yayina_hazir=True,
+        etki_skoru=Decimal("1.00"),
+    )
+    depo.cikarim_kaydet(
+        "zztest-kap-id",
+        cikarim=TutarCikarimi(tutarlar=[], **temel),
+        meta=meta,
+        yayina_hazir=False,
+        red_nedeni="A1",
+    )
+    depo.cikarim_kaydet(
+        "zztest-kap-id",
+        cikarim=TutarCikarimi(tutarlar=[], **temel),
+        meta=meta,
+        yayina_hazir=True,
+        etki_skoru=Decimal("2.50"),
+    )
+
+    assert depo.son_yayina_hazir("zztest-kap-id")["etki_skoru"] == Decimal("2.50")
