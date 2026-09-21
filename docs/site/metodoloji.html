@@ -1,85 +1,101 @@
-<title>Büyüklük Skoru — Yöntem Notu | KAP·RADAR</title>
+<title>Büyüklük Skoru — Araştırma Notu | KAP·RADAR</title>
 
 <style>
   /* Tasarım sistemi KAP-Radar.dc.html ve Proje-Hakkinda.dc.html'den
-     birebir alındı: aynı zemin, aynı kenarlık, aynı vurgu. Bu sayfa
-     siteye üçüncü kardeş olarak girecek, o yüzden yeni token yok.
-     Site tek temaya (açık/kâğıt) bilinçli olarak bağlı; burada da öyle. */
+     alındı: aynı zemin, kenarlık, tipografi ve vurgu. Bu sayfa siteye
+     üçüncü kardeş olarak girecek, o yüzden yeni token üretilmedi.
+     Site tek temaya (açık/kâğıt) bilinçli bağlı; burada da öyle.
+     Grafik renkleri dataviz doğrulayıcısından geçti:
+     #2677b2 ↔ #8c5f00, protan ΔE 21,7 · normal ΔE 22,9. */
 
   .mn { --ink:#191b19; --ink-2:#3b3e39; --mut:#5f6259; --mut-2:#6b6e66; --mut-3:#70736a;
         --zem:#f6f6f3; --kart:#fff; --kart-2:#fcfcfa; --ken:#e3e2dc; --ken-2:#e9e8e2; --ken-3:#d9d8d1;
         --uyari-z:#f3f1e9; --uyari-k:#e0dccb; --uyari-y:#5c563f; --uyari-r:#e6e1cd;
-        --mavi:oklch(0.55 0.12 245); --mavi-k:oklch(0.50 0.10 245); --mavi-kk:oklch(0.42 0.11 245);
-        --mavi-z:oklch(0.95 0.03 245); --yes:oklch(0.48 0.13 150); --kir:oklch(0.52 0.15 25);
-        --kehribar:oklch(0.52 0.12 80);
+        --mavi:#2677b2; --mavi-k:oklch(0.50 0.10 245); --mavi-kk:oklch(0.42 0.11 245);
+        --mavi-z:oklch(0.95 0.03 245); --kehribar:#8c5f00; --kehribar-z:oklch(0.96 0.04 80);
+        --yes:oklch(0.48 0.13 150); --kir:oklch(0.52 0.15 25);
         --sans:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
         --mono:'JetBrains Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
         background:var(--zem); color:var(--ink); font-family:var(--sans);
-        font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;
-        min-height:100vh; }
+        font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased; min-height:100vh; }
   .mn *, .mn *::before, .mn *::after { box-sizing:border-box; }
   .mn a { color:var(--mavi-k); text-decoration:none; }
   .mn a:hover { color:var(--mavi-kk); text-decoration:underline; }
-  .mn a:focus-visible, .mn button:focus-visible { outline:2px solid var(--mavi); outline-offset:2px; border-radius:3px; }
+  .mn a:focus-visible, .mn button:focus-visible, .mn [tabindex]:focus-visible {
+    outline:2px solid var(--mavi); outline-offset:2px; border-radius:3px; }
 
   .serit { background:var(--uyari-z); border-bottom:1px solid var(--uyari-k); color:var(--uyari-y); }
-  .serit-i { max-width:980px; margin:0 auto; padding:10px 24px; display:flex; flex-wrap:wrap;
+  .serit-i { max-width:1000px; margin:0 auto; padding:10px 24px; display:flex; flex-wrap:wrap;
              align-items:center; gap:10px; font-size:12.5px; }
   .rozet { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; padding:3px 8px;
-           background:var(--uyari-r); border-radius:4px; color:var(--uyari-y); flex:none; }
+           background:var(--uyari-r); border-radius:4px; flex:none; }
 
   .bas { position:sticky; top:0; z-index:40; background:rgba(246,246,243,0.93);
          backdrop-filter:blur(10px); border-bottom:1px solid var(--ken); }
-  .bas-i { max-width:980px; margin:0 auto; padding:0 24px; height:60px;
+  .bas-i { max-width:1000px; margin:0 auto; padding:0 24px; height:60px;
            display:flex; align-items:center; gap:16px; }
   .logo { font-family:var(--mono); font-weight:700; font-size:16px; letter-spacing:-0.03em; color:var(--ink); }
   .logo:hover { text-decoration:none; color:var(--ink); }
-  .logo span { color:var(--mavi); }
+  .logo i { font-style:normal; color:var(--mavi); }
   .bas-et { font-family:var(--mono); font-size:10px; color:var(--mut-2); letter-spacing:0.1em; }
   .bas-bos { flex:1; }
   .dugme { padding:8px 14px; background:var(--ink); color:#fff; border-radius:6px;
-           font-size:12.5px; font-weight:500; }
+           font-size:12.5px; font-weight:500; white-space:nowrap; }
   .dugme:hover { background:#33372f; color:#fff; text-decoration:none; }
 
-  .govde { max-width:980px; margin:0 auto; padding:44px 24px 90px; }
+  .govde { max-width:1000px; margin:0 auto; padding:44px 24px 90px; }
 
   .ust-et { font-family:var(--mono); font-size:10.5px; letter-spacing:0.13em;
             color:var(--mut-2); margin-bottom:14px; }
-  h1 { margin:0 0 16px; font-size:34px; line-height:1.15; font-weight:600;
-       letter-spacing:-0.035em; max-width:22ch; text-wrap:balance; }
-  .giris { margin:0 0 14px; font-size:16px; color:var(--mut); max-width:64ch; text-wrap:pretty; }
+  h1 { margin:0 0 18px; font-size:35px; line-height:1.13; font-weight:600;
+       letter-spacing:-0.035em; max-width:21ch; text-wrap:balance; }
+  .yazarlar { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:baseline;
+              padding-bottom:22px; border-bottom:1px solid var(--ken); margin-bottom:26px; }
+  .yazar { font-size:14px; font-weight:500; color:var(--ink); }
+  .yazar span { font-weight:400; color:var(--mut-2); font-size:12.5px; }
+  .yazar-ayr { color:var(--ken-3); }
+  .giris { margin:0 0 14px; font-size:16.5px; color:var(--mut); max-width:64ch; text-wrap:pretty; }
 
-  section { margin-bottom:56px; }
+  section { margin-bottom:60px; }
   h2 { margin:0 0 8px; font-size:12px; font-family:var(--mono); letter-spacing:0.13em;
        color:var(--mut-2); font-weight:500; }
-  h3 { margin:0 0 14px; font-size:22px; font-weight:600; letter-spacing:-0.02em;
+  h3 { margin:0 0 14px; font-size:23px; font-weight:600; letter-spacing:-0.022em;
        max-width:30ch; text-wrap:balance; }
-  h4 { margin:0 0 8px; font-size:15px; font-weight:600; letter-spacing:-0.01em; }
+  h4 { margin:26px 0 8px; font-size:15.5px; font-weight:600; letter-spacing:-0.01em; }
+  h4:first-child { margin-top:0; }
   p { margin:0 0 14px; color:var(--mut); max-width:66ch; text-wrap:pretty; }
   p:last-child { margin-bottom:0; }
   .mn strong { color:var(--ink); font-weight:600; }
-  .mn em { font-style:normal; font-family:var(--mono); font-size:0.94em; color:var(--ink-2); }
+  .mn em { font-style:normal; font-family:var(--mono); font-size:0.93em; color:var(--ink-2); }
+  .mn code { font-family:var(--mono); font-size:0.9em; background:#f0efe9;
+             padding:1px 5px; border-radius:4px; color:var(--ink-2); }
 
   .kart { background:var(--kart); border:1px solid var(--ken); border-radius:10px; padding:18px 20px; }
   .yigin { display:flex; flex-direction:column; gap:1px; background:var(--ken);
            border:1px solid var(--ken); border-radius:10px; overflow:hidden; }
   .yigin > div { background:var(--kart); padding:18px 20px; }
-  .yigin p { max-width:70ch; color:var(--mut-2); }
-  .izgara { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1px;
+  .yigin p { max-width:72ch; color:var(--mut-2); }
+  .izgara { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1px;
             background:var(--ken); border:1px solid var(--ken); border-radius:10px; overflow:hidden; }
   .izgara > div { background:var(--kart); padding:16px 18px; }
 
-  .say { font-family:var(--mono); font-size:24px; font-weight:600; letter-spacing:-0.03em;
+  .say { font-family:var(--mono); font-size:25px; font-weight:600; letter-spacing:-0.03em;
          font-variant-numeric:tabular-nums; }
   .say-et { font-size:12px; color:var(--mut-2); margin-top:4px; text-wrap:pretty; }
   .et { font-family:var(--mono); font-size:10px; color:var(--mut-2); letter-spacing:0.1em;
         margin-bottom:8px; }
 
+  .ozet { background:var(--kart); border:1px solid var(--ken); border-radius:10px;
+          padding:24px 26px; margin-bottom:56px; }
+  .ozet h4 { margin:0 0 14px; }
+  .ozet ol { margin:0; padding-left:22px; color:var(--mut); max-width:none; }
+  .ozet li { margin-bottom:11px; text-wrap:pretty; max-width:74ch; }
+  .ozet li:last-child { margin-bottom:0; }
+
   .formul { background:var(--kart); border:1px solid var(--ken); border-radius:10px;
             padding:22px 20px; text-align:center; font-family:var(--mono);
             font-variant-numeric:tabular-nums; overflow-x:auto; }
-  .formul-ana { font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink);
-                white-space:nowrap; }
+  .formul-ana { font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink); white-space:nowrap; }
   .formul-alt { font-size:13px; color:var(--mut-2); margin-top:12px; white-space:nowrap; }
 
   .akis { background:var(--kart); border:1px solid var(--ken); border-radius:10px; padding:18px;
@@ -90,25 +106,73 @@
   .akis span.o { color:#b6b9af; }
 
   .tablo-sar { overflow-x:auto; border:1px solid var(--ken); border-radius:10px; background:var(--kart); }
-  table { border-collapse:collapse; width:100%; font-size:13px; min-width:460px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; min-width:480px; }
   th { text-align:left; font-family:var(--mono); font-size:9.5px; letter-spacing:0.11em;
        color:var(--mut-2); font-weight:500; padding:12px 15px; border-bottom:1px solid var(--ken);
        white-space:nowrap; background:var(--kart-2); }
+  th.sag, td.s { text-align:right; }
   td { padding:11px 15px; border-bottom:1px solid var(--ken-2); color:var(--mut); text-wrap:pretty; }
   tbody tr:last-child td { border-bottom:none; }
-  td.s { font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right;
-         white-space:nowrap; color:var(--ink-2); }
+  td.s { font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink-2); }
   td.k { font-family:var(--mono); font-size:12px; color:var(--ink-2); white-space:nowrap; }
   td.v { font-weight:600; color:var(--ink); }
+  tr.vurgu td { background:var(--mavi-z); }
+  .yildiz { color:var(--mavi-kk); font-weight:600; }
+
+  /* ---- grafik ---- */
+  figure { margin:0 0 18px; background:var(--kart); border:1px solid var(--ken);
+           border-radius:10px; padding:22px 24px 18px; }
+  .gr-bas { font-size:15px; font-weight:600; letter-spacing:-0.01em; margin-bottom:3px; }
+  .gr-alt { font-size:12.5px; color:var(--mut-2); margin-bottom:20px; max-width:70ch; text-wrap:pretty; }
+  .gr-efsane { display:flex; flex-wrap:wrap; gap:16px; margin-bottom:18px; font-size:12px; color:var(--mut-2); }
+  .gr-efsane span { display:inline-flex; align-items:center; gap:7px; }
+  .gr-kutu { width:11px; height:11px; border-radius:3px; flex:none; }
+  .gr-sar { overflow-x:auto; padding-bottom:4px; }
+  .gr { display:grid; grid-template-columns:38px 1fr; gap:0 10px; min-width:520px; }
+  .gr-y { display:flex; flex-direction:column; justify-content:space-between; height:190px;
+          font-family:var(--mono); font-size:10px; color:var(--mut-3);
+          font-variant-numeric:tabular-nums; text-align:right; padding-bottom:1px; }
+  .gr-alan { position:relative; height:190px; border-bottom:1px solid var(--ken-3); }
+  .gr-kilavuz { position:absolute; left:0; right:0; border-top:1px dashed var(--ken); }
+  .gr-cubuklar { position:absolute; inset:0; display:flex; align-items:flex-end; gap:2px; }
+  .gr-c { flex:1; position:relative; display:flex; flex-direction:column;
+          justify-content:flex-end; align-items:center; height:100%; cursor:default; }
+  .gr-dolgu { width:100%; border-radius:4px 4px 0 0; transition:filter .12s; }
+  .gr-c:hover .gr-dolgu, .gr-c:focus-visible .gr-dolgu { filter:brightness(1.18); }
+  .gr-yildiz { font-family:var(--mono); font-size:9px; color:var(--mut-3); line-height:1;
+               margin-bottom:3px; height:9px; }
+  .gr-etiket { position:absolute; top:-2px; left:50%; transform:translate(-50%,-100%);
+               font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink);
+               white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .gr-x { display:grid; grid-column:2; grid-template-columns:repeat(11,1fr); gap:2px;
+          margin-top:7px; font-family:var(--mono); font-size:10px; color:var(--mut-3);
+          text-align:center; font-variant-numeric:tabular-nums; }
+  .gr-x b { color:var(--ink); font-weight:700; }
+  .ipucu { position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%);
+           background:var(--ink); color:#fff; font-family:var(--mono); font-size:10.5px;
+           padding:6px 9px; border-radius:5px; white-space:nowrap; opacity:0;
+           pointer-events:none; transition:opacity .12s; z-index:5; }
+  .gr-c:hover .ipucu, .gr-c:focus-visible .ipucu { opacity:1; }
+
+  .not { border-left:3px solid var(--mavi); background:var(--mavi-z); border-radius:0 8px 8px 0; padding:15px 18px; }
+  .not p { color:var(--mavi-kk); max-width:66ch; }
+  .not .et { color:var(--mavi-kk); opacity:0.75; }
+  .uyar { border-left:3px solid var(--uyari-k); background:var(--uyari-z); border-radius:0 8px 8px 0; padding:15px 18px; }
+  .uyar p { color:var(--uyari-y); max-width:66ch; }
+  .uyar .et { color:var(--uyari-y); opacity:0.8; }
+
+  ul { margin:0 0 14px; padding-left:20px; color:var(--mut); max-width:68ch; }
+  li { margin-bottom:8px; text-wrap:pretty; }
+  li:last-child { margin-bottom:0; }
+  ul:last-child { margin-bottom:0; }
 
   .hesap { background:var(--kart); border:1px solid var(--ken); border-radius:10px; overflow:hidden; }
   .hesap-bas { padding:14px 18px; border-bottom:1px solid var(--ken); background:var(--kart-2);
                display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; }
-  .hesap-tic { font-family:var(--mono); font-size:15px; font-weight:700; letter-spacing:0.01em; color:var(--ink); }
+  .hesap-tic { font-family:var(--mono); font-size:15px; font-weight:700; color:var(--ink); }
   .hesap-not { font-size:12.5px; color:var(--mut-2); }
   .hesap-skor { margin-left:auto; font-family:var(--mono); font-size:20px; font-weight:700;
-                letter-spacing:-0.03em; color:var(--mavi-k); font-variant-numeric:tabular-nums;
-                white-space:nowrap; }
+                letter-spacing:-0.03em; color:var(--mavi-k); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .hesap-g { padding:4px 18px 16px; }
   .satir { display:grid; grid-template-columns:1fr auto; gap:3px 16px; padding:9px 0;
            border-bottom:1px solid var(--ken-2); font-size:13px; align-items:baseline; }
@@ -118,44 +182,25 @@
              color:var(--ink-2); white-space:nowrap; }
   .satir.vurgu .satir-a { color:var(--ink); font-weight:600; }
   .satir.vurgu .satir-d { color:var(--ink); font-weight:700; }
-  .satir-alt { grid-column:1 / -1; font-size:11.5px; color:var(--mut-3); text-wrap:pretty; margin-top:1px; }
+  .satir-alt { grid-column:1 / -1; font-size:11.5px; color:var(--mut-3); text-wrap:pretty; margin-top:2px; }
 
   .cip { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:10px;
          letter-spacing:0.06em; padding:3px 9px; border-radius:999px; white-space:nowrap; }
   .cip-y { color:var(--yes); background:oklch(0.96 0.03 150); }
-  .cip-k { color:var(--kehribar); background:oklch(0.96 0.04 80); }
+  .cip-k { color:var(--kehribar); background:var(--kehribar-z); }
   .cip-r { color:var(--kir); background:oklch(0.96 0.03 25); }
   .cip-m { color:var(--mavi-kk); background:var(--mavi-z); }
 
-  .not { border-left:3px solid var(--mavi); background:var(--mavi-z); border-radius:0 8px 8px 0;
-         padding:14px 18px; }
-  .not p { color:var(--mavi-kk); max-width:64ch; }
-  .not .et { color:var(--mavi-kk); opacity:0.75; }
-
-  .uyar { border-left:3px solid var(--uyari-k); background:var(--uyari-z); border-radius:0 8px 8px 0;
-          padding:14px 18px; }
-  .uyar p { color:var(--uyari-y); max-width:64ch; }
-  .uyar .et { color:var(--uyari-y); opacity:0.8; }
-
-  ul { margin:0 0 14px; padding-left:20px; color:var(--mut); max-width:66ch; }
-  li { margin-bottom:7px; text-wrap:pretty; }
-  li:last-child { margin-bottom:0; }
-  ul:last-child { margin-bottom:0; }
-
-  .ayr { border:none; border-top:1px solid var(--ken); margin:0 0 30px; }
-  .kunye { border-top:1px solid var(--ken); padding-top:30px; }
-  .kunye p { font-size:12.5px; color:var(--mut-2); max-width:72ch; }
+  .ayr { border:none; border-top:1px solid var(--ken); margin:0 0 32px; }
+  .kunye p { font-size:12.5px; color:var(--mut-2); max-width:74ch; }
 
   @media (max-width:640px) {
-    h1 { font-size:27px; }
-    h3 { font-size:19px; }
+    h1 { font-size:27px; } h3 { font-size:19px; }
     .govde { padding:32px 20px 70px; }
-    .formul-ana { font-size:15px; }
-    .hesap-skor { margin-left:0; }
+    .formul-ana { font-size:15px; } .hesap-skor { margin-left:0; }
+    .ozet { padding:20px; }
   }
-  @media (prefers-reduced-motion:reduce) {
-    .mn * { animation:none !important; transition:none !important; }
-  }
+  @media (prefers-reduced-motion:reduce) { .mn * { transition:none !important; } }
 </style>
 
 <div class="mn">
@@ -163,14 +208,14 @@
   <div class="serit">
     <div class="serit-i">
       <span class="rozet">UYARI</span>
-      <span>Bu bir kişisel araştırma projesidir. Yatırım tavsiyesi değildir, fiyat tahmini üretmez.</span>
+      <span>Kişisel araştırma projesi. Yatırım tavsiyesi değildir, fiyat tahmini üretmez.</span>
     </div>
   </div>
 
   <header class="bas">
     <div class="bas-i">
-      <a class="logo" href="KAP-Radar.dc.html">KAP<span>·</span>RADAR</a>
-      <span class="bas-et">YÖNTEM NOTU</span>
+      <a class="logo" href="KAP-Radar.dc.html">KAP<i>·</i>RADAR</a>
+      <span class="bas-et">ARAŞTIRMA NOTU</span>
       <div class="bas-bos"></div>
       <a class="dugme" href="KAP-Radar.dc.html">Canlı akışa dön</a>
     </div>
@@ -178,106 +223,80 @@
 
   <main class="govde">
 
-    <div class="ust-et">YÖNTEM NOTU · SÜRÜM 1.0 · EYLÜL 2026</div>
-    <h1>Büyüklük skoru: bir bildirimi neye göre ölçüyoruz</h1>
-    <p class="giris">Bu not, KAP·RADAR'ın her “yeni iş ilişkisi” bildirimine verdiği <em>0,00–5,00</em> arası sayının nasıl üretildiğini, hangi kanıta dayandığını ve nerede bilerek sustuğunu tarif eder. Amaç, sayıyı gören birinin onu yeniden hesaplayabilmesi.</p>
-    <p class="giris">Tek cümlelik özet: <strong>skor bir getiri tahmini değil, sözleşmenin şirketin kendi ölçeğine göre ne kadar büyük olduğunun ölçüsüdür.</strong> Bu ayrımın nedeni ideolojik değil ampirik — 3. bölümde veriyle birlikte.</p>
+    <div class="ust-et">ARAŞTIRMA NOTU · SÜRÜM 2.0 · 21 EYLÜL 2026</div>
+    <h1>Bir KAP bildirimi ne kadar büyük? Skorun kurulması ve sınanması</h1>
 
-    <div class="izgara" style="margin:36px 0 56px;">
-      <div>
-        <div class="et">ÖRNEKLEM</div>
-        <div class="say">613</div>
-        <div class="say-et">bildirim · 22.09.2025 – 18.09.2026</div>
-      </div>
-      <div>
-        <div class="et">SKORLANAN</div>
-        <div class="say">480</div>
-        <div class="say-et">%78,3 · kalanı bilinçli olarak skorsuz</div>
-      </div>
-      <div>
-        <div class="et">MEDYAN SKOR</div>
-        <div class="say" style="color:var(--mavi-k);">1,39</div>
-        <div class="say-et">çeyreklikler 0,64 – 2,30</div>
-      </div>
-      <div>
-        <div class="et">ÜRETİLEN TAHMİN</div>
-        <div class="say">0</div>
-        <div class="say-et">fiyat, hedef ya da yön tahmini yok</div>
-      </div>
+    <div class="yazarlar">
+      <span class="yazar">Hüseyin Dinçer <span>· proje tasarımı, veri hattı, karar onayları</span></span>
+      <span class="yazar-ayr">·</span>
+      <span class="yazar">Claude (Opus 5) <span>· uygulama, istatistiksel analiz, yazım</span></span>
     </div>
 
+    <p class="giris">Bu not iki şey yapıyor. Önce KAP·RADAR'ın her “yeni iş ilişkisi” bildirimine verdiği <em>0,00–5,00</em> arası sayının nasıl üretildiğini, okuyanın yeniden hesaplayabileceği açıklıkta tarif ediyor. Sonra — asıl kısmı bu — <strong>skorun ölçtüğünü iddia ettiği şeyi gerçekten ölçüp ölçmediğini sınıyor.</strong></p>
+    <p class="giris">Sınavın sonucu karışık ve öyle raporlanıyor: bazı iddialar veriyle doğrulandı, biri çürütüldü, biri de “desteklenmiyor ama reddedilemiyor” bandında kaldı.</p>
+
+    <div class="ozet">
+      <h4>Özet bulgular</h4>
+      <ol>
+        <li><strong>Bildirimler gerçekten materyal olay.</strong> Bildirim günü işlem hacmi normalin <strong>%47,3 üzerine</strong> çıkıyor (t = +10,10) ve etki beş günde sönüyor.</li>
+        <li><strong>Hacim, bildirimden önce zaten yükselmiş.</strong> t₀−4 ile t₀−1 arasında hacim %10–14 fazla ve bu istatistiksel olarak anlamlı. Resmî açıklamadan önce bilgi sızıyor ya da bekleniyor.</li>
+        <li><strong>Skor bir getiri tahmini değil — ve gerçekten de değil.</strong> S ile işaretli anormal getiri arasında hiçbir ilişki yok (kümelenmiş t = +0,52, p = 0,61). İddia ile veri burada tam örtüşüyor.</li>
+        <li><strong>Skorun hacimle ilişkisi yönü doğru ama istatistiksel olarak kurulamadı.</strong> Beşlik dilimlerde monoton artıyor, ancak hisse bazında kümelenme ve bildirim sıklığı kontrol edilince eşiği geçmiyor (t = +1,05). Düşündürücü, kanıt değil.</li>
+        <li><strong>%1 tabanı veriyle çelişiyor.</strong> Formül r &lt; %1 olan 61 bildirime 0,00 veriyor; oysa bu bildirimlerde hacim yine <strong>%33,4 artıyor</strong> (t = +3,39) ve taban üstündekilerden ayırt edilemiyor (p = 0,51).</li>
+        <li><strong>En sağlam bulgu skorun kendisi değil: bildirim yorgunluğu.</strong> Sık bildirim yapan şirketlerde tepki sönüyor (kümelenmiş t = −2,48, p = 0,013) — ve bu şu an skorda hiç yok.</li>
+      </ol>
+    </div>
+
+    <div class="izgara" style="margin-bottom:56px;">
+      <div><div class="et">ÖRNEKLEM</div><div class="say">613</div><div class="say-et">bildirim · 111 hisse · 12 ay</div></div>
+      <div><div class="et">SKORLANAN</div><div class="say">480</div><div class="say-et">%78,3 · kalanı bilerek skorsuz</div></div>
+      <div><div class="et">HACİM ÖLÇÜMÜ</div><div class="say">423</div><div class="say-et">yeterli tahmin penceresi olan olay</div></div>
+      <div><div class="et">ÜRETİLEN TAHMİN</div><div class="say">0</div><div class="say-et">fiyat, hedef ya da yön tahmini</div></div>
+    </div>
+
+    <!-- ============================ I ============================ -->
     <section>
-      <h2>01 · KONUM</h2>
+      <h2>I · PROBLEM</h2>
       <h3>Aynı tutar, iki şirkette bambaşka bir olay</h3>
-      <p>500 milyon TL'lik bir sözleşme, cirosu 200 milyar TL olan bir holding için yuvarlama hatası; cirosu 2 milyar TL olan bir taahhüt şirketi için şirketi yeniden fiyatlandıran bir olaydır. KAP metni bu bağlamı vermez. Tutar bazen açıklanır bazen açıklanmaz, karşı taraf bazen isimlendirilir bazen “ticari sır” denir, ilk bildirim ile güncelleme aynı biçimde görünür.</p>
-      <p>Skorun tek işi bu bağlamı geri koymak: <strong>tutarı şirketin kendi hasılatına bölmek</strong> ve sonucu karşılaştırılabilir bir ölçeğe taşımak. Yaptığı bundan ibarettir; yapmadıklarının listesi ise 08. bölümde.</p>
+      <p>500 milyon TL'lik bir sözleşme, cirosu 200 milyar TL olan bir holding için yuvarlama hatasıdır; cirosu 2 milyar TL olan bir taahhüt şirketi için şirketi yeniden fiyatlandıran bir olaydır. KAP metni bu bağlamı vermez: tutar bazen açıklanır bazen açıklanmaz, karşı taraf bazen isimlendirilir bazen “ticari sır” denir, ilk bildirim ile güncelleme aynı biçimde görünür.</p>
+      <p>Skorun tek işi bu bağlamı geri koymak — <strong>tutarı şirketin kendi hasılatına bölmek</strong> ve sonucu karşılaştırılabilir bir ölçeğe taşımak. Yaptığı bundan ibaret; yapmadıklarının listesi IV. bölümde.</p>
       <div class="akis" style="margin-top:20px;">
-        <span class="a">ham metin</span>
-        <span class="o">→</span>
-        <span class="a">çıkarım</span>
-        <span class="o">→</span>
-        <span class="v">kapı A</span>
-        <span class="o">→</span>
-        <span class="a">r = tutar / TTM</span>
-        <span class="o">→</span>
-        <span class="v">kapı B</span>
-        <span class="o">→</span>
+        <span class="a">ham metin</span><span class="o">→</span>
+        <span class="a">çıkarım</span><span class="o">→</span>
+        <span class="v">kapı A</span><span class="o">→</span>
+        <span class="a">r = tutar / TTM</span><span class="o">→</span>
+        <span class="v">kapı B</span><span class="o">→</span>
         <span class="a">S = 5 · f(r) · K</span>
       </div>
     </section>
 
+    <!-- ============================ II ============================ -->
     <section>
-      <h2>02 · TEMEL AYRIM</h2>
-      <h3>Neden tahmin değil de ölçüm</h3>
-      <p>Projenin ilk tasarımında skor bir tepki beklentisiydi. 613 bildirimin tamamı üzerinde yapılan kanıt taraması bu fikri kurtarılamaz biçimde çürüttü:</p>
-      <div class="yigin" style="margin-bottom:18px;">
-        <div>
-          <h4>Tepki öngörülemiyor</h4>
-          <p>Elimizdeki tüm sinyaller birlikte, 3 günlük anormal getirinin yalnızca <strong>%6,4'ünü</strong> açıklıyor (1 günlükte %11). Bu açıklayıcılıkla kurulan bir tahmin, kullanıcıya sahte bir kesinlik satmaktan başka bir şey yapmaz.</p>
-        </div>
-        <div>
-          <h4>En istikrarlı katsayı temel veri bile değil</h4>
-          <p>Bütün sağlamlık testlerinden geçen tek değişken, bildirimden önceki 5 gün içinde devre kesici tetiklenmiş olması: 3 günlük tepkiyi <strong>−2,48 puan</strong> düşürüyor (t = −3,13). Yani en güçlü sinyal sözleşmeyle değil, tahtanın kirliliğiyle ilgili.</p>
-        </div>
-        <div>
-          <h4>Tutarı açıklamak iyi haber değil</h4>
-          <p>Şirket boyutu sabitken, tutarı açıklamış olmak tepkiyi <strong>−1,75 puan</strong> düşürüyor (t = −3,35); buna karşılık tutar/hacim oranının yükselmesi <strong>+0,81 puan</strong> getiriyor (t = +4,04). Önemli olan açıklamak değil, açıklananın büyük olması — payda odaklı bir skorun lehine tek doğrudan kanıt.</p>
-        </div>
-      </div>
-      <p>Sonuç: tek sayı ikiye ayrıldı. <strong>Modül A</strong> deterministik büyüklük skorunu verir, <strong>Modül C</strong> benzer bildirimlerin geçmiş tepki dağılımını betimler. Biri diğerinin tahmini değildir ve arayüzde yan yana ama ayrı dururlar.</p>
-    </section>
-
-    <section>
-      <h2>03 · PAYDA</h2>
-      <h3>Point-in-time TTM hasılat</h3>
-      <p>Oranın paydası, <strong>bildirimin yayınlandığı anda kamuya açık olan son dört çeyreğin</strong> hasılatıdır. İki şart birlikte geçerli:</p>
+      <h2>II · YÖNTEM</h2>
+      <h3>Payda: point-in-time TTM hasılat</h3>
+      <p>Oranın paydası, <strong>bildirimin yayınlandığı anda kamuya açık olan son dört çeyreğin</strong> hasılatıdır. İki şart birlikte:</p>
       <ul>
-        <li><strong>TTM (son 12 ay).</strong> Yıllık rapor kullanmak, yılın ortasında gelen bir bildirimi sekiz ay eski bir paydayla ölçmek demekti. Enflasyon ortamında bu, oranı sistematik olarak şişirir.</li>
-        <li><strong>Point-in-time.</strong> Bildirimden <em>sonra</em> yayınlanan finansallar geriye uygulanmaz. Aksi hâlde skor, o an kimsenin bilmediği bir bilgiyi kullanmış olurdu — geriye dönük test literatüründe buna lookahead yanlılığı denir ve sonucu kullanılamaz hâle getirir.</li>
+        <li><strong>TTM.</strong> Yıllık rapor kullanmak, yıl ortasında gelen bir bildirimi sekiz ay eski bir paydayla ölçmek demekti; enflasyonlu bir ortamda bu oranı sistematik olarak şişirir.</li>
+        <li><strong>Point-in-time.</strong> Bildirimden <em>sonra</em> yayınlanan finansallar geriye uygulanmaz. Aksi hâlde skor, o an kimsenin bilmediği bir bilgiyi kullanırdı — lookahead yanlılığı sonucu kullanılamaz kılar.</li>
       </ul>
-      <p>TTM tek rapordan çıkarılır, çünkü KAP gelir tablosu dört sütun birden verir: cari yılbaşından bugüne, geçen yılın aynı dönemi, cari çeyrek ve geçen yılın aynı çeyreği.</p>
+      <p>TTM tek rapordan çıkar, çünkü KAP gelir tablosu dört sütun birden verir: cari YTD, geçen yılın aynı YTD'si, cari çeyrek, geçen yılın aynı çeyreği.</p>
       <div class="formul" style="margin-bottom:18px;">
         <div class="formul-ana">TTM = FY(önceki yıl) + YTD(cari) − YTD(geçen yıl, aynı dönem)</div>
         <div class="formul-alt">nokta anahtarı: raporun publishDate'i ≤ bildirimin yayın zamanı</div>
       </div>
-      <p>935 finansal rapor arşivlendi; 613 bildirimin <strong>597'sinde</strong> (%97,4) payda çözülüyor. Çözülemeyen 16 bildirim, yeterli geçmişi olmayan 8 yeni halka açılmış şirkete ait — onlar skorsuz kalır, uydurma paydayla skorlanmaz.</p>
+      <p>935 finansal rapor arşivlendi; 613 bildirimin <strong>597'sinde</strong> (%97,4) payda çözülüyor. Çözülemeyen 16 bildirim, yeterli geçmişi olmayan 8 yeni halka açılmış şirkete ait — skorsuz kalırlar, uydurma paydayla skorlanmazlar.</p>
       <div class="uyar" style="margin-top:18px;">
         <div class="et">PAYDAYI SESSİZCE BOZAN ÜÇ ŞEY</div>
         <p><strong>Sunum para birimi.</strong> Künye “1.000 TL” ya da “1.000.000 TL” diyebiliyor (935 raporun 79'u). Çarpan uygulanmazsa TOASO, DOAS ve AKENR bin kat küçük okunur.</p>
         <p><strong>Gelir tablosunun rolü sabit değil.</strong> <em>310000</em> (fonksiyon esaslı), <em>310003</em> (çeşit esaslı), <em>holding_role_310030</em> — yalnız ilkine bakınca 935 raporun 577'si sessizce atlanıyordu.</p>
-        <p style="margin-bottom:0;"><strong>Şirket kendi beyanını yanlış yazabiliyor</strong> (ONCSM, ALTNY). Yükleyici her şirketin kendi serisindeki yıllıklandırılmış medyana bakar ve 100 katı aşan raporu kabul etmez.</p>
+        <p style="margin-bottom:0;"><strong>Şirket kendi beyanını yanlış yazabiliyor</strong> (ONCSM, ALTNY). Yükleyici her şirketin kendi serisindeki yıllıklandırılmış medyana bakar; 100 katı aşan raporu kabul etmez.</p>
       </div>
-    </section>
 
-    <section>
-      <h2>04 · PAY</h2>
-      <h3>Hangi tutar “yeni iş” sayılır</h3>
-      <p>Serbest metinden çıkarılan her tutar etiketli bir kalemdir: <em>{değer, para_birimi, tip, alıntı}</em>. Tip dört değerden biri olur ve <strong>yalnızca üçü skora girer</strong>:</p>
+      <h4>Pay: hangi tutar “yeni iş” sayılır</h4>
+      <p>Serbest metinden çıkarılan her tutar etiketli bir kalemdir — <em>{değer, para_birimi, tip, alıntı}</em> — ve dört tipten <strong>yalnızca üçü</strong> skora girer:</p>
       <div class="tablo-sar" style="margin-bottom:18px;">
         <table>
-          <thead>
-            <tr><th>TİP</th><th>ANLAMI</th><th>SKORA GİRER Mİ</th></tr>
-          </thead>
+          <thead><tr><th>TİP</th><th>ANLAMI</th><th>SKORA GİRER Mİ</th></tr></thead>
           <tbody>
             <tr><td class="k">ilave_siparis</td><td>Mevcut ilişkiye eklenen yeni sipariş</td><td><span class="cip cip-y">EVET</span></td></tr>
             <tr><td class="k">fiyat_farki</td><td>Var olan sözleşmede bedel artışı</td><td><span class="cip cip-y">EVET</span></td></tr>
@@ -286,84 +305,59 @@
           </tbody>
         </table>
       </div>
-      <p>Bu ayrım kozmetik değil. ORGE'nin 18.09.2026 bildiriminde model, 940.002 USD'lik ilave siparişin yanına üç para birimli kümülatif proje bedelini de doğru biçimde <em>toplam_sozlesme</em> olarak etiketledi. İkisi toplansaydı oran <strong>yaklaşık 12 kat</strong> şişecek, skor 0,77 yerine tavana dayanacaktı.</p>
-      <h4 style="margin-top:22px;">Para birimi çevrimi</h4>
-      <p>Kalemler <strong>bildirim tarihli TCMB döviz alış kuruyla</strong> TL'ye çevrilip toplanır. Alış kuru tercih edildi çünkü şirketler hasılatı bu mantıkla çeviriyor; oranın payı ile paydasının aynı kur rejiminde olması gerekiyordu.</p>
-      <ul>
-        <li>Kur bulunamazsa sonuç <em>None</em> olur — <strong>sıfır sayılmaz</strong>. Eksik kuru sıfır kabul etmek toplamı sessizce küçültür; bu bildirim kapı B2'den elle incelemeye düşer.</li>
-        <li>“Önceki iş günü” kuralı tek bir yerde uygulanır ve geriye yürüme <strong>10 günle sınırlıdır</strong>; bulunamazsa yine <em>None</em>.</li>
-        <li><em>Unit</em> alanı kritik: JPY 100 birim üzerinden yayınlanır. İndirgenmezse yen cinsi bir sözleşme 100 kat büyük görünür.</li>
-      </ul>
-      <p>Bildirimlerin düştüğü 223 işlem gününün 223'ünde USD ve EUR çözülüyor (221'i aynı gün, 2'si bir gün geriden).</p>
-    </section>
+      <p>Bu ayrım kozmetik değil. ORGE'nin 18.09.2026 bildiriminde model, 940.002 USD'lik ilave siparişin yanına üç para birimli kümülatif proje bedelini de doğru biçimde <em>toplam_sozlesme</em> olarak etiketledi. İkisi toplansaydı oran <strong>yaklaşık 12 kat</strong> şişer, skor 0,77 yerine tavana dayanırdı.</p>
+      <p>Kalemler <strong>bildirim tarihli TCMB döviz alış kuruyla</strong> TL'ye çevrilip toplanır. Alış kuru seçildi çünkü şirketler hasılatı bu mantıkla çeviriyor; oranın payı ile paydasının aynı kur rejiminde olması gerekiyordu. Kur bulunamazsa sonuç <em>None</em> olur — <strong>sıfır sayılmaz</strong>, çünkü eksik kuru sıfır kabul etmek toplamı sessizce küçültür. <em>Unit</em> alanı da kritik: JPY 100 birim üzerinden yayınlanır, indirgenmezse yen sözleşmesi 100 kat büyük görünür.</p>
 
-    <section>
-      <h2>05 · DÖNÜŞÜM</h2>
-      <h3>f(r) — neden logaritmik</h3>
-      <p>Ham oran <em>r = net tutar / TTM hasılat</em> doğrudan kullanılamaz, çünkü <strong>materyallik çarpımsaldır</strong>: %1'den %2'ye çıkmak ile %10'dan %20'ye çıkmak yatırımcıya aynı şeyi söyler. Doğrusal bir ölçek aralığın tamamını birkaç dev sözleşmeye harcar ve asıl ayrımın yaşandığı %1–%20 bandını ezer.</p>
+      <h4>f(r): neden logaritmik</h4>
+      <p>Ham oran doğrudan kullanılamaz, çünkü <strong>materyallik çarpımsaldır</strong>: %1'den %2'ye çıkmak ile %10'dan %20'ye çıkmak yatırımcıya aynı şeyi söyler. Doğrusal ölçek aralığın tamamını birkaç dev sözleşmeye harcar ve asıl ayrımın olduğu bandı ezer.</p>
       <div class="formul" style="margin-bottom:18px;">
         <div class="formul-ana">f(r) = clamp( (log₁₀(r) + 2) / 2 , 0 , 1 )</div>
         <div class="formul-alt">taban r = %1 → f = 0 &nbsp;·&nbsp; tavan r = %100 → f = 1</div>
       </div>
-      <p>Çapalar keyfî değil, ikisi de birer iddia: <strong>%1 altı bir sözleşme olay sayılmaz</strong>, <strong>%100 üstünde daha fazla ayrım yapmanın anlamı yoktur</strong> — hasılatının tamamı kadar iş alan bir şirket zaten ölçeğin en üstündedir, iki katı alması sıralamayı değiştirmez.</p>
-      <div class="tablo-sar">
-        <table>
-          <thead>
-            <tr><th>HASILAT ORANI r</th><th>f(r)</th><th>K = 1,00 İKEN SKOR</th><th>YORUM</th></tr>
-          </thead>
-          <tbody>
-            <tr><td class="s">%1,0</td><td class="s">0,000</td><td class="s v">0,00</td><td>taban — olay değil</td></tr>
-            <tr><td class="s">%2,3</td><td class="s">0,181</td><td class="s v">0,91</td><td>rutin</td></tr>
-            <tr><td class="s">%5,0</td><td class="s">0,350</td><td class="s v">1,75</td><td>rutin</td></tr>
-            <tr><td class="s">%10,0</td><td class="s">0,500</td><td class="s v">2,50</td><td>önemli</td></tr>
-            <tr><td class="s">%20,0</td><td class="s">0,650</td><td class="s v">3,25</td><td>önemli</td></tr>
-            <tr><td class="s">%50,0</td><td class="s">0,850</td><td class="s v">4,25</td><td>çok büyük</td></tr>
-            <tr><td class="s">%100,0</td><td class="s">1,000</td><td class="s v">5,00</td><td>tavan</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <h2>06 · ÇARPAN</h2>
-      <h3>K — büyüklüğü ezmeyen güvenilirlik katsayısı</h3>
-      <p>İkinci bileşen, bildirimin ne kadar doğrulanabilir olduğunu yansıtır: karşı taraf açıklanmış mı, bu ilk bildirim mi yoksa güncelleme mi. <strong>Çarpımsaldır, toplamsal değil</strong> — ve bu bilinçli bir tercih: karşı tarafı gizli dev bir sözleşme hâlâ devdir, sadece daha az güvenilirdir. Toplamsal bir ceza onu küçük gösterirdi.</p>
       <div class="tablo-sar" style="margin-bottom:18px;">
         <table>
-          <thead>
-            <tr><th>DURUM</th><th>K</th><th>GÖZLENEN 3 GÜNLÜK TEPKİ</th><th>n</th></tr>
-          </thead>
+          <thead><tr><th>HASILAT ORANI r</th><th class="sag">f(r)</th><th class="sag">K = 1,00 İKEN S</th><th>ÖRNEKLEMDEKİ PAYI</th></tr></thead>
           <tbody>
-            <tr><td>Karşı taraf açık + ilk bildirim</td><td class="s v">1,00</td><td class="s" style="color:var(--yes);">+%1,23</td><td class="s">327</td></tr>
-            <tr><td>Karşı taraf açık + güncelleme</td><td class="s v">0,85</td><td class="s" style="color:var(--yes);">+%0,68</td><td class="s">55</td></tr>
-            <tr><td>Karşı taraf gizli + ilk bildirim</td><td class="s v">0,70</td><td class="s">+%0,02</td><td class="s">213</td></tr>
-            <tr><td>Karşı taraf gizli + güncelleme</td><td class="s v">0,50</td><td class="s" style="color:var(--kir);">−%5,18</td><td class="s">6</td></tr>
+            <tr><td class="s" style="text-align:left;">%1,0</td><td class="s">0,000</td><td class="s v">0,00</td><td>taban — %12,7'si burada</td></tr>
+            <tr><td class="s" style="text-align:left;">%2,3</td><td class="s">0,181</td><td class="s v">0,91</td><td rowspan="2" style="vertical-align:middle;">%1–%10 bandı: <strong>%59,4</strong></td></tr>
+            <tr><td class="s" style="text-align:left;">%5,0</td><td class="s">0,350</td><td class="s v">1,75</td></tr>
+            <tr><td class="s" style="text-align:left;">%10,0</td><td class="s">0,500</td><td class="s v">2,50</td><td rowspan="2" style="vertical-align:middle;">%10–%50 bandı: %25,4</td></tr>
+            <tr><td class="s" style="text-align:left;">%20,0</td><td class="s">0,650</td><td class="s v">3,25</td></tr>
+            <tr><td class="s" style="text-align:left;">%50,0</td><td class="s">0,850</td><td class="s v">4,25</td><td>%50–%100: %2,3</td></tr>
+            <tr><td class="s" style="text-align:left;">%100,0</td><td class="s">1,000</td><td class="s v">5,00</td><td>tavan — 613'te <strong>4 kez</strong></td></tr>
           </tbody>
         </table>
       </div>
-      <p>Tablodaki tepki sütunu K'yı <em>türetmez</em> — skor bir tepki tahmini olmadığı için katsayılar getiriye göre optimize edilmedi. Sütun burada yalnızca sıralamanın veriyle çelişmediğini göstermek için var. Karşı tarafı gizlenen bildirimler 1. gün <strong>+%0,84</strong> alıp 3. günde kazancın tamamını geri veriyor; en yüksek 10 yükselişin 10'unda karşı taraf açıktı.</p>
-      <div class="not" style="margin-top:18px;">
-        <div class="et">VERİDEKİ AĞIRLIK</div>
-        <p style="margin-bottom:0;">613 bildirimin <strong>224'ünde (%36,5)</strong> karşı taraf alanı boş — KAP bunu gizlemeye izin veriyor. Yani K, azınlık bir düzeltme değil, örneklemin üçte birini doğrudan etkileyen bir bileşen.</p>
+
+      <h4>K: güvenilirlik çarpanı</h4>
+      <p>İkinci bileşen bildirimin ne kadar doğrulanabilir olduğunu yansıtır. <strong>Çarpımsaldır, toplamsal değil</strong> — karşı tarafı gizli dev bir sözleşme hâlâ devdir, sadece daha az güvenilirdir; toplamsal bir ceza onu küçük gösterirdi. 613 bildirimin <strong>224'ünde (%36,5)</strong> karşı taraf boş, yani K azınlık bir düzeltme değil.</p>
+      <div class="tablo-sar">
+        <table>
+          <thead><tr><th>DURUM</th><th class="sag">K</th><th class="sag">n</th><th class="sag">CAR(3g) ORT.</th><th class="sag">ANORMAL HACİM</th></tr></thead>
+          <tbody>
+            <tr><td>Karşı taraf açık + ilk bildirim</td><td class="s v">1,00</td><td class="s">327</td><td class="s" style="color:var(--yes);">+%1,23</td><td class="s">+0,351</td></tr>
+            <tr><td>Karşı taraf açık + güncelleme</td><td class="s v">0,85</td><td class="s">55</td><td class="s" style="color:var(--yes);">+%0,68</td><td class="s">+0,317</td></tr>
+            <tr><td>Karşı taraf gizli + ilk bildirim</td><td class="s v">0,70</td><td class="s">213</td><td class="s">+%0,02</td><td class="s">+0,259</td></tr>
+            <tr><td>Karşı taraf gizli + güncelleme</td><td class="s v">0,50</td><td class="s">6</td><td class="s" style="color:var(--kir);">−%5,18</td><td class="s">+0,615</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p style="margin-top:14px;">Tablodaki tepki sütunları K'yı <em>türetmez</em> — katsayılar getiriye göre optimize edilmedi. Yine de sağlama olarak kıymetliler: <strong>n ≥ 55 olan üç hücrede anormal hacim sıralaması K sıralamasıyla birebir uyumlu</strong> (0,259 &lt; 0,317 &lt; 0,351). Dördüncü hücrede n = 6; oradaki +0,615 K = 0,50 ile çelişiyor gibi görünse de altı gözlemle hiçbir şey söylenemez ve bu not onu kanıt saymıyor.</p>
     </section>
 
+    <!-- ============================ III ============================ -->
     <section>
-      <h2>07 · FORMÜL</h2>
+      <h2>III · FORMÜL</h2>
       <h3>Üç örnek üzerinde uçtan uca</h3>
       <div class="formul" style="margin-bottom:24px;">
         <div class="formul-ana">S = clamp( 5 · f(r) · K , 0 , 5 )</div>
         <div class="formul-alt">aynı girdi → aynı skor · LLM kanaati yok · saf fonksiyon</div>
       </div>
-
       <div style="display:flex; flex-direction:column; gap:16px;">
-
         <div class="hesap">
-          <div class="hesap-bas">
-            <span class="hesap-tic">ASELS</span>
-            <span class="hesap-not">10.07.2026 · karşı taraf açık · ilk bildirim</span>
-            <span class="hesap-skor">4,07 / 5,00</span>
-          </div>
+          <div class="hesap-bas"><span class="hesap-tic">ASELS</span>
+            <span class="hesap-not">10.07.2026 · açık · ilk bildirim</span>
+            <span class="hesap-skor">4,07 / 5,00</span></div>
           <div class="hesap-g">
             <div class="satir"><span class="satir-a">Net tutar (TL karşılığı)</span><span class="satir-d">78.700.425.412,57</span></div>
             <div class="satir"><span class="satir-a">TTM hasılat</span><span class="satir-d">184.925.592.000</span></div>
@@ -371,156 +365,273 @@
             <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,4256) + 2) / 2</span><span class="satir-d">0,8145</span></div>
             <div class="satir"><span class="satir-a">K (açık + ilk)</span><span class="satir-d">1,00</span></div>
             <div class="satir vurgu"><span class="satir-a">S = 5 × 0,8145 × 1,00</span><span class="satir-d">4,07</span>
-              <span class="satir-alt">Türkiye'nin en büyük sanayi şirketlerinden biri, 78 milyar TL'lik bir sözleşmeyle bile tavana çıkmıyor — çünkü ölçüt mutlak tutar değil, kendi cirosuna oranı.</span>
-            </div>
+              <span class="satir-alt">78 milyar TL'lik bir sözleşme bile tavana çıkmıyor — ölçüt mutlak tutar değil, kendi cirosuna oranı.</span></div>
           </div>
         </div>
-
         <div class="hesap">
-          <div class="hesap-bas">
-            <span class="hesap-tic">CEOEM</span>
-            <span class="hesap-not">09.04.2026 · karşı taraf açık · güncelleme</span>
-            <span class="hesap-skor">4,02 / 5,00</span>
-          </div>
+          <div class="hesap-bas"><span class="hesap-tic">CEOEM</span>
+            <span class="hesap-not">09.04.2026 · açık · güncelleme</span>
+            <span class="hesap-skor">4,02 / 5,00</span></div>
           <div class="hesap-g">
-            <div class="satir"><span class="satir-a">Net tutar (TL karşılığı)</span><span class="satir-d">689.500.000</span></div>
+            <div class="satir"><span class="satir-a">Net tutar</span><span class="satir-d">689.500.000</span></div>
             <div class="satir"><span class="satir-a">TTM hasılat</span><span class="satir-d">884.571.536</span></div>
             <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%77,95</span></div>
             <div class="satir"><span class="satir-a">f(r)</span><span class="satir-d">0,9459</span></div>
             <div class="satir"><span class="satir-a">K (açık + güncelleme)</span><span class="satir-d">0,85</span></div>
             <div class="satir vurgu"><span class="satir-a">S = 5 × 0,9459 × 0,85</span><span class="satir-d">4,02</span>
-              <span class="satir-alt">K'nın işleyişi burada görünür: oran ASELS'inkinin neredeyse iki katı, ama güncelleme bildirimi olduğu için skor onun altında kalıyor.</span>
-            </div>
+              <span class="satir-alt">K'nın işleyişi burada görünür: oran ASELS'inkinin neredeyse iki katı, ama güncelleme olduğu için skor onun altında kalıyor.</span></div>
           </div>
         </div>
-
         <div class="hesap">
-          <div class="hesap-bas">
-            <span class="hesap-tic">ORGE</span>
-            <span class="hesap-not">18.09.2026 · karşı taraf açık · güncelleme</span>
-            <span class="hesap-skor">0,77 / 5,00</span>
-          </div>
+          <div class="hesap-bas"><span class="hesap-tic">ORGE</span>
+            <span class="hesap-not">18.09.2026 · açık · güncelleme</span>
+            <span class="hesap-skor">0,77 / 5,00</span></div>
           <div class="hesap-g">
             <div class="satir"><span class="satir-a">FY2025 hasılat</span><span class="satir-d">3.495.512.127</span></div>
             <div class="satir"><span class="satir-a">+ 6A2026 hasılat</span><span class="satir-d">2.597.519.683</span></div>
             <div class="satir"><span class="satir-a">− 6A2025 hasılat</span><span class="satir-d">2.069.654.707</span></div>
             <div class="satir"><span class="satir-a">= TTM hasılat</span><span class="satir-d">4.023.377.103</span>
-              <span class="satir-alt">İki rapor da bildirimden önce yayınlanmış; lookahead yok.</span>
-            </div>
+              <span class="satir-alt">İki rapor da bildirimden önce yayınlanmış; lookahead yok.</span></div>
             <div class="satir"><span class="satir-a">863.000 EUR × 55,7981 (TCMB alış)</span><span class="satir-d">48.153.760</span></div>
             <div class="satir"><span class="satir-a">+ TL kalem</span><span class="satir-d">44.645.758</span></div>
             <div class="satir"><span class="satir-a">= Net tutar</span><span class="satir-d">92.799.518</span>
-              <span class="satir-alt">940.002 USD'lik kümülatif proje bedeli <em>toplam_sozlesme</em> etiketli olduğu için toplama girmedi.</span>
-            </div>
+              <span class="satir-alt">940.002 USD'lik kümülatif proje bedeli <em>toplam_sozlesme</em> olduğu için toplama girmedi.</span></div>
             <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%2,31</span></div>
-            <div class="satir"><span class="satir-a">f(r)</span><span class="satir-d">0,1814</span></div>
-            <div class="satir"><span class="satir-a">K (açık + güncelleme)</span><span class="satir-d">0,85</span></div>
+            <div class="satir"><span class="satir-a">f(r) × K (0,1814 × 0,85)</span><span class="satir-d">0,1542</span></div>
             <div class="satir vurgu"><span class="satir-a">S = 5 × 0,1814 × 0,85</span><span class="satir-d">0,77</span>
-              <span class="satir-alt">Rutin bir iş. Tutar 92,8 milyon TL olmasına rağmen şirketin yıllık hasılatının %2,3'ü.</span>
+              <span class="satir-alt">Rutin bir iş: tutar 92,8 milyon TL ama yıllık hasılatın %2,3'ü.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h4>Kapı: skor üretmemek bir arıza değil</h4>
+      <p>Çıkarım ile skor arasında iki aşamalı doğrulama var. <strong>Kapıdan geçmeyen bildirim hiç yayınlanmaz; kısmi yayın yok.</strong> Aşama A çıkarımın kendisini denetler — şemada her sayı ve isim için <strong>birebir alıntı zorunlu</strong>, alıntı ham metinde bulunamıyorsa çıkarım reddedilir; bu, modelin bir sayıyı “hatırlamasını” imkânsız kılar. Aşama B hesaplar koştuktan sonra çalışır ve bulduğu şey model hatası değil veri şüphesidir.</p>
+      <div class="tablo-sar" style="margin-bottom:18px;">
+        <table>
+          <thead><tr><th>KURAL</th><th>NEYİ YAKALAR</th><th class="sag">613'TE KAÇ KEZ</th></tr></thead>
+          <tbody>
+            <tr><td class="k">A1</td><td>Alıntı ham metinde hiç geçmiyor</td><td class="s">0</td></tr>
+            <tr><td class="k">A2</td><td>Değer, kendi alıntısının içinde geçmiyor</td><td class="s">3</td></tr>
+            <tr><td class="k">A3</td><td>Para birimi, kendi alıntısının içinde geçmiyor</td><td class="s">0</td></tr>
+            <tr><td class="k">A4</td><td>“Tutar gizli” işaretli ama tutar listesi dolu</td><td class="s">0</td></tr>
+            <tr><td class="k">A5</td><td>Aynı kalem iki kez sayılmış</td><td class="s">4</td></tr>
+            <tr><td class="k">A6</td><td>Modelin kendi güven beyanı düşük</td><td class="s">0</td></tr>
+            <tr><td class="k">B1</td><td>Hasılat oranı %200'ü aşıyor</td><td class="s">2</td></tr>
+            <tr><td class="k">B2</td><td>Bildirim tarihli TCMB kuru bulunamadı</td><td class="s">4</td></tr>
+            <tr><td class="k">B3</td><td>Aynı tutar iki para biriminde tekrarlanıyor</td><td class="s">3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="not">
+        <div class="et">SKORSUZ KALANLAR</div>
+        <p>480 bildirim skorlandı; <strong>133'ü (%21,7) bilerek skorsuz</strong> — 102'sinde tutar hiç açıklanmamış, 15'inde TTM çözülememiş, 16'sı kapıdan dönmüş.</p>
+        <p style="margin-bottom:0;">Bu bildirimlerde tahmini tutar üretip skor basmak teknik olarak mümkündü. Yapılmadı: <strong>uydurulmuş bir paydayla üretilen skor, skorsuzluktan kötüdür</strong>, çünkü kullanıcı ikisini ayırt edemez.</p>
+      </div>
+    </section>
+
+    <!-- ============================ IV ============================ -->
+    <section>
+      <h2>IV · AMPİRİK SINAMA</h2>
+      <h3>Skor, ölçtüğünü söylediği şeyi ölçüyor mu?</h3>
+      <p>Buraya kadarki her şey bir tasarım savunmasıydı. Asıl soru şu: <strong>bu sayı bir şey mi ölçüyor, yoksa kendi içinde tutarlı bir aritmetik mi?</strong></p>
+
+      <h4>Neden getiri değil hacim</h4>
+      <p>Skorun iddiası dar ve test edilebilir: “bu bildirim şirketin kendi ölçeğine göre büyüktür” der, “hisse yükselecek” demez. Bu yüzden onu getiriyle sınamak kategori hatası olurdu — ki zaten daha önceki kanıt taraması tepkinin öngörülemediğini göstermişti (tüm sinyaller 3 günlük anormal getirinin %6,4'ünü açıklıyor).</p>
+      <p>Muhasebe literatüründe materyalliğin standart sınavı <strong>işlem hacmidir</strong>. Beaver (1968) ve Kim &amp; Verrecchia (1991) çizgisindeki temel ayrım şu: <em>getiri fikir birliğini ölçer, hacim ilgiyi.</em> Yatırımcılar haberin yönü konusunda anlaşamasalar bile — hatta özellikle anlaşamadıklarında — materyal bilgi işlem hacmini artırır. Skor yön iddia etmediğine göre sınavı da hacim olmalı.</p>
+      <p>Ölçü: her bildirim için</p>
+      <div class="formul" style="margin-bottom:18px;">
+        <div class="formul-ana">AV = ln( ort. hacim [t₀, t₀+2] ) − ln( medyan hacim [t₀−60, t₀−11] )</div>
+        <div class="formul-alt">taban medyan (dirençli), pay ortalama (olayı görsün) — kasıtlı asimetri</div>
+      </div>
+      <p>Tahmin penceresinin son 10 günü <strong>bilerek dışarıda</strong>; nedeni birazdan gelen grafikte görünüyor. Sıfır hacimli günler (işlem durdurulmuş) tabana katılmıyor, yoksa medyanı sahte biçimde düşürürlerdi. 423 bildirimde yeterli tahmin penceresi var.</p>
+
+      <h4>Bulgu 1 — Bildirimler gerçekten materyal olay</h4>
+      <figure>
+        <div class="gr-bas">Olay penceresi boyunca anormal işlem hacmi</div>
+        <div class="gr-alt">Normal seviyeden yüzde sapma. Taban = bildirimden 60–11 gün öncesinin medyan hacmi. n = 423 bildirim, 111 hisse. Yıldızlar tek örneklem t sınavı: * p&lt;0,05 · ** p&lt;0,01 · *** p&lt;0,001.</div>
+        <div class="gr-efsane">
+          <span><i class="gr-kutu" style="background:#8c5f00;"></i> Bildirim öncesi</span>
+          <span><i class="gr-kutu" style="background:#2677b2;"></i> Bildirim günü ve sonrası</span>
+        </div>
+        <div class="gr-sar">
+          <div class="gr">
+            <div class="gr-y"><span>%50</span><span>%25</span><span>%0</span></div>
+            <div class="gr-alan">
+              <div class="gr-kilavuz" style="top:0;"></div>
+              <div class="gr-kilavuz" style="top:50%;"></div>
+              <div class="gr-cubuklar">
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀−5 · %+4,7 · t=+1,39</span><span class="gr-yildiz"></span><span class="gr-dolgu" style="height:9.4%; background:#8c5f00;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀−4 · %+10,0 · t=+2,60</span><span class="gr-yildiz">**</span><span class="gr-dolgu" style="height:20.0%; background:#8c5f00;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀−3 · %+12,4 · t=+3,25</span><span class="gr-yildiz">**</span><span class="gr-dolgu" style="height:24.8%; background:#8c5f00;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀−2 · %+13,8 · t=+3,60</span><span class="gr-yildiz">***</span><span class="gr-dolgu" style="height:27.6%; background:#8c5f00;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀−1 · %+10,5 · t=+2,72</span><span class="gr-yildiz">**</span><span class="gr-dolgu" style="height:21.0%; background:#8c5f00;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀ · %+47,3 · t=+10,10</span><span class="gr-etiket">%+47,3</span><span class="gr-yildiz">***</span><span class="gr-dolgu" style="height:94.6%; background:#2677b2;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀+1 · %+28,4 · t=+6,69</span><span class="gr-yildiz">***</span><span class="gr-dolgu" style="height:56.8%; background:#2677b2;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀+2 · %+19,9 · t=+4,84</span><span class="gr-yildiz">***</span><span class="gr-dolgu" style="height:39.8%; background:#2677b2;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀+3 · %+16,2 · t=+3,91</span><span class="gr-yildiz">***</span><span class="gr-dolgu" style="height:32.4%; background:#2677b2;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀+4 · %+15,6 · t=+4,09</span><span class="gr-yildiz">***</span><span class="gr-dolgu" style="height:31.2%; background:#2677b2;"></span></div>
+                <div class="gr-c" tabindex="0"><span class="ipucu">t₀+5 · %+9,9 · t=+2,70</span><span class="gr-yildiz">**</span><span class="gr-dolgu" style="height:19.8%; background:#2677b2;"></span></div>
+              </div>
+            </div>
+            <div class="gr-x">
+              <span>−5</span><span>−4</span><span>−3</span><span>−2</span><span>−1</span>
+              <b>t₀</b><span>+1</span><span>+2</span><span>+3</span><span>+4</span><span>+5</span>
             </div>
           </div>
         </div>
+      </figure>
+      <p>Bildirim günü hacim normalin <strong>%47,3 üzerinde</strong> (t = +10,10). Etki keskin ve sönümlü: ertesi gün %28,4, ikinci gün %19,9, beşinci gün %9,9. Bu, iki tasarım kararını da doğruluyor — <em>t₀</em>'ın “ilk tepki günü” olarak tanımlanması ve <strong>[t₀, t₀+2] penceresinin</strong> tepkinin gövdesini yakalaması.</p>
 
-      </div>
-    </section>
+      <h4>Bulgu 2 — Bilgi, bildirimden önce hareket ediyor</h4>
+      <p>Grafikteki kehribar renkli sütunlar beklenmedik kısım. Hacim, resmî açıklamadan <strong>dört gün önce</strong> yükselmeye başlıyor ve t₀−4 ile t₀−1 arasındaki her gün istatistiksel olarak anlamlı (%10,0 · %12,4 · %13,8 · %10,5; t = 2,60 … 3,60). t₀−5'te anlamlılık kayboluyor (t = 1,39), yani sızıntı penceresi yaklaşık dört gün.</p>
+      <p>Bu, KAP tabanlı bir proje için rahatsız edici ama önemli bir gözlem: <strong>bildirimin kamuya açıklanması, bilginin piyasaya ulaştığı ilk an değil.</strong> Not bunun nedenini iddia etmiyor — sözleşme karşı tarafının kendi duyurusu, sektörel beklenti ya da bilgi sızması, hepsi bu desenle uyumlu ve elimizdeki veri aralarında ayrım yapamaz.</p>
+      <p>Metodolojik sonucu net: tahmin penceresinin son 10 gününün dışarıda bırakılması şart. İçeri alınsaydı “normal” seviye şişer ve tüm anormal hacim ölçümleri sistematik olarak küçülürdü.</p>
 
-    <section>
-      <h2>08 · KAPI</h2>
-      <h3>Skor üretmemek bir arıza değil, ürünün duruşu</h3>
-      <p>Çıkarım ile skor arasında iki aşamalı bir doğrulama kapısı var. <strong>Kapıdan geçmeyen bildirim hiç yayınlanmaz; kısmi yayın yoktur.</strong></p>
-      <h4 style="margin-top:20px;">Aşama A — metin kapısı</h4>
-      <p>Çıkarımın kendisini denetler. Şemada her sayı ve isim için <strong>birebir alıntı alanı zorunludur</strong>; alıntı ham metinde birebir bulunamıyorsa çıkarım reddedilir. Bu, modelin bir sayıyı “hatırlamasını” imkânsız kılar.</p>
-      <div class="tablo-sar" style="margin-bottom:20px;">
+      <h4>Bulgu 3 — Skor bir getiri tahmini değil <span class="cip cip-y" style="margin-left:6px;">DOĞRULANDI</span></h4>
+      <p>Projenin en yüksek sesle savunduğu iddia bu ve veri onu destekliyor: S ile işaretli anormal getiri arasında hiçbir ilişki yok.</p>
+      <div class="tablo-sar" style="margin-bottom:14px;">
         <table>
-          <thead><tr><th>KURAL</th><th>NEYİ YAKALAR</th></tr></thead>
+          <thead><tr><th>İLİŞKİ</th><th class="sag">n</th><th class="sag">PEARSON r</th><th class="sag">SPEARMAN ρ</th><th class="sag">p</th></tr></thead>
           <tbody>
-            <tr><td class="k">A1</td><td>Alıntı ham metinde hiç geçmiyor</td></tr>
-            <tr><td class="k">A2</td><td>Değer, kendi alıntısının içinde geçmiyor</td></tr>
-            <tr><td class="k">A3</td><td>Para birimi, kendi alıntısının içinde geçmiyor</td></tr>
-            <tr><td class="k">A4</td><td>“Tutar gizli” işaretli ama tutar listesi dolu</td></tr>
-            <tr><td class="k">A5</td><td>Aynı kalem iki kez sayılmış</td></tr>
-            <tr><td class="k">A6</td><td>Modelin kendi güven beyanı düşük</td></tr>
+            <tr><td>S ~ CAR(1 gün)</td><td class="s">476</td><td class="s">+0,063</td><td class="s">+0,074</td><td class="s">0,168</td></tr>
+            <tr><td>S ~ CAR(3 gün)</td><td class="s">472</td><td class="s">+0,022</td><td class="s">+0,045</td><td class="s">0,632</td></tr>
+            <tr><td>S ~ CAR(5 gün)</td><td class="s">470</td><td class="s">+0,019</td><td class="s">+0,041</td><td class="s">0,681</td></tr>
+            <tr class="vurgu"><td>S ~ CAR(3 gün), hisse-kümelenmiş</td><td class="s">472</td><td class="s">katsayı +0,0012</td><td class="s">t = +0,52</td><td class="s">0,606</td></tr>
           </tbody>
         </table>
       </div>
-      <h4>Aşama B — tutarlılık kapısı</h4>
-      <p>Hesaplar koştuktan <em>sonra</em> çalışır; buradaki red bir model hatası değil veri şüphesidir, doğrudan elle inceleme kuyruğuna düşer.</p>
-      <div class="tablo-sar" style="margin-bottom:20px;">
+      <p>Bir ürün için bu iyi haber: kart “büyüklük 4,07” dediğinde kullanıcıya örtük bir alım sinyali verilmiyor. Ölçü ile vaat örtüşüyor.</p>
+
+      <h4>Bulgu 4 — Hacimle ilişki: yönü doğru, ispatı yok <span class="cip cip-k" style="margin-left:6px;">KURULAMADI</span></h4>
+      <p>Beklenti şuydu: S büyüdükçe anormal hacim de büyümeli. Ham korelasyon bunu veriyor (Pearson +0,105, p = 0,030; Spearman +0,122, p = 0,011) ve beşlik dilimler kabaca monoton:</p>
+      <div class="tablo-sar" style="margin-bottom:18px;">
         <table>
-          <thead><tr><th>KURAL</th><th>NEYİ YAKALAR</th></tr></thead>
+          <thead><tr><th>SKOR DİLİMİ</th><th class="sag">ORT. S</th><th class="sag">n</th><th class="sag">ORT. AV</th><th class="sag">MEDYAN AV</th></tr></thead>
           <tbody>
-            <tr><td class="k">B1</td><td>Hasılat oranı %200'ü aşıyor — muhtemelen kümülatif bedel ilave sipariş sanıldı ya da payda yanlış</td></tr>
-            <tr><td class="k">B2</td><td>Bildirim tarihli TCMB kuru bulunamadı</td></tr>
-            <tr><td class="k">B3</td><td>Aynı tutar iki para biriminde tekrarlanıyor (TL karşılıkları %5 içinde)</td></tr>
+            <tr><td>D1 (en düşük)</td><td class="s">0,06</td><td class="s">85</td><td class="s">+0,274</td><td class="s">+0,148</td></tr>
+            <tr><td>D2</td><td class="s">0,73</td><td class="s">85</td><td class="s">+0,299</td><td class="s">+0,196</td></tr>
+            <tr><td>D3</td><td class="s">1,38</td><td class="s">84</td><td class="s">+0,342</td><td class="s">+0,279</td></tr>
+            <tr><td>D4</td><td class="s">2,15</td><td class="s">84</td><td class="s">+0,304</td><td class="s">+0,313</td></tr>
+            <tr><td>D5 (en yüksek)</td><td class="s">3,37</td><td class="s">85</td><td class="s">+0,485</td><td class="s">+0,344</td></tr>
           </tbody>
         </table>
       </div>
-      <p>613 bildirimin sonucu: <strong>597'si yayına hazır, 16'sı elle inceleme kuyruğunda.</strong> Kuyruğa düşme nedenleri: B2 kur bulunamadı (4), A5 mükerrer kalem (4), B3 çift para birimi (3), A2 alıntı uyuşmazlığı (3), B1 oran &gt; %200 (2).</p>
-      <div class="not" style="margin-top:20px;">
-        <div class="et">SKORSUZ KALANLAR</div>
-        <p>480 bildirim skorlandı; <strong>133'ü (%21,7) bilinçli olarak skorsuz.</strong> Dağılımı: <strong>102</strong> bildirimde tutar hiç açıklanmamış, <strong>15</strong> bildirimde point-in-time TTM çözülemedi, <strong>16</strong> bildirim kapıdan dönmüş.</p>
-          <p style="margin-bottom:0;">Bu bildirimlerde tahmini bir tutar üretip skor basmak teknik olarak mümkündü. Yapılmadı: <strong>uydurulmuş bir paydayla üretilen skor, skorsuzluktan kötüdür</strong> — çünkü kullanıcı ikisini ayırt edemez.</p>
+      <p>Ama bu korelasyon, olayların <strong>bağımsız</strong> olduğunu varsayıyor — ki değiller. 423 olay 70 hisseye ait; aynı hissenin bildirimleri aynı likidite rejimini paylaşıyor. Standart hataları hisse bazında kümeleyince ve makul kontroller ekleyince tablo şöyle:</p>
+      <div class="tablo-sar" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>SINAV</th><th class="sag">S KATSAYISI</th><th class="sag">STD. HATA</th><th class="sag">t</th><th class="sag">p</th><th class="sag">n</th></tr></thead>
+          <tbody>
+            <tr><td>HC0 (kümelenme yok sayılıyor)</td><td class="s">+0,0623</td><td class="s">0,0280</td><td class="s">+2,22<span class="yildiz">*</span></td><td class="s">0,026</td><td class="s">423</td></tr>
+            <tr><td>Hisse bazında kümelenmiş</td><td class="s">+0,0623</td><td class="s">0,0360</td><td class="s">+1,73</td><td class="s">0,084</td><td class="s">423</td></tr>
+            <tr><td>+ şirket boyutu kontrolü</td><td class="s">+0,0658</td><td class="s">0,0362</td><td class="s">+1,82</td><td class="s">0,069</td><td class="s">423</td></tr>
+            <tr class="vurgu"><td>+ bildirim sıklığı kontrolü</td><td class="s">+0,0411</td><td class="s">0,0391</td><td class="s">+1,05</td><td class="s">0,294</td><td class="s">423</td></tr>
+            <tr><td>Winsorize %1/%99</td><td class="s">+0,0678</td><td class="s">0,0345</td><td class="s">+1,97<span class="yildiz">*</span></td><td class="s">0,049</td><td class="s">423</td></tr>
+            <tr><td>Kriz penceresi hariç</td><td class="s">+0,0640</td><td class="s">0,0369</td><td class="s">+1,74</td><td class="s">0,083</td><td class="s">413</td></tr>
+            <tr><td>En çok bildirimci 3 hisse hariç</td><td class="s">+0,0500</td><td class="s">0,0451</td><td class="s">+1,11</td><td class="s">0,268</td><td class="s">342</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p><strong>Katsayının işareti yedi sınavın yedisinde de pozitif ve büyüklüğü kararlı</strong> (+0,04 … +0,07; her skor puanı hacmi kabaca %4–7 artırıyor). Ama kümelenme hesaba katıldığı anda anlamlılık kayboluyor ve bildirim sıklığı kontrol edilince katsayı üçte bir küçülüyor.</p>
+      <p>Dürüst okuma: <strong>skorun materyallikle ilişkisi bu örneklemde kurulamadı.</strong> Yanlışlanmadı da — 70 kümeyle bu büyüklükte bir etkiyi yakalamak için istatistiksel güç zaten yetersiz. Doğru cümle “destekleyici ama sonuçsuz”, “doğrulandı” değil.</p>
+
+      <h4>Bulgu 5 — %1 tabanı veriyle çelişiyor <span class="cip cip-r" style="margin-left:6px;">ÇÜRÜTÜLDÜ</span></h4>
+      <p>Formül, hasılat oranı %1'in altındaki bildirimlere <em>S = 0,00</em> veriyor. Bunun arkasındaki iddia açıktı: <strong>“%1 altı bir sözleşme olay sayılmaz.”</strong> Veri bunu desteklemiyor.</p>
+      <div class="izgara" style="margin-bottom:16px;">
+        <div><div class="et">TABAN ALTI (r &lt; %1)</div><div class="say" style="color:var(--kir);">+%33,4</div><div class="say-et">n = 58 · anormal hacim · t = +3,39<span class="yildiz">***</span></div></div>
+        <div><div class="et">TABAN ÜSTÜ (r ≥ %1)</div><div class="say">+%41,8</div><div class="say-et">n = 365 · anormal hacim</div></div>
+        <div><div class="et">FARK</div><div class="say">p = 0,51</div><div class="say-et">Welch t = +0,66 · ayırt edilemiyor</div></div>
+        <div><div class="et">ETKİLENEN</div><div class="say">61</div><div class="say-et">skorlanan bildirimin %12,7'si</div></div>
+      </div>
+      <p>Yani taban altındaki bildirimlerde piyasa <strong>anlamlı biçimde hareketleniyor</strong> — hacim üçte bir artıyor, t = +3,39 — ve bu hareket taban üstündekilerden istatistiksel olarak ayırt edilemiyor. Formülün “olay değil” dediği 61 bildirime piyasa “olay” diyor.</p>
+      <p>Daha ince bir kesit aynı sonucu veriyor: r &lt; %0,5 olan 22 bildirimde ortalama AV +0,351 (yani hacim %42 artıyor) — taban üstü ortalamasından bile yüksek. Ancak en uçta, r &lt; %0,1 olan 4 bildirimde AV −0,202'ye dönüyor; dört gözlemle hüküm verilemez ama tabanın tümüyle kaldırılması yerine <strong>çok daha aşağı çekilmesi</strong> yönünde zayıf bir işaret.</p>
+
+      <h4>Bulgu 6 — %100 tavanı pratikte süs <span class="cip cip-m" style="margin-left:6px;">İŞLEVSİZ</span></h4>
+      <p>Tavan, 613 bildirimin <strong>4'ünde</strong> bağladı; skorlanan 480 kaydın yalnızca birinde (CVKMD, r = %118). Oranı %50'yi aşan bildirim sayısı 10 (%2,4). Yani ölçeğin üst dörtte biri neredeyse hiç kullanılmıyor: skorların çeyrekliği 0,64 – 2,30 ve medyanı 1,39 ile <strong>dağılım ölçeğin alt yarısına sıkışmış</strong>.</p>
+
+      <h4>Bulgu 7 — En sağlam bulgu skorda yok: bildirim yorgunluğu <span class="cip cip-y" style="margin-left:6px;">SAĞLAM</span></h4>
+      <p>Bu çalışmanın kümelenmiş standart hatalardan sağ çıkan tek ilişkisi, skorun bileşenlerinden biri değil: <strong>şirketin ne sıklıkta bildirim yaptığı.</strong></p>
+      <div class="tablo-sar" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>BİLDİRİM SIKLIĞI ÜÇLÜĞÜ</th><th class="sag">ORT. YILLIK BİLDİRİM</th><th class="sag">n</th><th class="sag">ORT. AV</th><th class="sag">MEDYAN AV</th></tr></thead>
+          <tbody>
+            <tr><td>D1 — seyrek</td><td class="s">5,9</td><td class="s">147</td><td class="s">+0,409</td><td class="s">+0,360</td></tr>
+            <tr><td>D2 — orta</td><td class="s">15,1</td><td class="s">141</td><td class="s">+0,426</td><td class="s">+0,301</td></tr>
+            <tr class="vurgu"><td>D3 — sık</td><td class="s">29,5</td><td class="s">135</td><td class="s">+0,177</td><td class="s">+0,143</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Yılda ~30 bildirim yapan şirketlerde bildirim başına hacim tepkisi, seyrek bildirimcilerin <strong>yarısından az</strong>. Regresyonda ln(sıklık) katsayısı −0,111, hisse-kümelenmiş <strong>t = −2,48 (p = 0,013)</strong> — bu notta kümelenmeye rağmen ayakta kalan tek katsayı.</p>
+      <p>Yorumu ihtiyatlı olmalı: bu bir <em>şirket</em> özelliği, tek bir bildirimin özelliği değil. Sık bildirim yapan şirketler aynı zamanda daha küçük, daha az likit ya da farklı bir sektörde olabilir. Yine de ürün açısından sonuç açık — <strong>şu an aynı r ve aynı K'ya sahip iki bildirim, biri yılda 30 kez bildirim yapan bir şirketten gelse bile, aynı skoru alıyor.</strong></p>
+
+      <h4>Bulgu 8 — Sistematik boyut yanlılığı yok</h4>
+      <p>Mekanik bir kaygı vardı: <em>r = tutar / hasılat</em> olduğuna göre skor küçük şirketleri kayırabilir. Veri bunu doğrulamıyor. S ile ln(TTM hasılat) arasındaki Pearson korelasyonu −0,057 (p = 0,212); Spearman −0,094 (p = 0,040) ile sınırda. Ama üçlükler <strong>monoton değil</strong> — ortalama S sırasıyla 1,79 · 1,22 · 1,55 — yani küçükten büyüğe düzenli bir eğilim yok. Zayıf bir sıra düzeyi eğilimi var, sistematik kayırma yok.</p>
+
+      <h4>Bulgu 9 — Beta = 1 varsayımı yanlış</h4>
+      <p>Anormal getiri şu an endeksin düz farkı olarak hesaplanıyor, yani her hissenin betası 1 kabul ediliyor. 106 hisse için piyasa modeli tahmin edildiğinde ortalama beta <strong>0,790</strong>, medyan 0,819, çeyreklikler 0,643 – 0,959 ve <strong>106 hissenin 89'u (%84) 1'in altında</strong>. Piyasa hareketi sistematik olarak fazla çıkarılıyor. Bu, bu nottaki hacim bulgularını etkilemiyor (hacim ölçümü betadan bağımsız) ama Modül C'nin getiri panelini etkiliyor.</p>
     </section>
 
+    <!-- ============================ V ============================ -->
     <section>
-      <h2>09 · DIŞARIDA BIRAKILANLAR</h2>
-      <h3>Skora girmeyen üç aday ve gerekçeleri</h3>
+      <h2>V · SONUÇLAR</h2>
+      <h3>Veriden çıkan dört değişiklik</h3>
       <div class="yigin">
         <div>
-          <h4>Devre kesici geçmişi <span class="cip cip-m" style="margin-left:6px;">EN GÜÇLÜ SİNYAL</span></h4>
-          <p>İstatistiksel olarak elimizdeki en güçlü değişken bu (−2,48 puan, t = −3,13) ve skora <em>girmiyor</em>. Gerekçe: bu bildirimin değil <strong>hissenin</strong> özelliği. Skora katılsaydı “neden 3,2?” sorusunun cevabı “çünkü hisse spekülatif” olurdu ve iki farklı risk tek sayıya gömülürdü. Bunun yerine Modül B'de ayrı bir bayrak olarak duruyor: <span class="cip cip-y">TEMİZ</span> (V₉₀ ≤ 2 ve V₅ = 0) · <span class="cip cip-k">HAREKETLİ</span> · <span class="cip cip-r">TEDBİRLİ</span> (V₉₀ &gt; 6 veya V₅ ≥ 2).</p>
+          <h4 style="margin-top:0;">1 · Taban %1'den aşağı çekilmeli</h4>
+          <p>Bulgu 5 doğrudan bunu söylüyor. Taban altındaki bildirimler piyasada anlamlı hacim üretiyor ve taban üstündekilerden ayırt edilemiyor. Öneri: tabanı <strong>%0,1 – %0,25 bandına</strong> indirmek ve <em>f(r)</em>'yi yeniden ölçeklemek. Bu, şu an 0,00 alan 61 bildirimi ölçeğe geri sokar. Tabanı tümüyle kaldırmak önerilmiyor — bir alt sınır olmadan logaritma patlar ve r → 0 tanımsızlaşır.</p>
         </div>
         <div>
-          <h4>Sözleşme süresi</h4>
-          <p>İlk tasarımda <em>w₃ = 0,3</em> ağırlığıyla vardı. İki nedenle düştü: KAP şablonu yalnızca <strong>başlangıç</strong> tarihini veriyor, bitiş tarihini değil; ve sürenin tepkiyle ilişkili olduğuna dair hiçbir kanıt bulunamadı. Ölçülemeyen bir şeye ağırlık vermek, skoru gürültüyle seyreltmekten başka işe yaramazdı.</p>
+          <h4 style="margin-top:0;">2 · Tavan %50'ye çekilmeli</h4>
+          <p>Bulgu 6: mevcut tavan 613 bildirimde 4 kez bağlıyor, ölçeğin üst dörtte biri ölü. Tavan %50'ye indirilirse 10 bildirim (%2,4) tavana dayanır ve dağılım ölçeğin tamamına yayılır. Maliyeti kabul edilmeli: %50 ile %120 arasındaki ayrım kaybolur — ama o aralıkta zaten 5 gözlem var.</p>
         </div>
         <div>
-          <h4>Bildirim öncesi fiyat sürüklenmesi</h4>
-          <p>Örneklemin ilk yarısında güçlü görünüyordu (t = 3,34), ikinci yarısında kayboldu (t = 0,32). Alt dönemler arasında ayakta kalmayan bir katsayı, aşırı uyumdan (overfitting) ayırt edilemez. Dışarıda bırakıldı.</p>
+          <h4 style="margin-top:0;">3 · Bildirim sıklığı görünür olmalı — ama skora girmemeli</h4>
+          <p>Bulgu 7 en sağlam ilişki, dolayısıyla onu yok saymak zor. Yine de skora katılmamalı, çünkü aynı gerekçe devre kesici için de geçerliydi: bu <strong>şirketin</strong> özelliği, bildirimin değil. Skora girerse “neden 2,1?” sorusunun cevabı “çünkü bu şirket çok konuşuyor” olur. Doğru yer Modül B'nin yanında <strong>üçüncü bir bağlam etiketi</strong>: “bu şirket son 12 ayda 30 bildirim yaptı”.</p>
         </div>
         <div>
-          <h4>Güncelleme bildirimi — çarpan değil, etiket</h4>
-          <p>Güncelleme olmanın kendi başına 3 günlük tepkiye etkisi <strong>~%0,10</strong>; yani pratikte sıfır. Bu yüzden ayrı bir ceza terimi değil, yalnızca K'nın içindeki güvenilirlik boyutu olarak yaşıyor.</p>
+          <h4 style="margin-top:0;">4 · Modül C piyasa modeline geçmeli</h4>
+          <p>Bulgu 9: hisselerin %84'ünde beta &lt; 1. Tepki paneli beta düzeltmesi olmadan sistematik olarak yanlı. Düzeltmenin kendisi de gürültülü olacak (medyan R² 0,12) ve bu, panelde gösterilen belirsizlik aralığının genişlemesi anlamına gelir — yani daha dürüst bir panel.</p>
         </div>
+      </div>
+      <div class="not" style="margin-top:18px;">
+        <div class="et">DEĞİŞMEYECEK OLAN</div>
+        <p style="margin-bottom:0;">Skorun bir getiri tahmini olmaması, tutar yoksa skor üretilmemesi ve kapının katı kalması bu sınavdan güçlenerek çıktı. Bulgu 3 birincisini doğrudan doğruladı; ikincisi ve üçüncüsü ise Bulgu 4'ün zayıflığıyla birlikte daha da savunulabilir hâle geldi — <strong>ölçünün kendisi belirsizken, belirsizliği kullanıcıdan saklamamak tek tutarlı duruş.</strong></p>
       </div>
     </section>
 
+    <!-- ============================ VI ============================ -->
     <section>
-      <h2>10 · MODÜL C</h2>
-      <h3>Tek sayı yerine dağılım</h3>
-      <p>Geçmiş tepki paneli, benzer bildirimlerin <strong>[t₀, t₀+2] penceresindeki anormal getirilerini</strong> medyan ve çeyrekliklerle, örneklem boyutuyla birlikte raporlar. Ham getiri değil <strong>anormal getiri</strong> kullanılır — XU100'ün aynı penceredeki hareketinden arındırılmış.</p>
-      <ul>
-        <li><strong>Ortalama bilerek yok.</strong> 20 günlük ortalamalarımız (+%2,82) medyanlarla (+%2,13 / −%2,51) çelişiyor; yani ortalama birkaç uç gözleme ait. Ortalamayı yayınlamak, tipik bir yatırımcının göreceği şeyi yanlış anlatır.</li>
-        <li><strong>Çeyreklikler ara değer üretmez.</strong> En yakın sıra istatistiği gösterilir: gerçekten gözlenmiş bir getiriyi göstermek, iki gözlem arasında hiç yaşanmamış bir sayı uydurmaktan dürüsttür.</li>
-        <li><strong>Pencere t₀'ı içerir.</strong> İlk tasarım <em>t₀+1…t₀+3</em> diyordu, ama t₀ zaten “ilk tepki günü” olarak tanımlıydı — asıl tepki günü pencerenin dışında kalıyordu. Hangi tanımın kullanıldığı her satırda saklanır.</li>
-        <li><strong>İşlem takvimi sabit liste değil.</strong> XU100 kapanışı olan gün seans var demektir; elle tutulan tatil listeleri eskir.</li>
-      </ul>
-      <p>27.581 kapanış üzerinden 613 bildirimin 612'sinde tepki hesaplandı. Ölçülen dağılım: ortalama +%0,69, medyan +%0,41, standart sapma %6,86, aralık −%30,2 … +%30,2.</p>
-      <div class="uyar" style="margin-top:18px;">
-        <div class="et">BİLİNEN KİRLİLİK</div>
-        <p style="margin-bottom:0;">Örneklem 16.09.2026 Pusula/Tera fon krizini kapsıyor (XU100 −%5,54) ve 54 bildirimin tepki penceresi bu stres gününe değiyor. Ayrıca bildirimlerin <strong>%92'si</strong> son 90 günde en az bir kez VBTS tedbiri görmüş hisselerden geliyor — yani “temiz tahta” bu evrende istisna.</p>
-      </div>
-    </section>
-
-    <section>
-      <h2>11 · SINIRLAR</h2>
+      <h2>VI · SINIRLAR</h2>
       <h3>Bu notun kendi zayıf noktaları</h3>
       <ul>
-        <li><strong>Örneklem küçük ve tek rejimli.</strong> 613 bildirim, 12 ay, tek bir piyasa rejimi. Katsayılar bu pencereye bakılarak seçildi; farklı bir faiz ya da likidite ortamında yeniden kalibrasyon gerekir. Ağırlıklar bu yüzden koda gömülü değil, ayarlanabilir bir yapıda tutuluyor.</li>
-        <li><strong>Beta = 1 varsayımı kırık.</strong> Anormal getiri şu an endeksin düz farkı olarak hesaplanıyor, ama evren betası ortalama 0,79 (medyan 0,82). 601 bildirimin 202'sinde fark 1 puanı aşıyor, 50'sinde işaret değişiyor. Piyasa modeline geçilmeli — medyan R² yalnızca 0,12 olduğu için bu düzeltmenin kendisi de gürültülü olacak.</li>
-        <li><strong>Doğruluk %100 değil.</strong> Elle etiketlenmiş 50 bildirimlik altın kümede çıkarımın <strong>47'si tam doğru (%94)</strong>, 2'si kısmi, 1'i yanlış. Skor <strong>49/50'de</strong> elle etiketle birebir aynı. Üç sapmanın üçünde de kapı doğru davrandı; tek skor sapması güvenli yönde, yani model yayın yerine elle kuyruğa düşürdü.</li>
-        <li><strong>“Benzer bildirim” tanımı henüz sabit değil.</strong> Modül C'nin akran grubunu neye göre seçtiği (sektör, büyüklük bandı, skor aralığı) kalibrasyonun açık maddesi.</li>
-        <li><strong>Skorun bir üst sınırı yoktur ki test edilsin.</strong> %100 üstü tüm oranlar 5,00'e düşer; 613 bildirimde bu yalnızca bir kez gerçekleşti (CVKMD, r = %118).</li>
+        <li><strong>Örneklem küçük ve tek rejimli.</strong> 613 bildirim, 12 ay, tek bir piyasa rejimi, 70–111 küme. Bulgu 4'ün sonuçsuz kalmasının başlıca nedeni bu; daha uzun bir arşivle aynı analiz farklı sonuç verebilir.</li>
+        <li><strong>Hacim ölçüsü tek bir tanıma dayanıyor.</strong> AV'nin taban penceresi, logaritmik dönüşümü ve olay penceresi makul ama seçilmiş kararlar. Alternatif tanımlar (turnover, ölçeklenmiş hacim, piyasa hacmiyle düzeltilmiş hacim) denenmedi.</li>
+        <li><strong>Nedensellik iddiası yok.</strong> Bulgu 2'deki bildirim öncesi hacim artışı sızıntı, beklenti ya da karşı tarafın kendi duyurusu olabilir; elimizdeki veri ayrım yapamaz.</li>
+        <li><strong>Bildirim sıklığı bir şirket özelliği.</strong> Bulgu 7'deki ilişki sektör, likidite ve piyasa değeri gibi gözlenmeyen şirket özellikleriyle karışık olabilir; hisse sabit etkileriyle ayrıştırılmadı.</li>
+        <li><strong>Çıkarım doğruluğu %100 değil.</strong> Elle etiketlenmiş 50 bildirimlik altın kümede çıkarımın 47'si tam doğru (%94), 2'si kısmi, 1'i yanlış; skor 49/50'de elle etiketle birebir aynı. Üç sapmanın üçünde de kapı doğru davrandı ve tek skor sapması güvenli yöndeydi.</li>
+        <li><strong>“Benzer bildirim” tanımı hâlâ açık.</strong> Modül C'nin akran grubunu neye göre seçtiği (sektör, büyüklük bandı, skor aralığı) kalibrasyonun kapanmamış maddesi.</li>
+        <li><strong>p değerleri normal yaklaşımıyla.</strong> scipy bağımlılık değil; n &gt; 400 ve serbestlik derecesi yüksek olduğundan fark ihmal edilebilir, ama her tabloda n basılıyor ki kontrol edilebilsin.</li>
       </ul>
+    </section>
+
+    <!-- ============================ VII ============================ -->
+    <section>
+      <h2>VII · YENİDEN ÜRETİLEBİLİRLİK</h2>
+      <h3>Her sayı tek komutla yeniden üretilebilir</h3>
+      <p>Bu nottaki bütün istatistikler tek bir betikten çıkıyor ve hiçbir ücretli çağrı yapmıyor:</p>
+      <div class="formul" style="text-align:left; margin-bottom:18px;">
+        <div class="formul-ana" style="font-size:14px; font-weight:500;">python scripts/skor_gecerlilik.py</div>
+      </div>
+      <p>Skorun kendisi <code>src/kap_radar/skor.py</code> içinde saf fonksiyon olarak duruyor: aynı girdi her koşuda aynı çıktıyı verir, LLM kanaati içermez. Her skorun yanında çıkarımın yapıldığı ham cümle alıntısıyla saklanır ve arayüzde gösterilir; tek tıkla KAP'taki orijinal bildirime gidilip sayı doğrulanabilir.</p>
+      <p>Veri hattının kaynakları: KAP bildirim API'si (613 bildirim, 935 finansal rapor), TCMB günlük kur arşivi (5.610 satır), yfinance günlük kapanış ve hacim (27.607 satır, 111 hisse + XU100).</p>
     </section>
 
     <hr class="ayr">
 
     <section class="kunye" style="margin-bottom:0;">
       <div class="et">KÜNYE</div>
-      <p>Her skorun yanında, çıkarımın yapıldığı ham cümle alıntısıyla birlikte saklanır ve arayüzde gösterilir; tek tıkla KAP'taki orijinal bildirime gidilip sayı doğrulanabilir. Aynı girdi her koşuda aynı çıktıyı verir.</p>
-      <p>Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır. Bu bir kişisel araştırma projesidir, <strong>yatırım tavsiyesi değildir</strong> ve hiçbir alım-satım önerisi içermez.</p>
+      <p><strong>Hüseyin Dinçer</strong> — proje tasarımı, kapsam ve metodoloji kararları, veri hattı mimarisi, tüm karar onayları.<br>
+      <strong>Claude (Opus 5)</strong> — uygulama, istatistiksel analiz, bu notun yazımı. Depoda ortak yazarlık <code>Co-Authored-By</code> ile işaretli.</p>
+      <p>Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır. Bu bir kişisel araştırma projesidir, <strong>yatırım tavsiyesi değildir</strong> ve hiçbir alım-satım önerisi içermez. Bulgular 21 Eylül 2026 tarihli veri kesitine aittir.</p>
     </section>
 
   </main>
