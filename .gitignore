@@ -35,3 +35,8 @@ data/altin_kume_ham.txt
 Thumbs.db
 .vscode/
 .idea/
+
+# Site (Next.js) — .env.* kurali ornek dosyayi da yakaliyordu
+!.env.local.example
+*.tsbuildinfo
+next-env.d.ts
