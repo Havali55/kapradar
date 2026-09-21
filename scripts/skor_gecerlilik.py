@@ -229,6 +229,32 @@ def anormal_hacim(olay, hac, takvim) -> pd.Series:
     return pd.Series(out, index=olay.index, name="av")
 
 
+# Tahta kalitesi vekili. VBTS verisi henüz çekilmedi (Adım 11), bu
+# yüzden spekülatif tahtayı limit yakını hareket sıklığından okuyoruz:
+# BIST günlük limit ±%10, |getiri| >= %9 olan gün limit yakınıdır.
+LIMIT_ESIGI = 0.09
+LIMIT_GERI_GUN = 90
+
+
+def limit_sayaci(olay, fiyat, takvim) -> pd.Series:
+    """Olaydan önceki 90 günde kaç kez limit yakını hareket olmuş."""
+    ix = {g: i for i, g in enumerate(takvim)}
+    getiri = {t: g.set_index("tarih")["kapanis_duzeltilmis"].astype(float)
+                 .sort_index().pct_change()
+              for t, g in fiyat.groupby("ticker", sort=False)}
+    out = []
+    for _, o in olay.iterrows():
+        if pd.isna(o["t0"]) or o["t0"] not in ix or o["ticker"] not in getiri:
+            out.append(np.nan)
+            continue
+        i0 = ix[o["t0"]]
+        g = getiri[o["ticker"]].reindex(
+            [takvim[j] for j in range(max(0, i0 - LIMIT_GERI_GUN), i0)]).dropna()
+        g = g[g.abs() < AZAMI_GUNLUK_GETIRI]   # bedelsiz sıçramalarını ele
+        out.append(float((g.abs() >= LIMIT_ESIGI).sum()) if len(g) >= 30 else np.nan)
+    return pd.Series(out, index=olay.index, name="limit90")
+
+
 def betalar(fiyat, endeks) -> pd.Series:
     e = endeks.set_index("tarih")["xu100_kapanis"].astype(float)
     er = np.log(e).diff()
@@ -287,6 +313,7 @@ def main() -> int:
     takvim = list(endeks["tarih"])
     hac = hacim_serileri(fiyat)
     olay["av"] = anormal_hacim(olay, hac, takvim)
+    olay["limit90"] = limit_sayaci(olay, fiyat, takvim)
     for k in ("etki_skoru", "ciro_orani", "net_tutar_tl", "car_1g", "car_3g", "car_5g"):
         olay[k] = pd.to_numeric(olay[k], errors="coerce")
     olay["abs_car3"] = olay["car_3g"].abs()
@@ -410,7 +437,55 @@ def main() -> int:
         print("\n" + dilim(s, "etki_skoru", "ln_ttm", 3).to_string(float_format=f4))
         print("\n  -> Uclukler monoton DEGIL; sistematik kucuk-sirket kayirmasi yok.")
 
-        bas("9 · BETA = 1 VARSAYIMININ MALİYETİ")
+        bas("9 · SPEKÜLATİF TAHTA — ölçü oynatılan tahtalarda kırılıyor mu?")
+        print("  Itiraz: BIST'te hacim imal edilebiliyor. Oyleyse 'anormal")
+        print("  hacim = materyallik' esitligi spekulatif tahtalarda kirilir.\n")
+        sv2 = sv.dropna(subset=["limit90"])
+        print(f"  Evren: ort {sv2['limit90'].mean():.1f} limit-yakini gun "
+              f"(medyan {sv2['limit90'].median():.0f}) · "
+              f"temiz %{(sv2['limit90'] == 0).mean()*100:.1f} · "
+              f"5+ gun %{(sv2['limit90'] >= 5).mean()*100:.1f}\n")
+        print(f"  {'TAHTA':<22} {'n':>4} {'hisse':>6} {'S kats':>9} {'t':>7} {'hacim':>9}")
+        for ad, grup in (("temiz (<=1)", sv2[sv2["limit90"] <= 1]),
+                         ("orta (2-4)", sv2[(sv2["limit90"] > 1) & (sv2["limit90"] < 5)]),
+                         ("spekulatif (>=5)", sv2[sv2["limit90"] >= 5])):
+            if len(grup) < 40:
+                print(f"  {ad:<22} {len(grup):>4}  (cok az, atlandi)")
+                continue
+            r_ = ols(grup["av"], grup[["etki_skoru"]], grup["ticker"], ["S"]).loc["S"]
+            print(f"  {ad:<22} {len(grup):>4} {grup['ticker'].nunique():>6} "
+                  f"{r_['katsayi']:>+9.4f} {r_['t']:>+7.2f}{yildiz(r_['t']):<3} "
+                  f"%{(math.exp(grup['av'].mean())-1)*100:>+7.1f}")
+        d3 = sv2.dropna(subset=["ln_ttm"]).copy()
+        d3["spek"] = (d3["limit90"] >= 5).astype(float)
+        d3["S_x_spek"] = d3["etki_skoru"] * d3["spek"]
+        print("\n  Etkilesim modeli:")
+        print(ols(d3["av"], d3[["etki_skoru", "spek", "S_x_spek", "ln_ttm"]],
+                  d3["ticker"], ["S", "spekulatif", "S x spekulatif", "ln(TTM)"])
+              .to_string(float_format=f4))
+        print("\n  -> Spekulatif tahtalar ayristirilinca S'nin ana etkisi")
+        print("     ANLAMLI hale geliyor (havuzlanmista t=+1,05 idi).")
+
+        bas("10 · BÜYÜK HABER DAHA ÇOK FİYATLANIYOR MU?")
+        for ad, grup in (("S >= 3", s[s["etki_skoru"] >= 3]),
+                         ("S <  1", s[s["etki_skoru"] < 1])):
+            car = grup["car_3g"].dropna().to_numpy(float)
+            if len(car) < 10:
+                continue
+            t_, p_ = tek_orneklem(car)
+            print(f"  {ad:<8} n={len(car):>3}  ort={car.mean():+.4f}  "
+                  f"medyan={np.median(car):+.4f}  pozitif=%{(car > 0).mean()*100:.0f}  "
+                  f"t={t_:+.2f}{yildiz(t_)}")
+        print("  -> Iki grup ayni: buyuk haber de kucuk haber de fiyatlanmiyor.")
+
+        bas("11 · SPEKÜLATİF TAHTA: OYNAKLIK VAR, YÖN YOK")
+        sc2 = sv2.dropna(subset=["car_3g"])
+        for ad, y in (("|CAR3|", sc2["abs_car3"]), ("CAR3 isaretli", sc2["car_3g"])):
+            r_ = ols(y, sc2[["limit90"]], sc2["ticker"], ["limit90"]).loc["limit90"]
+            print(f"  limit90 ~ {ad:<14} katsayi={r_['katsayi']:+.5f}  "
+                  f"t={r_['t']:+.2f}{yildiz(r_['t'])}  p={r_['p']:.4f}")
+
+        bas("12 · BETA = 1 VARSAYIMININ MALİYETİ")
         b = betalar(fiyat, endeks)
         print(f"  n={len(b)} hisse  ort={b.mean():.3f} medyan={b.median():.3f} "
               f"C1={b.quantile(0.25):.3f} C3={b.quantile(0.75):.3f}")
