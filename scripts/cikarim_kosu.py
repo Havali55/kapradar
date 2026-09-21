@@ -4,6 +4,7 @@ Kullanım:
     python scripts/cikarim_kosu.py --adet 20                # KURU: ne olacağını yaz
     python scripts/cikarim_kosu.py --adet 20 --calistir     # gerçek çağrı, para harcar
     python scripts/cikarim_kosu.py --kaynak altin --adet 50 --katman2 --calistir
+    python scripts/cikarim_kosu.py --kaynak kalan --adet 200 --katman2 --calistir
 
 **Varsayılan kuru koşudur.** `--calistir` verilmeden tek bir ücretli
 çağrı yapılmaz; kazara harcama mümkün değil. Kuru koşu ölçülmüş
@@ -11,6 +12,12 @@ karakter sayılarından maliyet tahmini basar.
 
 `--kaynak altin` seçilirse çıkarımlar elle etiketlenmiş altın kümeyle
 karşılaştırılır (Adım 13): doğruluk ölçümünün referansı orası.
+
+`--kaynak kalan` yalnızca **hiç çıkarımı olmayan** bildirimleri seçer;
+yarıda kesilen koşuyu para harcamadan sürdürmenin tek doğru yolu budur.
+`--kaynak ilk` kaldığı yeri bilmez, yeniden koşarsa çıkarılmış olanları
+ikinci kez ücretlendirir. Offset ile de yapılmaz: eksikler bitişik
+olmak zorunda değil (pilot koşusu kuyruğun ortasında delik bırakmıştı).
 """
 
 from __future__ import annotations
@@ -72,6 +79,19 @@ def bildirimleri_sec(baglanti, kaynak: str, adet: int) -> list[tuple]:
                 "where kap_id = any(%s) order by yayin_zamani limit %s",
                 (kap_idler, adet),
             )
+        elif kaynak == "kalan":
+            # Çıkarımı olmayanlar. Yarıda kesilen koşuyu sürdürmenin tek
+            # güvenli yolu: seçim DB'nin gerçek durumuna bakıyor, sayaca
+            # değil. Zaten çıkarılmış bir bildirim ikinci kez ücretli
+            # çağrılamaz.
+            imlec.execute(
+                f"select {ALANLAR} from public.bildirim b "
+                "where ham_metin_tr is not null and ham_metin_tr <> '' "
+                "and not exists ("
+                "  select 1 from public.cikarim c where c.kap_id = b.kap_id"
+                ") order by yayin_zamani limit %s",
+                (adet,),
+            )
         else:
             # Deterministik: aynı komut aynı bildirimleri seçsin ki iki
             # koşu karşılaştırılabilir olsun.
@@ -112,7 +132,9 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     ayristirici = argparse.ArgumentParser(description="LLM çıkarım koşusu")
-    ayristirici.add_argument("--kaynak", choices=("altin", "ilk"), default="ilk")
+    ayristirici.add_argument(
+        "--kaynak", choices=("altin", "ilk", "kalan"), default="ilk"
+    )
     ayristirici.add_argument("--adet", type=int, default=20)
     ayristirici.add_argument("--katman2", action="store_true")
     ayristirici.add_argument(
@@ -213,8 +235,11 @@ def main() -> int:
                     f"{karar.red_nedeni or ''}",
                     flush=True,
                 )
-                if sira % 20 == 0:
-                    baglanti.commit()
+                # Her satırda commit. 20'de bir commit 2026-09-20'de
+                # 18 ücretli çağrıyı çöpe attı: süreç düştüğünde açık
+                # işlem geri alındı, para harcanmış ama satır yoktu.
+                # Commit'in maliyeti LLM çağrısının yanında görünmez.
+                baglanti.commit()
             baglanti.commit()
         finally:
             for c in cikaricilar:
