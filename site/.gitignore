@@ -1,0 +1,4 @@
+.vercel
+.env*
+# Depo kokundeki kuralin aynisi: ornek dosya repoda kalir.
+!.env.local.example

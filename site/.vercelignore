@@ -1,0 +1,10 @@
+# Deploy kökü `site/` olduğu için depo kökündeki .gitignore bu dizine
+# uygulanmıyor: yerel `.next` ve `node_modules` aksi hâlde yüklenirdi.
+# Vercel bağımlılıkları kendi kurup kendi derliyor.
+node_modules
+.next
+out
+*.tsbuildinfo
+
+# Ortam değişkenleri Vercel projesinde tanımlı; dosya olarak gitmez.
+.env.local
