@@ -1,9 +1,11 @@
 "use client";
 
 import type { Bildirim } from "@/lib/veri";
-import { skorRengi, tahtaRenk } from "@/lib/skor";
+import { siklikRenk, skorRengi, tahtaRenk } from "@/lib/skor";
 import {
   KADEME_ADI,
+  SIKLIK_ADI,
+  SIKLIK_NOTU,
   TAHTA_ADI,
   TAHTA_NOTU,
   buyukTl,
@@ -130,7 +132,7 @@ export default function Kart({
 
           {/* ------------------------------------------- B · tahta */}
           <section className="modul">
-            <h3 className="modul-et mono">B · TAHTA KALİTESİ</h3>
+            <h3 className="modul-et mono">B · ŞİRKET BAĞLAMI</h3>
             {tahta ? (
               <>
                 <div className="tahta-satiri">
@@ -154,6 +156,28 @@ export default function Kart({
                 Bildirim anında yeterli fiyat geçmişi olmadığı için tahta
                 kalitesi hesaplanamadı.
               </p>
+            )}
+
+            {/* İkisi de hissenin/şirketin özelliği, bildirimin değil —
+                ikisi de skora girmiyor. Aynı modülde durmalarının sebebi
+                bu; kullanıcı "bunlar skorun parçası mı?" diye sormasın. */}
+            {b.siklik && (
+              <div className="baglam-ek">
+                <div className="tahta-satiri">
+                  <span
+                    className="tahta-nokta"
+                    style={{ background: `var(--${siklikRenk(b.siklik)})` }}
+                    aria-hidden="true"
+                  />
+                  <span className="baglam-ad">{SIKLIK_ADI[b.siklik]}</span>
+                  <span className="baglam-sayi mono">
+                    {b.bildirim_sikligi} bildirim / 12 ay
+                  </span>
+                </div>
+                <p className="tahta-not" style={{ margin: "7px 0 0" }}>
+                  {SIKLIK_NOTU[b.siklik]}
+                </p>
+              </div>
             )}
           </section>
 

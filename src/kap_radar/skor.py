@@ -36,6 +36,7 @@ __all__ = [
     "Agirliklar",
     "MEGA_ESIGI",
     "ONEMLI_ESIGI",
+    "SiklikBayragi",
     "TahtaBayragi",
     "TepkiPaneli",
     "VARSAYILAN_AGIRLIKLAR",
@@ -44,6 +45,7 @@ __all__ = [
     "guvenilirlik",
     "kademe",
     "net_tutar_tl",
+    "siklik_bayragi",
     "tahta_bayragi",
     "tepki_paneli",
 ]
@@ -279,6 +281,45 @@ class TahtaBayragi(Enum):
     TEMIZ = "temiz"
     HAREKETLI = "hareketli"
     TEDBIRLI = "tedbirli"
+
+
+class SiklikBayragi(Enum):
+    """Şirketin bildirim sıklığı — bildirim yorgunluğu bağlamı."""
+
+    SEYREK = "seyrek"
+    ORTA = "orta"
+    SIK = "sik"
+
+
+# Eşikler arşiv penceresindeki (12 ay) bildirim sayısının ÜÇLÜK
+# kesimlerinden: 613 bildirimi %33,9 / %33,1 / %33,0 diye bölüyor.
+# Adım 16'nın kendi analizi de sıklığı üçlüklere ayırmıştı, aynı kesim.
+# Şirket sayısı dağılımı çok daha çarpık (87 / 16 / 8): birkaç sık
+# bildirimci bildirimlerin üçte birini tek başına üretiyor.
+SIKLIK_ORTA_ESIGI = 8
+SIKLIK_SIK_ESIGI = 18
+
+
+def siklik_bayragi(adet: int) -> SiklikBayragi:
+    """Son 12 ayda `adet` bildirim yapmış şirketin yorgunluk kademesi.
+
+    **Skora girmez.** Adım 16'nın en sağlam bulgusu buydu — ln(sıklık)
+    katsayısı −0,111, hisse-kümelenmiş t=−2,48 (p=0,013); yılda ~30
+    bildirim yapan şirketlerde bildirim başına tepki seyreklerin
+    yarısından az. Skora katılmamasının sebebi tahta bayrağıyla aynı:
+    bu *şirketin* özelliği, bildirimin değil. Skora gömülseydi "neden
+    2,4?" sorusunun cevabı "çünkü şirket çok bildirim yapıyor" olurdu.
+
+    Ölçü arşiv penceresinin tamamından alınıyor, bildirim anına kadar
+    olan kısımdan değil. Bu bilinçli: gösterilen şey bir tahmin girdisi
+    değil, şirketi tanıtan betimleyici bir etiket. Arayüz de "son 12
+    ayda N bildirim" diyerek pencereyi açıkça söylüyor.
+    """
+    if adet >= SIKLIK_SIK_ESIGI:
+        return SiklikBayragi.SIK
+    if adet >= SIKLIK_ORTA_ESIGI:
+        return SiklikBayragi.ORTA
+    return SiklikBayragi.SEYREK
 
 
 def tahta_bayragi(*, v90: int, v5: int) -> TahtaBayragi:

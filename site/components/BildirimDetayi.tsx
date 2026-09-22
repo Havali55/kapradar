@@ -1,7 +1,17 @@
 import type { Bildirim } from "@/lib/veri";
-import { F_ORAN_METNI, fOran, skorRengi, tahtaRenk } from "@/lib/skor";
+import {
+  F_ORAN_METNI,
+  SIKLIK_ORTA_ESIGI,
+  SIKLIK_SIK_ESIGI,
+  fOran,
+  siklikRenk,
+  skorRengi,
+  tahtaRenk,
+} from "@/lib/skor";
 import {
   KADEME_ADI,
+  SIKLIK_ADI,
+  SIKLIK_NOTU,
   SKORA_GIREN,
   TAHTA_ADI,
   TAHTA_NOTU,
@@ -167,7 +177,7 @@ export default function BildirimDetayi({
       {/* --------------------------------------------- tahta */}
       {b.tahta && (
         <>
-          <h3 className="bolum-bas mono">B · TAHTA KALİTESİ</h3>
+          <h3 className="bolum-bas mono">B · ŞİRKET BAĞLAMI · TAHTA</h3>
           <div className="tahta-satiri">
             <span
               className="tahta-nokta"
@@ -191,6 +201,41 @@ export default function BildirimDetayi({
             Tahta kalitesi skora girmez — bu bildirimin değil hissenin
             özelliğidir. Vekil ölçü: günlük getirisi ±%9&apos;u aşan gün sayısı
             (BIST limiti ±%10).
+          </p>
+        </>
+      )}
+
+      {/* ------------------------------------- bildirim yorgunluğu */}
+      {b.siklik && (
+        <>
+          <h3 className="bolum-bas mono">B · ŞİRKET BAĞLAMI · BİLDİRİM SIKLIĞI</h3>
+          <div className="tahta-satiri">
+            <span
+              className="tahta-nokta"
+              style={{ background: `var(--${siklikRenk(b.siklik)})` }}
+              aria-hidden="true"
+            />
+            <span className="tahta-ad">{SIKLIK_ADI[b.siklik]}</span>
+          </div>
+          <p className="tahta-not">{SIKLIK_NOTU[b.siklik]}</p>
+          <dl className="kutu">
+            <div className="kutu-satir">
+              <dt>Şirketin arşiv penceresindeki bildirimi (12 ay)</dt>
+              <dd className="mono">{b.bildirim_sikligi ?? "—"}</dd>
+            </div>
+            <div className="kutu-satir">
+              <dt>Kademe eşikleri</dt>
+              <dd className="mono">
+                seyrek ≤ {SIKLIK_ORTA_ESIGI - 1} · sık ≥ {SIKLIK_SIK_ESIGI}
+              </dd>
+            </div>
+          </dl>
+          <p className="tutar-yok-not">
+            Bildirim sıklığı skora girmez — tahta kalitesi gibi bu da
+            şirketin özelliği, bildirimin değil. Ölçümde ln(sıklık)
+            katsayısı −0,111, hisse-kümelenmiş t = −2,48 (p = 0,013): sık
+            bildirim yapan şirketlerde bildirim başına tepki belirgin
+            biçimde daha sönük.
           </p>
         </>
       )}

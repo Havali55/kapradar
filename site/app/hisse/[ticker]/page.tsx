@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { hisseGetir, hisseleriGetir } from "@/lib/veri";
-import { skorRengi, tahtaRenk, yuzdelik } from "@/lib/skor";
+import { siklikRenk, skorRengi, tahtaRenk, yuzdelik } from "@/lib/skor";
 import {
   KADEME_ADI,
+  SIKLIK_ADI,
+  SIKLIK_NOTU,
   TAHTA_ADI,
   TAHTA_NOTU,
   buyukTl,
@@ -65,6 +67,13 @@ export default async function HisseSayfasi({
   const sonTahta = bildirimler.find((b) => b.tahta !== null);
   const sonHasilat = bildirimler.find((b) => b.ttm_hasilat !== null);
 
+  // Sıklık şirket başına sabit; view'dan geliyor ve 613'ün tamamını
+  // sayıyor. Sayfadaki liste yalnız yayına hazır olanları gösterdiği
+  // için `bildirimler.length` ondan küçük olabilir — bu yüzden ikisi
+  // ayrı ayrı yazılıyor.
+  const siklikAdet = bildirimler[0].bildirim_sikligi;
+  const siklik = bildirimler[0].siklik;
+
   return (
     <>
       <header className="bas">
@@ -109,9 +118,19 @@ export default async function HisseSayfasi({
 
         <div className="olcuum">
           <div className="olcu">
-            <div className="olcu-et mono">BİLDİRİM</div>
-            <div className="olcu-deger mono">{bildirimler.length}</div>
-            <div className="olcu-alt">{skorlar.length} tanesi skorlanabildi</div>
+            <div className="olcu-et mono">BİLDİRİM SIKLIĞI</div>
+            <div
+              className="olcu-deger mono"
+              style={{
+                color: siklik ? `var(--${siklikRenk(siklik)})` : undefined,
+              }}
+            >
+              {siklikAdet ?? bildirimler.length}
+            </div>
+            <div className="olcu-alt">
+              {siklik ? `${SIKLIK_ADI[siklik].toLocaleLowerCase("tr")} · ` : ""}
+              12 ayda, {skorlar.length} tanesi skorlanabildi
+            </div>
           </div>
           <div className="olcu">
             <div className="olcu-et mono">MEDYAN BÜYÜKLÜK S</div>
@@ -157,10 +176,16 @@ export default async function HisseSayfasi({
         </div>
 
         {sonTahta?.tahta && sonTahta.tahta !== "temiz" && (
-          <p className="panel-uyari" style={{ marginBottom: 18 }}>
+          <p className="panel-uyari" style={{ marginBottom: 10 }}>
             {TAHTA_NOTU[sonTahta.tahta]}{" "}
             {sonTahta.tahta === "tedbirli" &&
               "Bu hissenin bildirimlerinde tepki paneli fiyat oluşumunu değil oynaklığı yansıtıyor olabilir."}
+          </p>
+        )}
+
+        {siklik === "sik" && (
+          <p className="panel-uyari" style={{ marginBottom: 18 }}>
+            {SIKLIK_NOTU.sik}
           </p>
         )}
 

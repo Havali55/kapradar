@@ -16,12 +16,16 @@ from kap_radar.cikarim import Tutar
 from kap_radar.skor import (
     MEGA_ESIGI,
     ONEMLI_ESIGI,
+    SIKLIK_ORTA_ESIGI,
+    SIKLIK_SIK_ESIGI,
+    SiklikBayragi,
     TahtaBayragi,
     buyukluk_skoru,
     f_oran,
     guvenilirlik,
     kademe,
     net_tutar_tl,
+    siklik_bayragi,
     tahta_bayragi,
     tepki_paneli,
 )
@@ -104,6 +108,24 @@ def test_kademe_esikleri_kapsayici():
     assert kademe(MEGA_ESIGI - Decimal("0.01")) == "onemli"
     assert kademe(ONEMLI_ESIGI) == "onemli"
     assert kademe(ONEMLI_ESIGI - Decimal("0.01")) == "rutin"
+
+
+def test_siklik_esikleri_kapsayici():
+    """Eşiğin tam üstü üst kademeye girer, altı girmez."""
+    assert siklik_bayragi(SIKLIK_SIK_ESIGI) is SiklikBayragi.SIK
+    assert siklik_bayragi(SIKLIK_SIK_ESIGI - 1) is SiklikBayragi.ORTA
+    assert siklik_bayragi(SIKLIK_ORTA_ESIGI) is SiklikBayragi.ORTA
+    assert siklik_bayragi(SIKLIK_ORTA_ESIGI - 1) is SiklikBayragi.SEYREK
+
+
+def test_tek_bildirimli_sirket_seyrek():
+    """Arşivdeki 111 şirketin 34'ü tek bildirimli."""
+    assert siklik_bayragi(1) is SiklikBayragi.SEYREK
+
+
+def test_en_sik_bildirimci_sik_sayilir():
+    """Arşivin en sık bildirimcisi 42 bildirimle geliyor."""
+    assert siklik_bayragi(42) is SiklikBayragi.SIK
 
 
 def test_skorsuz_bildirim_kademesiz():

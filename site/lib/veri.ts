@@ -1,5 +1,12 @@
 import { supabase } from "./supabase";
-import { guvenilirlik, kademeBul, yuzdelik, type Kademe } from "./skor";
+import {
+  guvenilirlik,
+  kademeBul,
+  siklikBayragi,
+  yuzdelik,
+  type Kademe,
+  type SiklikBayragi,
+} from "./skor";
 
 // Skor ölçeğinin aynaları `lib/skor.ts`'te; istemci bileşenleri de
 // kullandığı için oradan geçiyorlar. Buradan yeniden dışa vuruluyorlar
@@ -13,6 +20,8 @@ export {
   fOran,
   guvenilirlik,
   kademeBul,
+  siklikBayragi,
+  siklikRenk,
   skorRengi,
   tahtaRenk,
 } from "./skor";
@@ -50,6 +59,13 @@ export type AkisSatiri = {
   tahta: "temiz" | "hareketli" | "tedbirli" | null;
   tahta_v90: number | null;
   tahta_v5: number | null;
+  /**
+   * Şirketin arşiv penceresindeki (12 ay) toplam bildirim sayısı.
+   * `bildirim` tablosunun tamamından sayılıyor — 613'ün hepsi, yayına
+   * hazır 597 değil: şirketin ne sıklıkta bildirim yaptığı bizim kaçını
+   * skorlayabildiğimizden bağımsız bir gerçek.
+   */
+  bildirim_sikligi: number | null;
 };
 
 export type TepkiPaneli = {
@@ -69,6 +85,8 @@ export type Bildirim = AkisSatiri & {
   kademe: Kademe | null;
   /** Güvenilirlik çarpanı K; skordan türetilmiyor, yeniden gösteriliyor. */
   k: number;
+  /** Bildirim yorgunluğu kademesi — skora girmez, bağlam etiketi. */
+  siklik: SiklikBayragi | null;
   panel: TepkiPaneli | null;
 };
 
@@ -209,6 +227,7 @@ function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
     ...satir,
     kademe: kademeBul(satir.etki_skoru),
     k: guvenilirlik(satir.karsi_taraf !== null, satir.guncelleme_mi),
+    siklik: siklikBayragi(satir.bildirim_sikligi),
     panel,
   };
 }

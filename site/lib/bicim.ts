@@ -117,6 +117,23 @@ export const TAHTA_NOTU: Record<string, string> = {
     "Tahta sık limit görüyor. Bu hisselerde fiyat hareketi habere değil oynaklığa bağlı olabilir.",
 };
 
+export const SIKLIK_ADI: Record<string, string> = {
+  seyrek: "Seyrek bildirimci",
+  orta: "Orta sıklıkta",
+  sik: "Sık bildirimci",
+};
+
+/**
+ * Notlar bulguyu anlatıyor, tahmin kurmuyor. Adım 16: ln(sıklık)
+ * katsayısı −0,111, kümelenmiş t = −2,48 (p = 0,013).
+ */
+export const SIKLIK_NOTU: Record<string, string> = {
+  seyrek:
+    "Bu şirket seyrek bildirim yapıyor. Ölçümlerimizde seyrek bildirimcilerde bildirim başına piyasa ilgisi daha yüksek.",
+  orta: "Bu şirketin bildirim sıklığı arşivin orta bandında.",
+  sik: "Bu şirket sık bildirim yapıyor. Ölçümlerimizde sık bildirimcilerde bildirim başına tepki belirgin biçimde daha sönük — bildirimin kendisi küçük olduğu için değil, alışıldığı için.",
+};
+
 export const KADEME_ADI: Record<string, string> = {
   rutin: "Rutin",
   onemli: "Önemli iş",

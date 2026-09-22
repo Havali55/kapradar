@@ -92,6 +92,38 @@ export function skorRengi(skor: number | null): string {
   return "var(--ken)";
 }
 
+/* ---------------------------------------------- bildirim yorgunluğu */
+
+export type SiklikBayragi = "seyrek" | "orta" | "sik";
+
+/**
+ * Eşikler `skor.SIKLIK_ORTA_ESIGI` / `skor.SIKLIK_SIK_ESIGI` ile aynı.
+ * Arşiv penceresindeki bildirim sayısının üçlük kesimlerinden geliyor:
+ * 613 bildirimi %33,9 / %33,1 / %33,0 diye bölüyor.
+ */
+export const SIKLIK_ORTA_ESIGI = 8;
+export const SIKLIK_SIK_ESIGI = 18;
+
+/**
+ * Şirketin bildirim sıklığı — **skora girmez**. Adım 16'nın en sağlam
+ * bulgusu: ln(sıklık) katsayısı −0,111, hisse-kümelenmiş t = −2,48
+ * (p = 0,013). Sık bildirim yapan şirketlerde bildirim başına tepki
+ * belirgin biçimde daha sönük. Skora katılmamasının sebebi tahta
+ * bayrağıyla aynı: bu şirketin özelliği, bildirimin değil.
+ */
+export function siklikBayragi(adet: number | null): SiklikBayragi | null {
+  if (adet === null) return null;
+  if (adet >= SIKLIK_SIK_ESIGI) return "sik";
+  if (adet >= SIKLIK_ORTA_ESIGI) return "orta";
+  return "seyrek";
+}
+
+export function siklikRenk(bayrak: SiklikBayragi): string {
+  if (bayrak === "seyrek") return "yes";
+  if (bayrak === "orta") return "kehribar";
+  return "kir";
+}
+
 export function tahtaRenk(tahta: string): string {
   if (tahta === "temiz") return "yes";
   if (tahta === "hareketli") return "kehribar";

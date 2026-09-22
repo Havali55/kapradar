@@ -1039,6 +1039,27 @@ a:hover {
   color: var(--ink-2);
 }
 
+/* ------------------------------------------------ bildirim sikligi */
+
+/* Modül B'nin ikinci bağlamı. Ayraçla ayrılıyor ama aynı modülde
+   kalıyor: ikisi de şirketin özelliği ve ikisi de skora girmiyor. */
+.baglam-ek {
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ken-2);
+}
+.baglam-ad {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.baglam-sayi {
+  font-size: 10.5px;
+  color: var(--mut-2);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 /* ------------------------------------------- hisse / kalici bildirim */
 
 .iz {
