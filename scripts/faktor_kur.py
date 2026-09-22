@@ -79,7 +79,12 @@ def indir(kodlar: list[str], bitis: str) -> pd.DataFrame:
 
 
 def ew_seri(kapanis: pd.DataFrame) -> pd.DataFrame:
-    getiri = kapanis.sort_index().pct_change(fill_method=None)
+    # Resmî tatillerde yfinance 20–40 hisselik çöp satır üretiyor (23 Nisan,
+    # 19 Mayıs, 15 Temmuz). Getiriden ÖNCE atılmazsa ertesi günün getirisi
+    # o yarım satıra göre hesaplanır, çoğu hisse NaN olur ve gün düşer.
+    kapanis = kapanis.sort_index()
+    kapanis = kapanis[kapanis.notna().sum(axis=1) >= ASGARI_HISSE]
+    getiri = kapanis.pct_change(fill_method=None)
     getiri = getiri.where(getiri.abs() < SICRAMA)
     return pd.DataFrame({
         "ew_getiri": getiri.mean(axis=1, skipna=True),

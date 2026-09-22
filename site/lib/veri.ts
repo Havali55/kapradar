@@ -66,8 +66,11 @@ export type AkisSatiri = {
    * skorlayabildiğimizden bağımsız bir gerçek.
    */
   bildirim_sikligi: number | null;
-  /** car_Ng'nin formülü: piyasa = Σ r − (α + β·r_m); beta1 = Σ r − r_m. */
-  tepki_modeli: "piyasa" | "beta1" | null;
+  /**
+   * car_Ng'nin formülü. ew = Σ r − (α + β·r_ew), kıyas eşit ağırlıklı BIST
+   * (2026-09-22'den beri); piyasa = aynısı XU100'e karşı; beta1 = Σ r − r_m.
+   */
+  tepki_modeli: "ew" | "piyasa" | "beta1" | null;
   /** CAR'da kullanılan (Vasicek-küçültülmüş) beta. */
   beta: number | null;
   /**
@@ -87,7 +90,57 @@ export type AkisSatiri = {
   kap_aciklama_12a: number | null;
   /** 365'ten azsa 12 aylık sayım eksik pencereden (yeni halka arz). */
   siklik_arsiv_gun: number | null;
+  /**
+   * Bildirim anındaki fon durumu (point-in-time): her fonun bildirimden
+   * önce yayınlanmış son Portföy Dağılım Raporu. Tasfiye tutarı yalnız
+   * SPK kararından sonraki bildirimlerde dolu.
+   */
+  fon_sayisi: number | null;
+  fon_tl: number | null;
+  fon_tasfiye_tl: number | null;
+  gunluk_hacim_tl: number | null;
 };
+
+/** Hisse sayfasındaki BUGÜNKÜ fon durumu (`hisse_fon_guncel`). */
+export type HisseFon = {
+  ticker: string;
+  fon_sayisi: number;
+  fon_tl: number;
+  portfoy_sirketi_sayisi: number;
+  en_buyuk_pay: number | null;
+  tasfiye_tl: number;
+  tasfiye_fon_sayisi: number;
+  gunluk_hacim_tl: number | null;
+  fon_tl_3ay_once: number | null;
+  son_rapor_donemi: string | null;
+  muaf_fon_sayisi: number;
+};
+
+export async function hisseFonGetir(ticker: string): Promise<HisseFon | null> {
+  const { data, error } = await supabase
+    .from("hisse_fon_guncel")
+    .select("*")
+    .eq("ticker", ticker)
+    .maybeSingle();
+  if (error) throw new Error(`Fon durumu okunamadı: ${error.message}`);
+  return (data as HisseFon | null) ?? null;
+}
+
+/** Sitenin üstündeki tek satırlık piyasa bandı (`piyasa_bandi` view). */
+export type PiyasaBandi = {
+  son_tarih: string;
+  ew_5s: number | null;
+  xu100_5s: number | null;
+  tasfiye_tarihi: string | null;
+  tasfiye_sirket_sayisi: number | null;
+};
+
+export async function piyasaBandiGetir(): Promise<PiyasaBandi | null> {
+  const { data, error } = await supabase.from("piyasa_bandi").select("*").maybeSingle();
+  // Bant süs; okunamazsa sayfa düşmesin.
+  if (error) return null;
+  return (data as PiyasaBandi | null) ?? null;
+}
 
 export type TepkiPaneli = {
   n: number;

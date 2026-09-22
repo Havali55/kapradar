@@ -18,6 +18,7 @@ import {
   TAHTA_SINIR_NOTU,
   TIP_ADI,
   VBTS_KADEME_ADI,
+  buyukTl,
   isaretliYuzde,
   kalemTutari,
   kisaTarih,
@@ -265,6 +266,35 @@ export default function BildirimDetayi({
         </>
       )}
 
+      {/* ------------------------------- fon sahipliği (bildirim anı) */}
+      {b.fon_sayisi !== null && b.fon_tl !== null && (
+        <>
+          <h3 className="bolum-bas mono">B · ŞİRKET BAĞLAMI · FONLAR (BİLDİRİM ANINDA)</h3>
+          <dl className="kutu">
+            <div className="kutu-satir">
+              <dt>Pozisyon açıklayan fonlar</dt>
+              <dd className="mono">
+                {b.fon_sayisi} fon · {buyukTl(b.fon_tl)}
+                {b.gunluk_hacim_tl
+                  ? ` · ≈ ${sayi(b.fon_tl / b.gunluk_hacim_tl, 1)} günlük hacim`
+                  : ""}
+              </dd>
+            </div>
+            {b.fon_tasfiye_tl !== null && b.fon_tasfiye_tl > 0 && (
+              <div className="kutu-satir">
+                <dt>Bunun tasfiyedeki fonlarda olan kısmı</dt>
+                <dd className="mono">{buyukTl(b.fon_tasfiye_tl)}</dd>
+              </div>
+            )}
+          </dl>
+          <p className="tutar-yok-not">
+            Her fonun bu bildirimden önce KAP&apos;ta yayınlanmış son Portföy
+            Dağılım Raporu. Hissenin bugünkü fon durumu için hisse sayfasına
+            bakın. Fon pozisyonu skora girmez.
+          </p>
+        </>
+      )}
+
       {/* --------------------------------------------- tepki */}
       {b.panel && (
         <>
@@ -309,17 +339,23 @@ export default function BildirimDetayi({
               Geçmiş veridir, tahmin değildir.
             </p>
           )}
-          {b.tepki_modeli === "piyasa" && b.beta !== null && (
-            <p className="tutar-yok-not">
-              Anormal getiri piyasa modeliyle hesaplanır: beklenen getiri
-              hissenin endekse duyarlılığına (β) göre düşülür, endeksin tamamı
-              değil. Bu hissede{" "}
-              <strong className="mono">β = {sayi(b.beta, 2)}</strong>
-              {b.beta_kaynak === "evren_ort"
-                ? " — hisse yeni halka açıldığı için kendi betası tahmin edilemedi; evrenin ortalama betası kullanıldı."
-                : " (bildirimden önceki 120 işlem gününden, evren ortalamasına küçültülmüş)."}
-            </p>
-          )}
+          {(b.tepki_modeli === "ew" || b.tepki_modeli === "piyasa") &&
+            b.beta !== null && (
+              <p className="tutar-yok-not">
+                Anormal getiri, hissenin{" "}
+                {b.tepki_modeli === "ew"
+                  ? "eşit ağırlıklı BIST'e (≈630 hissenin ortalaması)"
+                  : "XU100'e"}{" "}
+                göre beklenen getirisinden sapmasıdır. Beklenen getiri hissenin
+                bu kıyasa duyarlılığıyla (β) hesaplanır. Bu hissede{" "}
+                <strong className="mono">β = {sayi(b.beta, 2)}</strong>
+                {b.beta_kaynak === "evren_ort"
+                  ? " — hisse yeni halka açıldığı için kendi betası tahmin edilemedi; evrenin ortalama betası kullanıldı."
+                  : " (bildirimden önceki 120 işlem gününden, evren ortalamasına küçültülmüş)."}
+                {b.tepki_modeli === "ew" &&
+                  " Kıyas XU100 değil, çünkü bu evrenin hisseleri büyük endeksi değil küçük hisselerin ortak hareketini izliyor."}
+              </p>
+            )}
         </>
       )}
     </>

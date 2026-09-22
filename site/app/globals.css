@@ -97,6 +97,32 @@ a:hover {
   gap: 10px;
   font-size: 12.5px;
 }
+/* Piyasa bandı — uyarı şeridinin altında, nötr tonda: olgu, alarm değil. */
+.bant {
+  background: var(--kart-2);
+  border-bottom: 1px solid var(--ken);
+  color: var(--mut-2);
+}
+.bant-ic {
+  max-width: var(--en);
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.bant strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .serit-ic,
+  .bant-ic {
+    padding: 8px 16px;
+  }
+}
 .rozet {
   font-size: 10px;
   letter-spacing: 0.1em;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { hisseGetir, hisseleriGetir } from "@/lib/veri";
+import { hisseFonGetir, hisseGetir, hisseleriGetir } from "@/lib/veri";
 import { siklikRenk, skorRengi, tahtaRenk, yuzdelik } from "@/lib/skor";
 import {
   KADEME_ADI,
@@ -46,7 +46,10 @@ export default async function HisseSayfasi({
   params: Promise<{ ticker: string }>;
 }) {
   const { ticker } = await params;
-  const bildirimler = await hisseGetir(ticker);
+  const [bildirimler, fon] = await Promise.all([
+    hisseGetir(ticker),
+    hisseFonGetir(ticker),
+  ]);
   if (bildirimler.length === 0) notFound();
 
   const sirket = bildirimler[0].sirket;
@@ -190,6 +193,71 @@ export default async function HisseSayfasi({
           <p className="panel-uyari" style={{ marginBottom: 18 }}>
             {SIKLIK_NOTU.sik}
           </p>
+        )}
+
+        {fon && (
+          <section style={{ margin: "8px 0 22px" }}>
+            <h3 className="bolum-bas mono">
+              FON SAHİPLİĞİ · BUGÜN
+              {fon.son_rapor_donemi ? ` · SON RAPOR ${fon.son_rapor_donemi}` : ""}
+            </h3>
+            <dl className="kutu">
+              <div className="kutu-satir">
+                <dt>Pozisyon açıklayan fonlar</dt>
+                <dd className="mono">
+                  {fon.fon_sayisi} fon · {fon.portfoy_sirketi_sayisi} portföy şirketi
+                  · {buyukTl(fon.fon_tl)}
+                </dd>
+              </div>
+              {fon.fon_tl_3ay_once !== null && fon.fon_tl_3ay_once > 0 && (
+                <div className="kutu-satir">
+                  <dt>3 ay önceki fon pozisyonu</dt>
+                  <dd className="mono">
+                    {buyukTl(fon.fon_tl_3ay_once)} (
+                    {isaretliYuzde(fon.fon_tl / fon.fon_tl_3ay_once - 1, 0)})
+                  </dd>
+                </div>
+              )}
+              {fon.en_buyuk_pay !== null && fon.portfoy_sirketi_sayisi > 1 && (
+                <div className="kutu-satir">
+                  <dt>En büyük portföy şirketinin payı</dt>
+                  <dd className="mono">{yuzde(fon.en_buyuk_pay, 0)}</dd>
+                </div>
+              )}
+              {fon.tasfiye_tl > 0 && (
+                <div className="kutu-satir">
+                  <dt>Tasfiyedeki fonların pozisyonu</dt>
+                  <dd className="mono">
+                    {buyukTl(fon.tasfiye_tl)} · {fon.tasfiye_fon_sayisi} fon
+                    {fon.gunluk_hacim_tl
+                      ? ` · ≈ ${sayi(fon.tasfiye_tl / fon.gunluk_hacim_tl, 1)} günlük işlem hacmi`
+                      : ""}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            {fon.tasfiye_tl > 0 && (
+              <p className="tutar-yok-not">
+                SPK&apos;nın tasfiyeye aldığı fonların varlıkları tasfiye süresince
+                satılacak. &ldquo;Günlük işlem hacmi&rdquo; oranı, bu pozisyonun
+                son 20 seansın ortalama TL hacmine bölünmesiyle bulunur; satışın
+                ne zaman ve nasıl yapılacağını söylemez.
+              </p>
+            )}
+            {fon.muaf_fon_sayisi > 0 && (
+              <p className="tutar-yok-not">
+                Bu hissede pozisyonu olan portföy şirketlerinin, nitelikli
+                yatırımcı muafiyetiyle portföyünü açıklamayan{" "}
+                {fon.muaf_fon_sayisi} fonu daha var. Gerçek fon pozisyonu
+                yukarıdakinden büyük olabilir.
+              </p>
+            )}
+            <p className="tutar-yok-not">
+              Kaynak: fonların KAP&apos;taki Portföy Dağılım Raporları. Raporlar
+              çoğunlukla aylık ve yaklaşık bir ay geriden gelir. Fon pozisyonu
+              skora girmez.
+            </p>
+          </section>
         )}
 
         <div className="liste" style={{ marginTop: 6 }}>

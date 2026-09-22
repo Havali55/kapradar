@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
-from kap_radar.fon import rapor_ayristir
+from kap_radar.fon import portfoy_sirketi, rapor_ayristir
+
+
+def test_portfoy_sirketi_fon_adindan():
+    assert portfoy_sirketi("TERA PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST (TL) FON") == "TERA PORTFÖY"
+    assert portfoy_sirketi("GARANTİ PORTFÖY MUTLAK GETİRİ HEDEFLİ FON") == "GARANTİ PORTFÖY"
+    assert portfoy_sirketi("A1 CAPITAL PORTFÖY BİRİNCİ FON") == "A1 CAPITAL PORTFÖY"
+    assert portfoy_sirketi("TÜRKİYE HAYAT EMEKLİLİK FONU") is None
 
 # Tera Portföy Dördüncü Hisse (DOH), Ağustos 2026 — sayfa başlığı bir
 # pozisyon bloğunun ortasına düşmüş hâliyle.

@@ -63,6 +63,26 @@ def env_oku(yol: Path) -> dict[str, str]:
     return veri
 
 
+def ew_seviyesi(baglanti, gunler: list) -> dict:
+    """Eşit ağırlıklı BIST getirilerinden XU100 takviminde seviye serisi.
+
+    Seviye EW'nin KENDİ günlerinde birikiyor, sonra XU100 günlerinde
+    örnekleniyor: yfinance'in tatile uydurduğu satırlar (Kurban Bayramı,
+    25 Aralık) bir sonraki gerçek güne katlanır. EW'de olmayan XU100 günü
+    None kalır — `car_hesapla` o güne dokunan pencereyi hesaplamaz.
+    Anahtarlar XU100 takviminin tamamı; `car_hesapla` takvimi buradan
+    okuduğu için gün atlanırsa pencere sessizce kayardı.
+    """
+    with baglanti.cursor() as imlec:
+        imlec.execute("select tarih, ew_getiri from public.faktor_gunluk order by tarih")
+        satirlar = imlec.fetchall()
+    seviye, s = {}, Decimal(1000)
+    for tarih, getiri in satirlar:
+        s = s * (1 + Decimal(getiri))
+        seviye[tarih] = s
+    return {g: seviye.get(g) for g in gunler}
+
+
 def ondalik(deger: float, basamak: int) -> Decimal:
     """Saklanan değer CAR'da kullanılanla aynı olsun diye önce yuvarlanır."""
     return Decimal(f"{deger:.{basamak}f}")
@@ -75,6 +95,12 @@ def main() -> int:
     ayristirici.add_argument("--pencere-basi", type=int, default=0)
     ayristirici.add_argument(
         "--model", choices=("piyasa", "beta1"), default="piyasa"
+    )
+    ayristirici.add_argument(
+        "--kiyas",
+        choices=("ew", "xu100"),
+        default="ew",
+        help="piyasa modelinin kıyas serisi (varsayılan eşit ağırlıklı BIST)",
     )
     secenek = ayristirici.parse_args()
 
@@ -106,7 +132,11 @@ def main() -> int:
         endeks = depo.endeks_serisi(endeks_ilk, endeks_son)
         gunler = sorted(endeks)
         sira_no = {g: i for i, g in enumerate(gunler)}
-        piyasa = getiri_serisi(endeks, gunler)
+        # Takvim her zaman XU100'den; kıyas serisi o takvimde örnekleniyor.
+        kiyas = endeks
+        if secenek.model == "piyasa" and secenek.kiyas == "ew":
+            kiyas = ew_seviyesi(baglanti, gunler)
+        piyasa = getiri_serisi(kiyas, gunler)
         seriler: dict[str, dict] = {}
         getiriler: dict[str, dict] = {}
         supheli: dict[str, set] = {}
@@ -145,6 +175,7 @@ def main() -> int:
         # --- 2. geçiş: beta tahmini ve küçültme ------------------------
         katsayilar: dict[str, dict] = {}
         capa = None
+        model_adi = "ew" if secenek.kiyas == "ew" else "piyasa"
         if secenek.model == "piyasa":
             tahminler = {
                 kap_id: beta_tahmin(
@@ -166,7 +197,7 @@ def main() -> int:
 
             for (kap_id, tahmin), beta_k in zip(gecerli, kucuk):
                 katsayilar[kap_id] = {
-                    "model": "piyasa",
+                    "model": model_adi,
                     "beta": ondalik(beta_k, 6),
                     "alfa": ondalik(tahmin.alfa, 8),
                     "beta_ham": ondalik(tahmin.beta, 6),
@@ -179,7 +210,7 @@ def main() -> int:
                     # Yeni halka arz: bu evrende β=1'den daha doğru varsayım
                     # evrenin kendi ortalaması. α uydurulmuyor.
                     katsayilar[kap_id] = {
-                        "model": "piyasa",
+                        "model": model_adi,
                         "beta": ondalik(capa, 6),
                         "alfa": Decimal(0),
                         "beta_kaynak": "evren_ort",
@@ -194,7 +225,7 @@ def main() -> int:
             for ad, gun in PENCERELER.items():
                 carlar[ad] = car_hesapla(
                     seriler[ticker],
-                    endeks,
+                    kiyas,
                     t0,
                     pencere=(
                         secenek.pencere_basi,

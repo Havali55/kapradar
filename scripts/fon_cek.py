@@ -57,29 +57,55 @@ def sirket_bul(baslik: str) -> str | None:
     return next((k for k, p in SIRKETLER.items() if re.search(p, baslik)), None)
 
 
-def listeyi_cek(istemci: KapIstemcisi, arsiv: HamArsiv) -> list[dict]:
+def listeyi_cek(
+    istemci: KapIstemcisi,
+    arsiv: HamArsiv,
+    baslangic: date = BASLANGIC,
+    bitis: date = BITIS,
+) -> list[dict]:
     kayitlar: dict[int, dict] = {}
-    bas = BASLANGIC
-    while bas <= BITIS:
-        bit = min(bas + timedelta(days=PENCERE_GUN - 1), BITIS)
+    # Diskteki her liste dosyası (hangi pencere sınırıyla yazılmış olursa
+    # olsun) okunur; kapsanan günler bir daha istenmez.
+    kapsanan: set[date] = set()
+    for dosya in (FON_KOKU / "liste").glob("*.json"):
+        b0, e0 = (date.fromisoformat(x) for x in dosya.stem.split("_"))
+        kapsanan.update(b0 + timedelta(days=i) for i in range((e0 - b0).days + 1))
+        for k in arsiv.liste_oku(b0, e0):
+            kayitlar[k["disclosureIndex"]] = k
+    atlanan: list[tuple[date, date]] = []
+
+    bas = baslangic
+    while bas <= bitis:
+        bit = min(bas + timedelta(days=PENCERE_GUN - 1), bitis)
         gunler = [(bas, bit)]
         while gunler:
             b, e = gunler.pop()
-            if arsiv.liste_var_mi(b, e):
-                parca = arsiv.liste_oku(b, e)
-            else:
+            if all(b + timedelta(days=i) in kapsanan for i in range((e - b).days + 1)):
+                continue
+            try:
                 parca = istemci.fon_liste(b, e)
-                if len(parca) >= SINIR and b < e:
-                    # Sınıra dayandı: günlere böl, bu pencereyi kaydetme.
+            except Exception as hata:  # kesinti: önce günlere böl, olmazsa atla
+                if b < e:
                     gunler += [(b + timedelta(days=i), b + timedelta(days=i))
                                for i in range((e - b).days + 1)]
                     continue
-                if len(parca) >= SINIR:
-                    print(f"  !! {b} tek günde {SINIR} sınırında — eksik olabilir")
-                arsiv.liste_yaz(b, e, parca)
+                atlanan.append((b, e))
+                print(f"  !! {b}–{e} alınamadı ({type(hata).__name__}); sonraki koşuda",
+                      flush=True)
+                continue
+            if len(parca) >= SINIR and b < e:
+                # Sınıra dayandı: günlere böl, bu pencereyi kaydetme.
+                gunler += [(b + timedelta(days=i), b + timedelta(days=i))
+                           for i in range((e - b).days + 1)]
+                continue
+            if len(parca) >= SINIR:
+                print(f"  !! {b} tek günde {SINIR} sınırında — eksik olabilir")
+            arsiv.liste_yaz(b, e, parca)
             for k in parca:
                 kayitlar[k["disclosureIndex"]] = k
         bas = bit + timedelta(days=1)
+    if atlanan:
+        print(f"  !! alınamayan pencere: {len(atlanan)} — yeniden koşunca tamamlanır")
     return list(kayitlar.values())
 
 

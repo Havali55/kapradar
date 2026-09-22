@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { isaretliYuzde, kisaTarih } from "@/lib/bicim";
+import { piyasaBandiGetir } from "@/lib/veri";
 
 // Yazı tipleri build anında indirilip kendi sunucumuzdan veriliyor:
 // CDN çağrısı yok, layout kayması yok.
@@ -28,11 +30,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const bant = await piyasaBandiGetir();
   return (
     <html lang="tr" className={`${sans.variable} ${mono.variable}`}>
       <body>
@@ -45,6 +48,33 @@ export default function RootLayout({
             </span>
           </div>
         </div>
+        {bant && (
+          // Bağlam katmanı: piyasanın geneli. Olgu + tarih, yorum yok.
+          <div className="bant">
+            <div className="bant-ic">
+              <span className="rozet mono">PİYASA</span>
+              <span>
+                Son 5 seans ({kisaTarih(bant.son_tarih)} itibarıyla): eşit ağırlıklı
+                BIST{" "}
+                <strong className="mono">
+                  {bant.ew_5s !== null ? isaretliYuzde(bant.ew_5s, 1) : "—"}
+                </strong>{" "}
+                · XU100{" "}
+                <strong className="mono">
+                  {bant.xu100_5s !== null ? isaretliYuzde(bant.xu100_5s, 1) : "—"}
+                </strong>
+                {bant.tasfiye_tarihi && (
+                  <>
+                    {" "}
+                    · SPK {kisaTarih(bant.tasfiye_tarihi)} tarihinde{" "}
+                    {bant.tasfiye_sirket_sayisi} portföy şirketinin fonlarını
+                    tasfiyeye aldı.
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
         {children}
       </body>
     </html>

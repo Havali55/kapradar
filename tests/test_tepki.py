@@ -199,6 +199,19 @@ def test_piyasa_modeli_dusuk_betali_hisseyi_endeksin_tamaminla_cezalandirmaz():
     assert model == Decimal("0")
 
 
+def test_kiyas_serisinde_eksik_gun_pencereyi_hesaplatmaz():
+    """EW kıyas serisi XU100 takviminde örnekleniyor; eksik gün None kalır.
+
+    Anahtar silinseydi takvim kayar ve üç günlük pencere sessizce dört
+    günü kapsardı.
+    """
+    hisse = seri("100", "101", "102", "103")
+    kiyas = seri("1000", "1010", "1020", "1030")
+    kiyas[date(2026, 9, 17)] = None
+
+    assert car_hesapla(hisse, kiyas, t0=date(2026, 9, 15), pencere=(0, 2)) is None
+
+
 def test_alfa_her_gun_beklenen_getiriye_eklenir():
     hisse = seri("100", "101", "102.01")
     endeks = seri("1000", "1000", "1000")

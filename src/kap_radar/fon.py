@@ -50,6 +50,19 @@ _AY = re.compile(
 )
 
 
+_PORTFOY = re.compile(r"^(.*?\bPORTFÖY)\b")
+
+
+def portfoy_sirketi(fon_adi: str) -> str | None:
+    """'TERA PORTFÖY DÖRDÜNCÜ HİSSE ...' → 'TERA PORTFÖY'.
+
+    KAP fon kaydında yöneten şirketin adı ayrı alan olarak yok; fon
+    unvanları SPK kuralı gereği kurucunun adıyla başlıyor.
+    """
+    m = _PORTFOY.match(fon_adi.strip().upper())
+    return m[1] if m else None
+
+
 def sayi(metin: str) -> float:
     return float(metin.replace(".", "").replace(",", "."))
 
