@@ -1,6 +1,7 @@
 "use client";
 
 import type { Bildirim } from "@/lib/veri";
+import { skorRengi, tahtaRenk } from "@/lib/skor";
 import {
   KADEME_ADI,
   TAHTA_ADI,
@@ -15,18 +16,9 @@ import {
 /** Kutu çiziminin ölçeği: tepkilerin ezici çoğunluğu ±%8 içinde. */
 const UC = 0.08;
 
-export function skorRengi(skor: number | null): string {
-  if (skor === null) return "var(--ken)";
-  if (skor >= 3) return "var(--mavi-koyu)";
-  if (skor >= 2) return "var(--mavi)";
-  return "var(--mut-2)";
-}
-
-export function tahtaRenk(tahta: string): string {
-  if (tahta === "temiz") return "yes";
-  if (tahta === "hareketli") return "kehribar";
-  return "kir";
-}
+// skorRengi / tahtaRenk artık lib/skor.ts'te — hem istemci bileşenleri
+// hem sunucuda render edilen /kap sayfası kullanıyor.
+export { skorRengi, tahtaRenk };
 
 function konum(v: number): string {
   const k = Math.max(-UC, Math.min(UC, v));

@@ -1039,6 +1039,97 @@ a:hover {
   color: var(--ink-2);
 }
 
+/* ------------------------------------------- hisse / kalici bildirim */
+
+.iz {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--mut-2);
+  margin-bottom: 18px;
+}
+.iz span[aria-hidden] {
+  color: var(--ken-4);
+}
+
+/* Kalıcı bildirim sayfası, panelin dar sütununu koruyor: aynı içerik
+   geniş ekranda satır uzunluğu 120 karaktere çıkarsa okunmaz oluyor. */
+.kalici-detay {
+  background: var(--kart);
+  border: 1px solid var(--ken);
+  border-radius: var(--r-kart);
+  padding: 26px 28px;
+  max-width: 720px;
+}
+.kalici-detay h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.hisse-satir {
+  position: relative;
+  display: flex;
+  background: var(--kart);
+  border: 1px solid var(--ken);
+  border-radius: var(--r-kart);
+  overflow: hidden;
+  color: inherit;
+}
+.hisse-satir:hover {
+  border-color: var(--ken-4);
+  text-decoration: none;
+  color: inherit;
+}
+.hisse-satir:focus-visible {
+  outline: 2px solid var(--mavi);
+  outline-offset: 2px;
+}
+.hisse-satir-ic {
+  flex: 1;
+  padding: 14px 17px;
+  min-width: 0;
+}
+.hisse-satir-ust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 7px;
+}
+.hisse-satir-tarih {
+  font-size: 11.5px;
+  color: var(--mut-2);
+}
+.hisse-satir-skor {
+  font-size: 12px;
+  color: var(--mut-2);
+  white-space: nowrap;
+}
+.hisse-satir-skor strong {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+.hisse-satir-is {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+  text-wrap: pretty;
+}
+.hisse-satir-alt {
+  display: block;
+  font-size: 12px;
+  color: var(--mut-2);
+  text-wrap: pretty;
+}
+
 /* ----------------------------------------------------------- profil */
 
 .profil-bas {

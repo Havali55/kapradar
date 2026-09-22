@@ -1,4 +1,21 @@
 import { supabase } from "./supabase";
+import { guvenilirlik, kademeBul, yuzdelik, type Kademe } from "./skor";
+
+// Skor ölçeğinin aynaları `lib/skor.ts`'te; istemci bileşenleri de
+// kullandığı için oradan geçiyorlar. Buradan yeniden dışa vuruluyorlar
+// ki çağıranlar tek bir yerden alabilsin.
+export {
+  F_ORAN_METNI,
+  MEGA_ESIGI,
+  ONEMLI_ESIGI,
+  TABAN_ORAN,
+  TAVAN_ORAN,
+  fOran,
+  guvenilirlik,
+  kademeBul,
+  skorRengi,
+  tahtaRenk,
+} from "./skor";
 
 /** Bir tutar kalemi. `alinti` denetlenebilirliğin taşıyıcısı. */
 export type Tutar = {
@@ -49,54 +66,23 @@ export type TepkiPaneli = {
 
 export type Bildirim = AkisSatiri & {
   /** Skorun kademesi — akran grubunun da temeli. */
-  kademe: "rutin" | "onemli" | "mega" | null;
+  kademe: Kademe | null;
   /** Güvenilirlik çarpanı K; skordan türetilmiyor, yeniden gösteriliyor. */
   k: number;
   panel: TepkiPaneli | null;
 };
 
+/**
+ * Panelin ihtiyaç duyduğu her şey. Tek bir bildirim sayfası için 597
+ * satırın tamamını çekmek gerekmiyor: akran grubu yalnız bu dört alana
+ * bakıyor.
+ */
+export type PanelGirdi = Pick<
+  AkisSatiri,
+  "kap_id" | "etki_skoru" | "car_3g" | "tahta"
+>;
+
 const ESAS_ASGARI_N = 20;
-
-/**
- * Eşikler 2026-09-22'de 3/2'den 3,5/2,5'e çıkarıldı — skor enflasyonu
- * DEĞİL, telafisi. Aynı gün formülün tabanı %1'den %0,25'e indi; taban
- * eksenin sıfır noktası olduğu için altındaki her şey yukarı kaydı
- * (medyan 1,38 → 2,00). Eşikler yerinde bıraksaydık "Mega iş" 60
- * bildirimden 94'e çıkardı, yani etiketin anlamı kullanıcıya haber
- * verilmeden değişirdi.
- *
- * Yeni eşikler kademelerin nüfus içindeki payını koruyor: 3,5 → 55
- * bildirim (eskiden 60), 2,5 → 164 (eskiden 153). "Mega iş" görmüş
- * biri için sayı aynı şeyi söylemeye devam ediyor.
- *
- * KANONİK TANIM `src/kap_radar/skor.py::kademe`. Burası onun kopyası —
- * eşikler orada değişirse burada da değişmeli.
- */
-export function kademeBul(skor: number | null): Bildirim["kademe"] {
-  if (skor === null) return null;
-  if (skor >= 3.5) return "mega";
-  if (skor >= 2.5) return "onemli";
-  return "rutin";
-}
-
-/**
- * K — skorun içindeki güvenilirlik çarpanı. Burada YENİDEN HESAPLANMIYOR,
- * yalnızca gösterim için aynı tablodan okunuyor; skorun kendisi veritabanından
- * geliyor (`etki_skoru`). Formülün iki kopyası olmasın diye kural bu.
- */
-export function guvenilirlik(ktAcik: boolean, guncelleme: boolean): number {
-  if (ktAcik) return guncelleme ? 0.85 : 1.0;
-  return guncelleme ? 0.7 : 0.5;
-}
-
-/**
- * En yakın sıra istatistiği; ara değer üretmiyor. Python tarafındaki
- * `skor._yuzdelik` ile birebir aynı: gerçekten gözlenmiş bir getiriyi
- * göstermek, iki gözlem arasında hiç yaşanmamış bir sayı uydurmaktan dürüst.
- */
-function yuzdelik(sirali: number[], oran: number): number {
-  return sirali[Math.floor(oran * (sirali.length - 1))];
-}
 
 function panelKur(
   carlar: number[],
@@ -125,7 +111,7 @@ function panelKur(
  * Tahtaları karıştıran bir panel, spekülatif hareketi "benzer bildirimin
  * tepkisi" diye gösterirdi.
  */
-function panelleriHesapla(satirlar: AkisSatiri[]): Map<string, TepkiPaneli> {
+function panelleriHesapla(satirlar: PanelGirdi[]): Map<string, TepkiPaneli> {
   const kademeli = satirlar.map((s) => ({
     ...s,
     kademe: kademeBul(s.etki_skoru),
@@ -185,12 +171,148 @@ export async function bildirimleriGetir(): Promise<Bildirim[]> {
   const satirlar = (data ?? []) as AkisSatiri[];
   const paneller = panelleriHesapla(satirlar);
 
-  return satirlar.map((s) => ({
-    ...s,
-    kademe: kademeBul(s.etki_skoru),
-    k: guvenilirlik(s.karsi_taraf !== null, s.guncelleme_mi),
-    panel: paneller.get(s.kap_id) ?? null,
-  }));
+  return satirlar.map((s) => zenginlestir(s, paneller.get(s.kap_id) ?? null));
+}
+
+/**
+ * Akran grubu girdileri — süreç ömrü boyunca saatlik önbellekte.
+ *
+ * Neden gerekli: `/kap/[kap_id]` 597 sayfa statik üretiliyor ve her biri
+ * akran grubunu kurmak için tüm arşivin skor/tepki/tahta üçlüsüne
+ * bakmak zorunda. Önbelleksiz 597 kez aynı sorgu koşardı.
+ *
+ * Neden modül düzeyinde: derleme tek bir Node süreci, orada bir kez
+ * çekiliyor. Çalışma anında ise TTL sayfaların `revalidate = 3600`
+ * değeriyle aynı — yani önbellek sayfadan daha uzun yaşamıyor.
+ */
+const PANEL_TTL_MS = 3600_000;
+let panelBellek: { zaman: number; veri: PanelGirdi[] } | null = null;
+
+async function panelGirdileriGetir(): Promise<PanelGirdi[]> {
+  if (panelBellek && Date.now() - panelBellek.zaman < PANEL_TTL_MS) {
+    return panelBellek.veri;
+  }
+  const { data, error } = await supabase
+    .from("akis")
+    .select("kap_id, etki_skoru, car_3g, tahta");
+
+  if (error) {
+    throw new Error(`Akran grubu okunamadı: ${error.message}`);
+  }
+  const veri = (data ?? []) as PanelGirdi[];
+  panelBellek = { zaman: Date.now(), veri };
+  return veri;
+}
+
+function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
+  return {
+    ...satir,
+    kademe: kademeBul(satir.etki_skoru),
+    k: guvenilirlik(satir.karsi_taraf !== null, satir.guncelleme_mi),
+    panel,
+  };
+}
+
+/** Tek bir bildirim — `/kap/[kap_id]` sayfasının kaynağı. */
+export async function bildirimGetir(kapId: string): Promise<Bildirim | null> {
+  const [{ data, error }, girdiler] = await Promise.all([
+    supabase.from("akis").select("*").eq("kap_id", kapId).maybeSingle(),
+    panelGirdileriGetir(),
+  ]);
+
+  if (error) {
+    throw new Error(`Bildirim okunamadı: ${error.message}`);
+  }
+  if (!data) return null;
+
+  const satir = data as AkisSatiri;
+  return zenginlestir(satir, panelleriHesapla(girdiler).get(kapId) ?? null);
+}
+
+/** Bir hissenin tüm bildirimleri, yeniden eskiye. */
+export async function hisseGetir(ticker: string): Promise<Bildirim[]> {
+  const [{ data, error }, girdiler] = await Promise.all([
+    supabase
+      .from("akis")
+      .select("*")
+      .eq("ticker", ticker)
+      .order("yayin_zamani", { ascending: false }),
+    panelGirdileriGetir(),
+  ]);
+
+  if (error) {
+    throw new Error(`Hisse okunamadı: ${error.message}`);
+  }
+  const paneller = panelleriHesapla(girdiler);
+  return ((data ?? []) as AkisSatiri[]).map((s) =>
+    zenginlestir(s, paneller.get(s.kap_id) ?? null),
+  );
+}
+
+export type HisseOzeti = {
+  ticker: string;
+  sirket: string;
+  adet: number;
+  medyanSkor: number | null;
+  sonBildirim: string;
+  tahta: AkisSatiri["tahta"];
+};
+
+/**
+ * Hisse listesi — hem `/hisse` dizini hem `generateStaticParams` için.
+ * Tek sorguda okunuyor; 597 satır zaten bellekte toplanacak kadar küçük.
+ */
+export async function hisseleriGetir(): Promise<HisseOzeti[]> {
+  const { data, error } = await supabase
+    .from("akis")
+    .select("ticker, sirket, etki_skoru, yayin_zamani, tahta")
+    .order("yayin_zamani", { ascending: false });
+
+  if (error) {
+    throw new Error(`Hisse listesi okunamadı: ${error.message}`);
+  }
+
+  const gruplar = new Map<string, HisseOzeti & { skorlar: number[] }>();
+  for (const s of (data ?? []) as Pick<
+    AkisSatiri,
+    "ticker" | "sirket" | "etki_skoru" | "yayin_zamani" | "tahta"
+  >[]) {
+    const mevcut = gruplar.get(s.ticker);
+    if (mevcut) {
+      mevcut.adet += 1;
+      if (s.etki_skoru !== null) mevcut.skorlar.push(s.etki_skoru);
+      // Sorgu yeniden eskiye sıralı: ilk görülen en yeni olan.
+      if (mevcut.tahta === null) mevcut.tahta = s.tahta;
+    } else {
+      gruplar.set(s.ticker, {
+        ticker: s.ticker,
+        sirket: s.sirket,
+        adet: 1,
+        medyanSkor: null,
+        sonBildirim: s.yayin_zamani,
+        tahta: s.tahta,
+        skorlar: s.etki_skoru !== null ? [s.etki_skoru] : [],
+      });
+    }
+  }
+
+  return [...gruplar.values()]
+    .map(({ skorlar, ...h }) => ({
+      ...h,
+      medyanSkor: skorlar.length
+        ? yuzdelik([...skorlar].sort((a, b) => a - b), 0.5)
+        : null,
+    }))
+    .sort((a, b) => b.adet - a.adet || a.ticker.localeCompare(b.ticker, "tr"));
+}
+
+/** `/kap/[kap_id]` için statik parametreler. */
+export async function kapIdleriGetir(): Promise<string[]> {
+  const { data, error } = await supabase.from("akis").select("kap_id");
+  if (error) {
+    throw new Error(`kap_id listesi okunamadı: ${error.message}`);
+  }
+  return ((data ?? []) as { kap_id: string }[]).map((s) => s.kap_id);
 }
 
 export type Ozet = {
