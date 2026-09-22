@@ -1039,12 +1039,85 @@ a:hover {
   color: var(--ink-2);
 }
 
+/* ----------------------------------------------------------- profil */
+
+.profil-bas {
+  display: flex;
+  align-items: flex-start;
+  gap: 26px;
+  margin-bottom: 34px;
+}
+.profil-foto {
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--ken-3);
+  background: var(--kart);
+  object-fit: cover;
+}
+.profil-kimlik {
+  min-width: 0;
+}
+.profil-kimlik h1 {
+  margin-bottom: 10px;
+}
+.profil-alt {
+  font-size: 15px;
+}
+.profil-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 16px;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--mut-2);
+  margin-bottom: 14px;
+}
+.cip-dizi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 13px;
+}
+.yapan-satiri {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+/* Ölçü kutusunda sayı değil kısa bir ibare duruyorsa 27 px fazla. */
+.olcu-kisa {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+/* Kutunun ilk başlığı üstten boşluk almasın; inline stille tekrar
+   tekrar bastırmak yerine tek kural. */
+.yigin-kutu > h4:first-child {
+  margin-top: 0;
+}
+
 @media (max-width: 720px) {
   .kart-sirket {
     max-width: 180px;
   }
+  .profil-bas {
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
   .govde {
     padding: 20px 16px 60px;
+  }
+  /* Başlıkta artık dört öğe var (logo + üç bağlantı); sabit 62 px
+     yükseklikte bunlar dar ekranda sıkışıyordu. Sarma serbest,
+     yükseklik içeriğe göre. Filtre çubuğu mobilde sticky olmadığı
+     için 62 px'e bağlı bir hizalama kalmıyor. */
+  .bas-ic {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 62px;
+    padding: 11px 16px;
+    gap: 10px;
   }
   .filtre-cubugu {
     position: static;

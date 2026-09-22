@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { bildirimleriGetir, ozetCikar } from "@/lib/veri";
 import { sayi, yuzde } from "@/lib/bicim";
@@ -30,11 +31,14 @@ export default async function ProjeHakkinda() {
             <span className="logo-alt mono">PROJE HAKKINDA</span>
           </Link>
           <div className="bas-bos" />
+          <Link href="/profil" className="bag">
+            Profil
+          </Link>
           <Link href="/metodoloji" className="bag">
             Metodoloji
           </Link>
           <Link href="/" className="bag bag-koyu">
-            Canlı akışa dön
+            Akışa dön
           </Link>
         </div>
       </header>
@@ -246,14 +250,26 @@ export default async function ProjeHakkinda() {
 
         <section style={{ borderTop: "1px solid var(--ken)", paddingTop: 30 }}>
           <div className="ust-etiket mono">YAPANLAR</div>
-          <p>
-            <strong>Hüseyin Dinçer</strong> — proje tasarımı, kapsam ve
-            metodoloji kararları, veri hattı mimarisi, arayüz tasarımı ve tüm
-            karar onayları.
-            <br />
-            <strong>Claude (Opus 5)</strong> — uygulama, istatistiksel analiz ve
-            yazım. Depoda ortak yazarlık <code>Co-Authored-By</code> ile işaretli.
-          </p>
+          <div className="yapan-satiri">
+            <Image
+              src="/huseyin-dincer.jpg"
+              alt="Hüseyin Dinçer"
+              width={54}
+              height={54}
+              className="profil-foto"
+            />
+            <p style={{ marginBottom: 0 }}>
+              <strong>
+                <Link href="/profil">Hüseyin Dinçer</Link>
+              </strong>{" "}
+              — proje tasarımı, kapsam ve metodoloji kararları, veri hattı
+              mimarisi, arayüz tasarımı ve tüm karar onayları.
+              <br />
+              <strong>Claude (Opus 5)</strong> — uygulama, istatistiksel analiz
+              ve yazım. Depoda ortak yazarlık <code>Co-Authored-By</code> ile
+              işaretli.
+            </p>
+          </div>
           <p style={{ fontSize: 12.5, color: "var(--mut-2)" }}>
             Proje eğitim amaçlı kişisel bir araştırmadır. Skorlar kamuya açık
             KAP metinleri ve finansal tablolar üzerinden hesaplanır; hiçbir
