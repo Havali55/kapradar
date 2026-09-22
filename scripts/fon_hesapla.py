@@ -92,7 +92,7 @@ def main() -> int:
         ((k, v, len(sahip[k]), hacim.get(k)) for k, v in net.items() if v > 0),
         key=lambda x: -x[1],
     )
-    print(f"\nEN BÜYÜK 25 POZİSYON (★ = bizim bildirim evrenimizde)")
+    print("\nEN BÜYÜK 25 POZİSYON (★ = bizim bildirim evrenimizde)")
     print(f"  {'KOD':<7} {'NET TL':>16} {'FON':>4} {'GÜNLÜK HACİM':>14} {'GÜN':>7}")
     for k, v, n, h in satirlar[:25]:
         gun = f"{v / h:7.1f}" if h else "      —"
