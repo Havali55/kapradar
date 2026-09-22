@@ -34,12 +34,15 @@ from kap_radar.cikarim import Tutar
 
 __all__ = [
     "Agirliklar",
+    "MEGA_ESIGI",
+    "ONEMLI_ESIGI",
     "TahtaBayragi",
     "TepkiPaneli",
     "VARSAYILAN_AGIRLIKLAR",
     "buyukluk_skoru",
     "f_oran",
     "guvenilirlik",
+    "kademe",
     "net_tutar_tl",
     "tahta_bayragi",
     "tepki_paneli",
@@ -55,7 +58,21 @@ class Agirliklar:
     """
 
     azami: Decimal = Decimal("5")
-    taban_oran: Decimal = Decimal("0.01")  # %1 altı: olay değil
+    # Taban 2026-09-22'de %1'den %0,25'e indirildi. Adım 16 geçerlilik
+    # sınaması %1 tabanını çürüttü: taban altındaki 58 bildirimde işlem
+    # hacmi yine %+33,4 artıyor (t=+3,39) ve taban üstünden ayırt
+    # edilemiyor (Welch p=0,51). Eski eşik 480 skorlu bildirimin 62'sine
+    # "olay değil" diyordu; yeni eşikte bu 7'ye iniyor.
+    #
+    # Sıfırlanmıyor, yalnız indiriliyor: f(r) logaritmik, taban 0 olursa
+    # log10(0) tanımsız.
+    taban_oran: Decimal = Decimal("0.0025")  # %0,25 altı: ölçülemeyecek kadar küçük
+    # Tavan %100'de KALIYOR. Adım 16'da "işlevsiz, nadiren bağlıyor"
+    # diye ölçüldü ve %50'ye çekilmesi önerilmişti; ölçüm doğru, çıkarım
+    # yanlıştı. İşlevsiz bir tavan zarar vermiyor, indirmek zarar
+    # veriyor: %100'de 480 kaydın 1'ini bağlıyor, %50'de 12'sini — yani
+    # tepedeki bir düzine bildirim 5,00'de birbirine eşitlenip ayrım
+    # kayboluyordu.
     tavan_oran: Decimal = Decimal("1.00")  # %100 üstü: daha fazla ayrım yok
 
     # K — güvenilirlik çarpanı. Kanıt taramasındaki 2×2 tablodan:
@@ -72,6 +89,16 @@ VARSAYILAN_AGIRLIKLAR = Agirliklar()
 # Skora giren tipler. `toplam_sozlesme` projenin kümülatif bedeli —
 # yeni iş değil; karıştırılırsa ORGE örneğinde oran ~12 kat şişer.
 SKORA_GIREN_TIPLER = frozenset({"ilave_siparis", "fiyat_farki", "tek_seferlik"})
+
+# Kademe eşikleri — kanonik tanım burası. `site/lib/veri.ts::kademeBul`
+# bunun birebir kopyası; biri değişirse diğeri de değişmeli, yoksa
+# arayüzdeki etiket ile betiklerin raporladığı dağılım ayrışır.
+#
+# 2026-09-22: taban %1'den %0,25'e indiği için 3,0/2,0 → 3,5/2,5.
+# Eşikler kademelerin nüfus payını koruyacak şekilde seçildi (yüzdelik
+# eşleme): mega 55 bildirim (eskiden 60), önemli+ 164 (eskiden 153).
+MEGA_ESIGI = Decimal("3.5")
+ONEMLI_ESIGI = Decimal("2.5")
 
 _IKI_HANE = Decimal("0.01")
 
@@ -180,6 +207,22 @@ def buyukluk_skoru(
         )
     )
     return _yuvarla(max(Decimal("0"), min(agirliklar.azami, ham)))
+
+
+def kademe(skor: Decimal | None) -> str | None:
+    """Skoru kullanıcının gördüğü etikete çevirir.
+
+    Skorsuz bildirim kademesiz: `None` "rutin" değildir. Tutarı
+    açıklanmamış bir bildirime "rutin" demek, ölçmediğimiz şeyi küçük
+    ilan etmek olurdu.
+    """
+    if skor is None:
+        return None
+    if skor >= MEGA_ESIGI:
+        return "mega"
+    if skor >= ONEMLI_ESIGI:
+        return "onemli"
+    return "rutin"
 
 
 # -------------------------------------------------------- tepki paneli

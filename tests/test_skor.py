@@ -14,10 +14,13 @@ from decimal import Decimal
 
 from kap_radar.cikarim import Tutar
 from kap_radar.skor import (
+    MEGA_ESIGI,
+    ONEMLI_ESIGI,
     TahtaBayragi,
     buyukluk_skoru,
     f_oran,
     guvenilirlik,
+    kademe,
     net_tutar_tl,
     tahta_bayragi,
     tepki_paneli,
@@ -41,8 +44,20 @@ def tutar(deger: str, para: str, tip: str) -> Tutar:
 
 
 def test_taban_altindaki_oran_sifir_verir():
-    """%1'in altı 'olay değil' sayılıyor — ölçeğin tabanı."""
-    assert f_oran(Decimal("0.005")) == Decimal("0")
+    """%0,25'in altı ölçülemeyecek kadar küçük — ölçeğin tabanı."""
+    assert f_oran(Decimal("0.001")) == Decimal("0")
+
+
+def test_eski_yuzde_bir_tabani_artik_sifirlamiyor():
+    """Adım 16'nın çürüttüğü eşik: %1 altı bildirimler de olay.
+
+    Taban %1'ken %0,5'lik bir sözleşme 0,00 alıyordu. Geçerlilik
+    sınaması bunun yanlış olduğunu gösterdi: taban altındaki 58
+    bildirimde işlem hacmi yine %+33,4 artıyor (t=+3,39) ve taban
+    üstünden ayırt edilemiyor (Welch p=0,51). Artık gerçek bir skor
+    alıyorlar.
+    """
+    assert round(5 * f_oran(Decimal("0.005")), 2) == Decimal("0.58")
 
 
 def test_tavan_ustundeki_oran_bire_doyar():
@@ -53,15 +68,53 @@ def test_tavan_ustundeki_oran_bire_doyar():
 def test_logaritmik_olcek_onaylanan_tabloya_uyar():
     """Materyallik çarpımsal: %1→%2 ile %10→%20 aynı şeyi söyler.
 
-    Onaylanan ölçek: %2,31→0,91 · %5→1,75 · %20→3,25 · %50→4,25 (K=1).
-    (%2,31 ORGE'nin gerçek oranı; tablodaki "%2,3" onun yuvarlanmışı.)
+    Taban %0,25'e indikten sonraki ölçek (K=1):
+    %2,31→1,86 · %5→2,50 · %20→3,66 · %50→4,42.
+    (%2,31 ORGE'nin gerçek oranı.)
+
+    Eski ölçek %1 tabanıyla 0,91 · 1,75 · 3,25 · 4,25 veriyordu. Sayılar
+    yukarı kaydı çünkü taban eksenin sıfır noktası; kademe eşikleri de
+    (3,0/2,0 → 3,5/2,5) aynı gün bu yüzden yükseltildi.
     """
     olculen = [
         round(5 * f_oran(Decimal(oran)), 2)
         for oran in ("0.0231", "0.05", "0.20", "0.50")
     ]
 
-    assert olculen == [Decimal("0.91"), Decimal("1.75"), Decimal("3.25"), Decimal("4.25")]
+    assert olculen == [Decimal("1.86"), Decimal("2.50"), Decimal("3.66"), Decimal("4.42")]
+
+
+def test_yuzde_bes_tam_onemli_esiginde_durur():
+    """Ölçeğin okunabilirlik sınaması: cironun %5'i = 'Önemli iş' sınırı.
+
+    Taban %0,25 ve tavan %100 seçilince %5 logaritmik aralığın tam
+    ortasına düşüyor (f=0,5 → S=2,50). Eşik 2,5 olduğu için kullanıcıya
+    anlatılabilir bir kural çıkıyor: cirosunun yirmide birini aşan iş
+    'önemli' sayılıyor.
+    """
+    assert round(5 * f_oran(Decimal("0.05")), 2) == ONEMLI_ESIGI
+
+
+# ---------------------------------------------------------- kademeler
+
+
+def test_kademe_esikleri_kapsayici():
+    """Eşiğin tam üstündeki skor üst kademeye girer, altındaki girmez."""
+    assert kademe(MEGA_ESIGI) == "mega"
+    assert kademe(MEGA_ESIGI - Decimal("0.01")) == "onemli"
+    assert kademe(ONEMLI_ESIGI) == "onemli"
+    assert kademe(ONEMLI_ESIGI - Decimal("0.01")) == "rutin"
+
+
+def test_skorsuz_bildirim_kademesiz():
+    """`None` 'rutin' değil.
+
+    Tutarı açıklanmamış bir bildirime 'rutin' demek, ölçmediğimiz şeyi
+    küçük ilan etmek olurdu. Arayüz bu durumda skor yerine etiket
+    gösteriyor.
+    """
+    assert kademe(None) is None
+    assert kademe(Decimal("0")) == "rutin"
 
 
 # ------------------------------------------------------ K: güvenilirlik
@@ -126,8 +179,12 @@ def test_tutar_yoksa_net_tutar_sifir_degil_none():
 def test_orge_bildiriminin_skoru_ucten_uca_dogrulanir():
     """Gerçek veriyle doğrulanmış örnek: ORGE 1665567.
 
-    net 92.799.518 TL / TTM 4.023.377.103 TL = %2,31 → f=0,181,
-    karşı taraf açık + güncelleme → K=0,85 → skor 0,77/5.
+    net 92.799.518 TL / TTM 4.023.377.103 TL = %2,31 → f=0,371,
+    karşı taraf açık + güncelleme → K=0,85 → skor 1,58/5.
+
+    TTM'in kendisi iki gerçek rapordan çözüldü (FY2025 + 6A2026 −
+    6A2025), ikisi de bildirimden önce yayınlanmış. Taban %1'ken bu
+    skor 0,77'ydi; oran aynı, ölçek değişti.
     """
     skor = buyukluk_skoru(
         net_tutar_tl=Decimal("92799518.30"),
@@ -136,7 +193,7 @@ def test_orge_bildiriminin_skoru_ucten_uca_dogrulanir():
         guncelleme_mi=True,
     )
 
-    assert skor == Decimal("0.77")
+    assert skor == Decimal("1.58")
 
 
 def test_tutar_yoksa_skor_gosterilmez():

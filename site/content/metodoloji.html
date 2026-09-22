@@ -243,7 +243,7 @@
         <li><strong>Skor bir getiri tahmini değil — ve gerçekten de değil.</strong> S ile işaretli anormal getiri arasında hiçbir ilişki yok (kümelenmiş t = +0,52, p = 0,61). İddia ile veri burada tam örtüşüyor.</li>
         <li><strong>Skorun hacimle ilişkisi, yalnızca temiz tahtalarda var.</strong> Havuzlanmış örneklemde eşiği geçmiyor (t = +1,05); ama spekülatif tahtalar ayrıştırılınca S'nin etkisi anlamlı hâle geliyor (<strong>t = +2,35</strong>). Katsayı temiz tahtada +0,083, spekülatif tahtada −0,039 — <strong>ölçü, oynatılan tahtalarda kırılıyor.</strong></li>
         <li><strong>Büyük haber, küçük haberden ölçülebilir biçimde daha çok fiyatlanmıyor.</strong> S ≥ 3 olanların 3 günlük tepkisi +%1,18, S &lt; 1 olanlarınki +%0,79 ve ikisi de sıfırdan ayrılamıyor. Spekülatif tahtalarda mutlak hareket çok daha büyük (t = +4,80) ama <strong>yönü tamamen rastgele</strong> (t = −0,13) — “oynatılan tahta” olgusunun istatistiksel karşılığı.</li>
-        <li><strong>%1 tabanı veriyle çelişiyor.</strong> Formül r &lt; %1 olan 61 bildirime 0,00 veriyor; oysa bu bildirimlerde hacim yine <strong>%33,4 artıyor</strong> (t = +3,39) ve taban üstündekilerden ayırt edilemiyor (p = 0,51).</li>
+        <li><strong>%1 tabanı veriyle çelişiyordu — düzeltildi.</strong> Formül r &lt; %1 olan 61 bildirime 0,00 veriyordu; oysa bu bildirimlerde hacim yine <strong>%33,4 artıyor</strong> (t = +3,39) ve taban üstündekilerden ayırt edilemiyor (p = 0,51). Taban 22.09.2026'da <strong>%0,25</strong>'e indirildi, kademe eşikleri de ölçek kaymasını telafi edecek biçimde 3,5/2,5'e taşındı.</li>
         <li><strong>En sağlam bulgu skorun kendisi değil: bildirim yorgunluğu.</strong> Sık bildirim yapan şirketlerde tepki sönüyor (kümelenmiş t = −2,48, p = 0,013) — ve bu şu an skorda hiç yok.</li>
       </ol>
     </div>
@@ -312,23 +312,26 @@
       <h4>f(r): neden logaritmik</h4>
       <p>Ham oran doğrudan kullanılamaz, çünkü <strong>materyallik çarpımsaldır</strong>: %1'den %2'ye çıkmak ile %10'dan %20'ye çıkmak yatırımcıya aynı şeyi söyler. Doğrusal ölçek aralığın tamamını birkaç dev sözleşmeye harcar ve asıl ayrımın olduğu bandı ezer.</p>
       <div class="formul" style="margin-bottom:18px;">
-        <div class="formul-ana">f(r) = clamp( (log₁₀(r) + 2) / 2 , 0 , 1 )</div>
-        <div class="formul-alt">taban r = %1 → f = 0 &nbsp;·&nbsp; tavan r = %100 → f = 1</div>
+        <div class="formul-ana">f(r) = clamp( (log₁₀(r) + 2,602) / 2,602 , 0 , 1 )</div>
+        <div class="formul-alt">taban r = %0,25 → f = 0 &nbsp;·&nbsp; tavan r = %100 → f = 1</div>
       </div>
+      <p style="font-size:13px;">Taban 22.09.2026'da %1'den <strong>%0,25</strong>'e indirildi; gerekçesi aşağıdaki Bulgu 5. Aynı gün kademe eşikleri de 3,0/2,0'dan <strong>3,5/2,5</strong>'e çıkarıldı — taban eksenin sıfır noktası olduğu için altındaki her şey yukarı kaydı (medyan 1,39 → 2,02) ve eşikler yerinde bırakılsaydı “Mega iş” etiketi kullanıcıya haber verilmeden üç kat kolaylaşırdı. Yeni eşikler kademelerin örneklemdeki payını koruyor.</p>
       <div class="tablo-sar" style="margin-bottom:18px;">
         <table>
           <thead><tr><th>HASILAT ORANI r</th><th class="sag">f(r)</th><th class="sag">K = 1,00 İKEN S</th><th>ÖRNEKLEMDEKİ PAYI</th></tr></thead>
           <tbody>
-            <tr><td class="s" style="text-align:left;">%1,0</td><td class="s">0,000</td><td class="s v">0,00</td><td>taban — %12,7'si burada</td></tr>
-            <tr><td class="s" style="text-align:left;">%2,3</td><td class="s">0,181</td><td class="s v">0,91</td><td rowspan="2" style="vertical-align:middle;">%1–%10 bandı: <strong>%59,4</strong></td></tr>
-            <tr><td class="s" style="text-align:left;">%5,0</td><td class="s">0,350</td><td class="s v">1,75</td></tr>
-            <tr><td class="s" style="text-align:left;">%10,0</td><td class="s">0,500</td><td class="s v">2,50</td><td rowspan="2" style="vertical-align:middle;">%10–%50 bandı: %25,4</td></tr>
-            <tr><td class="s" style="text-align:left;">%20,0</td><td class="s">0,650</td><td class="s v">3,25</td></tr>
-            <tr><td class="s" style="text-align:left;">%50,0</td><td class="s">0,850</td><td class="s v">4,25</td><td>%50–%100: %2,3</td></tr>
-            <tr><td class="s" style="text-align:left;">%100,0</td><td class="s">1,000</td><td class="s v">5,00</td><td>tavan — 613'te <strong>4 kez</strong></td></tr>
+            <tr><td class="s" style="text-align:left;">%0,25</td><td class="s">0,000</td><td class="s v">0,00</td><td>taban — %1,5'i burada</td></tr>
+            <tr><td class="s" style="text-align:left;">%1,0</td><td class="s">0,231</td><td class="s v">1,16</td><td>%0,25–%1 bandı: %11,2</td></tr>
+            <tr><td class="s" style="text-align:left;">%2,3</td><td class="s">0,370</td><td class="s v">1,85</td><td rowspan="2" style="vertical-align:middle;">%1–%10 bandı: <strong>%59,5</strong></td></tr>
+            <tr><td class="s" style="text-align:left;">%5,0</td><td class="s">0,500</td><td class="s v">2,50</td></tr>
+            <tr><td class="s" style="text-align:left;">%10,0</td><td class="s">0,616</td><td class="s v">3,08</td><td rowspan="2" style="vertical-align:middle;">%10–%50 bandı: %25,4</td></tr>
+            <tr><td class="s" style="text-align:left;">%20,0</td><td class="s">0,731</td><td class="s v">3,66</td></tr>
+            <tr><td class="s" style="text-align:left;">%50,0</td><td class="s">0,884</td><td class="s v">4,42</td><td>%50–%100: %2,3</td></tr>
+            <tr><td class="s" style="text-align:left;">%100,0</td><td class="s">1,000</td><td class="s v">5,00</td><td>tavan — 613'te <strong>1 kez</strong></td></tr>
           </tbody>
         </table>
       </div>
+      <p style="font-size:13px;">Ölçeğin okunabilir bir çapası var: taban %0,25 ve tavan %100 seçilince <strong>%5 tam olarak aralığın ortasına</strong> düşüyor (f = 0,500 → S = 2,50) ve bu da “Önemli iş” eşiği. Yani kullanıcıya anlatılabilir bir kural çıkıyor: <em>cirosunun yirmide birini aşan iş önemli sayılır.</em></p>
 
       <h4>K: güvenilirlik çarpanı</h4>
       <p>İkinci bileşen bildirimin ne kadar doğrulanabilir olduğunu yansıtır. <strong>Çarpımsaldır, toplamsal değil</strong> — karşı tarafı gizli dev bir sözleşme hâlâ devdir, sadece daha az güvenilirdir; toplamsal bir ceza onu küçük gösterirdi. 613 bildirimin <strong>224'ünde (%36,5)</strong> karşı taraf boş, yani K azınlık bir düzeltme değil.</p>
@@ -536,8 +539,9 @@
       <p>Dürüst okuma: <strong>skorun materyallikle ilişkisi bu havuzda kurulamadı.</strong> Yanlışlanmadı da — 70 kümeyle bu büyüklükte bir etkiyi yakalamak için istatistiksel güç zaten yetersiz. Doğru cümle “destekleyici ama sonuçsuz”.</p>
       <p><strong>Ama havuzun kendisi sorunluydu.</strong> Bulgu 10 bunu ele alıyor ve sonucu değiştiriyor.</p>
 
-      <h4>Bulgu 5 — %1 tabanı veriyle çelişiyor <span class="cip cip-r" style="margin-left:6px;">ÇÜRÜTÜLDÜ</span></h4>
-      <p>Formül, hasılat oranı %1'in altındaki bildirimlere <em>S = 0,00</em> veriyor. Bunun arkasındaki iddia açıktı: <strong>“%1 altı bir sözleşme olay sayılmaz.”</strong> Veri bunu desteklemiyor.</p>
+      <h4>Bulgu 5 — %1 tabanı veriyle çelişiyor <span class="cip cip-r" style="margin-left:6px;">ÇÜRÜTÜLDÜ</span> <span class="cip cip-y" style="margin-left:4px;">DÜZELTİLDİ</span></h4>
+      <p><strong>Bu bulgu uygulandı.</strong> Taban 22.09.2026'da %0,25'e indirildi ve arşivin tamamı yeniden skorlandı: 0,00 alan bildirim sayısı <strong>62'den 7'ye</strong> indi. Aşağıdaki ölçüm, değişiklikten önceki hâli anlatıyor.</p>
+      <p>Formül, hasılat oranı %1'in altındaki bildirimlere <em>S = 0,00</em> veriyor<em>du</em>. Bunun arkasındaki iddia açıktı: <strong>“%1 altı bir sözleşme olay sayılmaz.”</strong> Veri bunu desteklemiyor.</p>
       <div class="izgara" style="margin-bottom:16px;">
         <div><div class="et">TABAN ALTI (r &lt; %1)</div><div class="say" style="color:var(--kir);">+%33,4</div><div class="say-et">n = 58 · anormal hacim · t = +3,39<span class="yildiz">***</span></div></div>
         <div><div class="et">TABAN ÜSTÜ (r ≥ %1)</div><div class="say">+%41,8</div><div class="say-et">n = 365 · anormal hacim</div></div>
@@ -547,8 +551,9 @@
       <p>Yani taban altındaki bildirimlerde piyasa <strong>anlamlı biçimde hareketleniyor</strong> — hacim üçte bir artıyor, t = +3,39 — ve bu hareket taban üstündekilerden istatistiksel olarak ayırt edilemiyor. Formülün “olay değil” dediği 61 bildirime piyasa “olay” diyor.</p>
       <p>Daha ince bir kesit aynı sonucu veriyor: r &lt; %0,5 olan 22 bildirimde ortalama AV +0,351 (yani hacim %42 artıyor) — taban üstü ortalamasından bile yüksek. Ancak en uçta, r &lt; %0,1 olan 4 bildirimde AV −0,202'ye dönüyor; dört gözlemle hüküm verilemez ama tabanın tümüyle kaldırılması yerine <strong>çok daha aşağı çekilmesi</strong> yönünde zayıf bir işaret.</p>
 
-      <h4>Bulgu 6 — %100 tavanı pratikte süs <span class="cip cip-m" style="margin-left:6px;">İŞLEVSİZ</span></h4>
+      <h4>Bulgu 6 — %100 tavanı pratikte süs <span class="cip cip-m" style="margin-left:6px;">İŞLEVSİZ</span> <span class="cip cip-m" style="margin-left:4px;">ÖNERİ GERİ ÇEKİLDİ</span></h4>
       <p>Tavan, 613 bildirimin <strong>4'ünde</strong> bağladı; skorlanan 480 kaydın yalnızca birinde (CVKMD, r = %118). Oranı %50'yi aşan bildirim sayısı 10 (%2,4). Yani ölçeğin üst dörtte biri neredeyse hiç kullanılmıyor: skorların çeyrekliği 0,64 – 2,30 ve medyanı 1,39 ile <strong>dağılım ölçeğin alt yarısına sıkışmış</strong>.</p>
+      <p><strong>Bu notun ilk sürümü buradan “tavan %50'ye çekilsin” sonucunu çıkarıyordu; öneri 22.09.2026'da geri çekildi.</strong> Ölçüm doğruydu, çıkarım değildi: işlevsiz bir tavan zarar vermiyor, indirmek veriyor. Tavan %100'de 480 kaydın 1'ini bağlıyor, %50'ye çekilseydi 12'sini bağlayacaktı — yani tepedeki bir düzine bildirim 5,00'de birbirine eşitlenip aralarındaki ayrım kaybolacaktı. Bir eşiği “nadiren devreye giriyor” diye değiştirmek, onu değiştirmek için bir sebep değil. Tavan <strong>%100'de kaldı</strong>; dağılımın alt yarısına sıkışması sorunu ise tavandan değil tabandan kaynaklanıyordu ve Bulgu 5'in düzeltmesiyle giderildi (medyan 1,39 → 2,02).</p>
 
       <h4>Bulgu 7 — En sağlam bulgu skorda yok: bildirim yorgunluğu <span class="cip cip-y" style="margin-left:6px;">SAĞLAM</span></h4>
       <p>Bu çalışmanın kümelenmiş standart hatalardan sağ çıkan tek ilişkisi, skorun bileşenlerinden biri değil: <strong>şirketin ne sıklıkta bildirim yaptığı.</strong></p>

@@ -57,10 +57,25 @@ export type Bildirim = AkisSatiri & {
 
 const ESAS_ASGARI_N = 20;
 
+/**
+ * Eşikler 2026-09-22'de 3/2'den 3,5/2,5'e çıkarıldı — skor enflasyonu
+ * DEĞİL, telafisi. Aynı gün formülün tabanı %1'den %0,25'e indi; taban
+ * eksenin sıfır noktası olduğu için altındaki her şey yukarı kaydı
+ * (medyan 1,38 → 2,00). Eşikler yerinde bıraksaydık "Mega iş" 60
+ * bildirimden 94'e çıkardı, yani etiketin anlamı kullanıcıya haber
+ * verilmeden değişirdi.
+ *
+ * Yeni eşikler kademelerin nüfus içindeki payını koruyor: 3,5 → 55
+ * bildirim (eskiden 60), 2,5 → 164 (eskiden 153). "Mega iş" görmüş
+ * biri için sayı aynı şeyi söylemeye devam ediyor.
+ *
+ * KANONİK TANIM `src/kap_radar/skor.py::kademe`. Burası onun kopyası —
+ * eşikler orada değişirse burada da değişmeli.
+ */
 export function kademeBul(skor: number | null): Bildirim["kademe"] {
   if (skor === null) return null;
-  if (skor >= 3) return "mega";
-  if (skor >= 2) return "onemli";
+  if (skor >= 3.5) return "mega";
+  if (skor >= 2.5) return "onemli";
   return "rutin";
 }
 

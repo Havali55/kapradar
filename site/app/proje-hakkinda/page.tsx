@@ -206,9 +206,12 @@ export default async function ProjeHakkinda() {
               panelin geçerlilik koşulu.
             </li>
             <li>
-              <strong>Kendi eşiklerimizden biri çürüdü.</strong> %1 tabanının
-              altındaki bildirimlerde de hacim anlamlı biçimde artıyor — yani
-              formül bir grup gerçek olayı &ldquo;olay değil&rdquo; sayıyor.
+              <strong>Kendi eşiklerimizden biri çürüdü — ve düzeltildi.</strong>{" "}
+              %1 tabanının altındaki bildirimlerde de hacim anlamlı biçimde
+              artıyordu; yani formül bir grup gerçek olayı &ldquo;olay
+              değil&rdquo; sayıyordu. Taban %0,25&apos;e indirildi, skoru
+              sıfırlanan bildirim sayısı 62&apos;den 7&apos;ye düştü. Ölçek
+              kaydığı için kademe eşikleri de birlikte taşındı.
             </li>
           </ul>
           <p>

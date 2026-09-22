@@ -166,7 +166,7 @@ def test_bildirim_tarihli_kur_ve_point_in_time_ttm_baglanir():
 
     assert sonuc.karar is Karar.YAYINLA
     assert sonuc.net_tutar_tl == Decimal("48153760.30")
-    assert sonuc.etki_skoru == Decimal("0.20")
+    assert sonuc.etki_skoru == Decimal("1.31")
     # Kur bildirimin kendi gününden sorulmalı, bugünden değil.
     assert depo.sorulan == [(date(2026, 9, 1), "EUR")]
 

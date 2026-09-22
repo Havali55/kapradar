@@ -60,8 +60,9 @@ def test_temiz_bildirim_skoruyla_birlikte_yayina_gecer():
 
     assert sonuc.karar is Karar.YAYINLA
     assert sonuc.net_tutar_tl == Decimal("48153760.30")
-    # 48,15 mn / 4,02 mr = %1,20 -> f=0,039 -> 5 x 0,039 x 1,00
-    assert sonuc.etki_skoru == Decimal("0.20")
+    # 48,15 mn / 4,02 mr = %1,20 -> f=0,261 -> 5 x 0,261 x 1,00
+    # (taban %1'ken f=0,039 ve skor 0,20'ydi; oran aynı, ölçek değişti)
+    assert sonuc.etki_skoru == Decimal("1.31")
 
 
 def test_ayni_tutarin_iki_para_birimindeki_tekrari_yayini_durdurur():
