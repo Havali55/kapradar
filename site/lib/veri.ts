@@ -75,6 +75,18 @@ export type AkisSatiri = {
    * beta evren ortalaması, α = 0. Kullanıcıya söylenmesi gereken bir şey.
    */
   beta_kaynak: "tahmin" | "evren_ort" | null;
+  /**
+   * Bildirim anında yürürlükteki VBTS kademesi: 0 yok, 1 kredili işlem
+   * yasağı, 2 brüt takas, 3 emir paketi, 4 tek fiyat. `tahta_v90/v5`
+   * `tahta_yontem = kap_v1` iken devre kesicinin başladığı ayrı seans günü.
+   */
+  tahta_vbts_kademe: number | null;
+  tahta_vbts_bitis: string | null;
+  tahta_yontem: string | null;
+  /** Bildirimden önceki 12 aydaki tüm KAP özel durum açıklamaları. */
+  kap_aciklama_12a: number | null;
+  /** 365'ten azsa 12 aylık sayım eksik pencereden (yeni halka arz). */
+  siklik_arsiv_gun: number | null;
 };
 
 export type TepkiPaneli = {

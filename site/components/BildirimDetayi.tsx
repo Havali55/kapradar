@@ -15,9 +15,12 @@ import {
   SKORA_GIREN,
   TAHTA_ADI,
   TAHTA_NOTU,
+  TAHTA_SINIR_NOTU,
   TIP_ADI,
+  VBTS_KADEME_ADI,
   isaretliYuzde,
   kalemTutari,
+  kisaTarih,
   sayi,
   tamTarih,
   tamTl,
@@ -189,18 +192,30 @@ export default function BildirimDetayi({
           <p className="tahta-not">{TAHTA_NOTU[b.tahta]}</p>
           <dl className="kutu">
             <div className="kutu-satir">
-              <dt>Son 90 günde limit yakını gün</dt>
+              <dt>Bildirim anında VBTS tedbiri</dt>
+              <dd>
+                {b.tahta_vbts_kademe
+                  ? `${VBTS_KADEME_ADI[b.tahta_vbts_kademe]}${
+                      b.tahta_vbts_bitis ? ` · bitiş ${kisaTarih(b.tahta_vbts_bitis)}` : ""
+                    }`
+                  : "yok"}
+              </dd>
+            </div>
+            <div className="kutu-satir">
+              <dt>Devre kesici günü · son 90 seans</dt>
               <dd className="mono">{b.tahta_v90 ?? "—"}</dd>
             </div>
             <div className="kutu-satir">
-              <dt>Son 5 günde</dt>
+              <dt>Son 5 seansta</dt>
               <dd className="mono">{b.tahta_v5 ?? "—"}</dd>
             </div>
           </dl>
           <p className="tutar-yok-not">
             Tahta kalitesi skora girmez — bu bildirimin değil hissenin
-            özelliğidir. Vekil ölçü: günlük getirisi ±%9&apos;u aşan gün sayısı
-            (BIST limiti ±%10).
+            özelliğidir. Kaynak Borsa İstanbul&apos;un KAP&apos;taki kendi
+            kayıtları: pay bazında devre kesici bildirimleri ve Volatilite
+            Bazlı Tedbir Sistemi duyuruları. Yalnız bildirimden önce
+            yayınlanmış olanlar sayılır. {TAHTA_SINIR_NOTU}
           </p>
         </>
       )}
@@ -220,9 +235,19 @@ export default function BildirimDetayi({
           <p className="tahta-not">{SIKLIK_NOTU[b.siklik]}</p>
           <dl className="kutu">
             <div className="kutu-satir">
-              <dt>Şirketin arşiv penceresindeki bildirimi (12 ay)</dt>
+              <dt>Yeni İş İlişkisi bildirimi · önceki 12 ay (bu dahil)</dt>
               <dd className="mono">{b.bildirim_sikligi ?? "—"}</dd>
             </div>
+            <div className="kutu-satir">
+              <dt>Tüm KAP özel durum açıklaması · önceki 12 ay</dt>
+              <dd className="mono">{b.kap_aciklama_12a ?? "—"}</dd>
+            </div>
+            {b.siklik_arsiv_gun !== null && b.siklik_arsiv_gun < 365 && (
+              <div className="kutu-satir">
+                <dt>Şirketin KAP geçmişi</dt>
+                <dd>yalnız {b.siklik_arsiv_gun} gün — 12 ay dolmadı</dd>
+              </div>
+            )}
             <div className="kutu-satir">
               <dt>Kademe eşikleri</dt>
               <dd className="mono">

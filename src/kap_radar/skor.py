@@ -310,10 +310,12 @@ def siklik_bayragi(adet: int) -> SiklikBayragi:
     bu *şirketin* özelliği, bildirimin değil. Skora gömülseydi "neden
     2,4?" sorusunun cevabı "çünkü şirket çok bildirim yapıyor" olurdu.
 
-    Ölçü arşiv penceresinin tamamından alınıyor, bildirim anına kadar
-    olan kısımdan değil. Bu bilinçli: gösterilen şey bir tahmin girdisi
-    değil, şirketi tanıtan betimleyici bir etiket. Arayüz de "son 12
-    ayda N bildirim" diyerek pencereyi açıkça söylüyor.
+    `adet` bildirimden ÖNCEKİ 12 aydaki Yeni İş İlişkisi sayısı, bu
+    bildirim dahil (`siklik_durumu.yeni_is_12a`). 2026-09-22'ye kadar
+    arşivin tamamından sayılıyordu — ileriye bakıyordu ve 613 bildirimin
+    121'inde kademeyi değiştiriyordu. Bulgu lookahead'siz ölçüyle de
+    ayakta: katsayı −0,116, kümelenmiş t=−2,29 (p=0,022). Eşikler
+    değişmedi; point-in-time sayımın üçlükleri 7/18, mevcut 8/18.
     """
     if adet >= SIKLIK_SIK_ESIGI:
         return SiklikBayragi.SIK
@@ -322,16 +324,33 @@ def siklik_bayragi(adet: int) -> SiklikBayragi:
     return SiklikBayragi.SEYREK
 
 
-def tahta_bayragi(*, v90: int, v5: int) -> TahtaBayragi:
-    """Son 90 gün ve son 5 gündeki VBTS/devre kesici sayısına bakar.
+# Devre kesici günü (90 seans) üçlükleri — bkz. tahta_bayragi.
+TAHTA_TEMIZ_V90 = 4
+TAHTA_TEDBIRLI_V90 = 8
+
+
+def tahta_bayragi(*, v90: int, v5: int, vbts_kademe: int = 0) -> TahtaBayragi:
+    """Son 90 ve son 5 seanstaki devre kesici günü + yürürlükteki VBTS.
 
     Eşikler formül önerisinden. Sıra tersten kuruldu — en ağır durum
     önce: `v90=3, v5=2` hem 'hareketli' hem 'tedbirli' eşiğini
     karşılıyor, iki devre kesici gören bir tahtayı 'hareketli' diye
     yayınlamak yanıltıcı olurdu.
+
+    `vbts_kademe` > 0: bildirim anında Borsa İstanbul'un volatilite
+    tedbiri yürürlükte. Bu, "tedbirli" kelimesinin tam anlamı; sayım
+    eşiklerinin altında kalsa bile tahta tedbirlidir.
+
+    Eşikler (2026-09-22, Hüseyin onayı): v90 bildirim ağırlıklı
+    üçlüklerden (4 / 8) — sıklık etiketiyle aynı kural. Önceki 2 / 6
+    limit yakını gün vekili için kurulmuştu; gerçek devre kesici daha sık
+    tetiklendiği için bildirimlerin %47'sini "tedbirli" yapıyordu. S~AV
+    katsayısı gruplara göre: 4/8 ile +0,168 / +0,026 / −0,068; 2/6 ile
+    +0,109 / +0,121 / −0,060. 4/8 sonuçlar görüldükten sonra seçildi —
+    gerekçesi sonuç değil, sıklıkla aynı üçlük kuralı.
     """
-    if v90 > 6 or v5 >= 2:
+    if vbts_kademe > 0 or v90 > TAHTA_TEDBIRLI_V90 or v5 >= 2:
         return TahtaBayragi.TEDBIRLI
-    if v90 <= 2 and v5 == 0:
+    if v90 <= TAHTA_TEMIZ_V90 and v5 == 0:
         return TahtaBayragi.TEMIZ
     return TahtaBayragi.HAREKETLI

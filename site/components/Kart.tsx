@@ -8,6 +8,7 @@ import {
   SIKLIK_NOTU,
   TAHTA_ADI,
   TAHTA_NOTU,
+  VBTS_KADEME_ADI,
   buyukTl,
   gecenSure,
   isaretliYuzde,
@@ -145,16 +146,21 @@ export default function Kart({
                 </div>
                 <p className="tahta-not">{TAHTA_NOTU[tahta]}</p>
                 <dl className="kv mono">
-                  <dt>Limit yakını gün (90g)</dt>
+                  <dt>VBTS tedbiri</dt>
+                  <dd>
+                    {b.tahta_vbts_kademe
+                      ? VBTS_KADEME_ADI[b.tahta_vbts_kademe]
+                      : "yok"}
+                  </dd>
+                  <dt>Devre kesici günü (90 seans)</dt>
                   <dd>{b.tahta_v90 ?? "—"}</dd>
-                  <dt>Son 5 günde</dt>
+                  <dt>Son 5 seansta</dt>
                   <dd>{b.tahta_v5 ?? "—"}</dd>
                 </dl>
               </>
             ) : (
               <p className="tutar-yok-not" style={{ marginTop: 0 }}>
-                Bildirim anında yeterli fiyat geçmişi olmadığı için tahta
-                kalitesi hesaplanamadı.
+                Bu bildirim için tahta kalitesi hesaplanamadı.
               </p>
             )}
 
@@ -171,7 +177,7 @@ export default function Kart({
                   />
                   <span className="baglam-ad">{SIKLIK_ADI[b.siklik]}</span>
                   <span className="baglam-sayi mono">
-                    {b.bildirim_sikligi} bildirim / 12 ay
+                    {b.bildirim_sikligi} yeni iş · {b.kap_aciklama_12a ?? "—"} açıklama / 12 ay
                   </span>
                 </div>
                 <p className="tahta-not" style={{ margin: "7px 0 0" }}>

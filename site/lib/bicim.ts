@@ -94,6 +94,12 @@ export function gunEtiketi(isoTarih: string, simdi = new Date()): string {
   });
 }
 
+/** "2026-10-15" → "15.10.2026". Saat dilimi dönüşümü yok: gün olduğu gibi. */
+export function kisaTarih(isoGun: string): string {
+  const [y, a, g] = isoGun.slice(0, 10).split("-");
+  return `${g}.${a}.${y}`;
+}
+
 export function tamTarih(isoTarih: string): string {
   return new Date(isoTarih).toLocaleString(TR, {
     day: "2-digit",
@@ -110,11 +116,33 @@ export const TAHTA_ADI: Record<string, string> = {
   tedbirli: "Tedbirli",
 };
 
+/**
+ * Kaynak Borsa İstanbul'un KAP kayıtları (devre kesici + VBTS). Eşikler
+ * `skor.py::tahta_bayragi`: 90 seansta ≤4 devre kesici günü temiz, >8
+ * ya da yürürlükte VBTS tedbirli.
+ */
 export const TAHTA_NOTU: Record<string, string> = {
-  temiz: "Son 5 günde limit yakını hareket yok, son 90 günde en fazla iki gün.",
-  hareketli: "Tahtada zaman zaman limit yakını hareket görülüyor.",
+  temiz:
+    "Son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, son 5 seansta hiç; yürürlükte volatilite tedbiri yok.",
+  hareketli: "Tahtada devre kesici zaman zaman tetikleniyor.",
   tedbirli:
-    "Tahta sık limit görüyor. Bu hisselerde fiyat hareketi habere değil oynaklığa bağlı olabilir.",
+    "Tahta ya Borsa İstanbul'un volatilite tedbiri (VBTS) altında ya da devre kesiciyi sık tetikliyor. Bu hisselerde fiyat hareketi habere değil oynaklığa bağlı olabilir.",
+};
+
+/**
+ * Bayrağın sınırı: oynaklık ölçüyor. 2026-09 soruşturmasında adı geçen
+ * dönemlerde devre kesici AZALMIŞTI — kontrollü bir
+ * yükseliş sakin görünür. "Temiz" bu yüzden "sağlıklı" demek değil.
+ */
+export const TAHTA_SINIR_NOTU =
+  "“Temiz” yalnızca oynaklığın düşük olduğunu söyler. Kontrollü, sakin bir fiyat yükselişi devre kesiciyi tetiklemez; bu bayrak onu ayırt edemez.";
+
+/** Borsa İstanbul Volatilite Bazlı Tedbir Sistemi kademeleri. */
+export const VBTS_KADEME_ADI: Record<number, string> = {
+  1: "kredili işlem yasağı",
+  2: "brüt takas",
+  3: "emir paketi",
+  4: "tek fiyat",
 };
 
 export const SIKLIK_ADI: Record<string, string> = {

@@ -299,3 +299,15 @@ def test_bildirim_oncesi_iki_devre_kesici_tedbirli():
 
 def test_cok_sik_devre_kesici_goren_hisse_tedbirli():
     assert tahta_bayragi(v90=9, v5=0) is TahtaBayragi.TEDBIRLI
+
+
+def test_uckluk_sinirlari():
+    """4/8: bildirim ağırlıklı üçlükler (2026-09-22)."""
+    assert tahta_bayragi(v90=4, v5=0) is TahtaBayragi.TEMIZ
+    assert tahta_bayragi(v90=5, v5=0) is TahtaBayragi.HAREKETLI
+    assert tahta_bayragi(v90=8, v5=0) is TahtaBayragi.HAREKETLI
+
+
+def test_yururlukte_vbts_sayimdan_bagimsiz_tedbirli():
+    """Hiç devre kesici görmese bile VBTS altındaki tahta tedbirlidir."""
+    assert tahta_bayragi(v90=0, v5=0, vbts_kademe=1) is TahtaBayragi.TEDBIRLI

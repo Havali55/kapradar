@@ -1,5 +1,11 @@
 """Bildirim anındaki tahta kalitesini hesaplar (Modül B) — Adım 17.
 
+**YERİNİ `baglam_hesapla.py` ALDI (2026-09-22).** Bu betik limit yakını
+gün VEKİLİ kullanıyor; tahta artık Borsa İstanbul'un kendi devre kesici
+ve VBTS kayıtlarından hesaplanıyor. Karşılaştırma için duruyor ve
+varsayılan olarak yazmıyor — `--vekil-yaz` verilmeden gerçek veriyi
+ezmez.
+
 Neden var: Adım 16b'de ölçüldü ki skorun piyasa ilgisiyle ilişkisi
 TEMİZ tahtalarda var (+0,083), spekülatif tahtalarda yok (−0,039).
 Tahta bayrağı bu yüzden yanında duran bir süs değil, Modül C'nin
@@ -86,6 +92,11 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="Tahta kalitesi hesabı")
     ap.add_argument("--kuru", action="store_true", help="yazma, yalnız dağılım")
+    ap.add_argument(
+        "--vekil-yaz",
+        action="store_true",
+        help="gerçek veriyi vekille EZ (yalnız bilerek)",
+    )
     secenek = ap.parse_args()
 
     dsn = dsn_bul()
@@ -128,8 +139,8 @@ def main() -> int:
             n = dagilim[ad]
             print(f"  {ad:<10} : {n:>3}  (%{n/toplam*100:.1f})" if toplam else ad)
 
-        if secenek.kuru:
-            print("\n  --kuru verildi, yazılmadı.")
+        if secenek.kuru or not secenek.vekil_yaz:
+            print("\n  Yazılmadı (vekil; gerçek veri için baglam_hesapla.py).")
             return 0
 
         with baglanti.cursor() as imlec:

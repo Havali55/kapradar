@@ -9,6 +9,7 @@ import {
   SIKLIK_NOTU,
   TAHTA_ADI,
   TAHTA_NOTU,
+  VBTS_KADEME_ADI,
   buyukTl,
   gunEtiketi,
   isaretliYuzde,
@@ -160,7 +161,9 @@ export default async function HisseSayfasi({
             </div>
             <div className="olcu-alt">
               {sonTahta?.tahta
-                ? `90 günde ${sonTahta.tahta_v90 ?? "—"} limit yakını gün`
+                ? sonTahta.tahta_vbts_kademe
+                  ? `VBTS: ${VBTS_KADEME_ADI[sonTahta.tahta_vbts_kademe]}`
+                  : `90 seansta ${sonTahta.tahta_v90 ?? "—"} devre kesici günü`
                 : "ölçülemedi"}
             </div>
           </div>
