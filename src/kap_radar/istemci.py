@@ -22,7 +22,32 @@ from kap_radar.http_temel import (
 KOK = "https://www.kap.org.tr"
 ISITMA_YOLU = "/tr/bildirim-sorgu"
 LISTE_YOLU = "/tr/api/disclosure/members/byCriteria"
+# Fon bildirimleri (Portföy Dağılım Raporu vb.) şirket listesinde YOK;
+# ayrı uç noktadan geliyor (2026-09-22 keşfi).
+FON_LISTE_YOLU = "/tr/api/disclosure/funds/byCriteria"
 DETAY_YOLU = "/tr/api/notification/attachment-detail"
+EK_YOLU = "/tr/api/file/download"
+PDF_IMZASI = b"%PDF"
+
+
+def java_sarmalini_ac(govde: bytes) -> bytes:
+    """Ek indirme yanıtı Java serileştirilmiş byte[] (AC ED 00 05 ...).
+
+    `Content-Type: application/pdf` dese de ilk baytlar PDF değil; asıl
+    dosya sarmalın içinde, önünde 4 baytlık uzunluk alanıyla duruyor.
+    Uzunluk tutmuyorsa yarım dosya yazmaktansa hata.
+    """
+    if govde.startswith(PDF_IMZASI):
+        return govde
+    bas = govde.find(PDF_IMZASI)
+    if bas < 4:
+        raise KapErisimHatasi("ek yanıtında PDF bulunamadı")
+    uzunluk = int.from_bytes(govde[bas - 4 : bas], "big", signed=True)
+    if uzunluk != len(govde) - bas:
+        raise KapErisimHatasi(
+            f"ek uzunluğu tutmuyor: alan {uzunluk}, gelen {len(govde) - bas}"
+        )
+    return govde[bas:]
 
 __all__ = [
     "KOK",
@@ -87,6 +112,34 @@ class KapIstemcisi(HizSinirliIstemci):
                 },
             ).json()
         )
+
+    def fon_liste(self, baslangic: date, bitis: date) -> list[dict]:
+        """Fon bildirimleri; `liste` ile aynı sözleşme ve aynı 2.000 sınırı."""
+        return self._dene(
+            lambda: self._oturum.post(
+                FON_LISTE_YOLU,
+                json={
+                    "fromDate": baslangic.isoformat(),
+                    "toDate": bitis.isoformat(),
+                    "mkkMemberOidList": [],
+                    "subjectList": [],
+                },
+                headers={
+                    "Referer": f"{KOK}{ISITMA_YOLU}",
+                    "Accept": "application/json",
+                },
+            ).json()
+        )
+
+    def ek_indir(self, obj_id: str, kap_index: int) -> bytes:
+        """Bildirim ekini (PDF) indirir, Java sarmalından çıkarır."""
+        govde = self._dene(
+            lambda: self._oturum.get(
+                f"{EK_YOLU}/{obj_id}",
+                headers={"Referer": f"{KOK}/tr/Bildirim/{kap_index}"},
+            ).content
+        )
+        return java_sarmalini_ac(govde)
 
     def detay(self, kap_index: int) -> dict:
         """Tek bir bildirimin künyesini, gövdesini ve eklerini döndürür.
