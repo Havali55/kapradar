@@ -8,11 +8,21 @@ sınanıyor, çünkü ikisi de sessizce yanlış sonuç üretiyor:
 
 from __future__ import annotations
 
-from datetime import date, datetime
+import math
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
-from kap_radar.tepki import car_hesapla, t0_bul
+from kap_radar.tepki import (
+    BETA_ASGARI_GOZLEM,
+    BETA_PENCERE,
+    BETA_TAMPON,
+    BetaTahmini,
+    beta_tahmin,
+    car_hesapla,
+    t0_bul,
+    vasicek_kucult,
+)
 
 ISTANBUL = ZoneInfo("Europe/Istanbul")
 
@@ -166,3 +176,106 @@ def test_t0_oncesi_kapanis_yoksa_hesaplanmaz():
     endeks = seri("1000", "1010", "1020", "1030")
 
     assert car_hesapla(hisse, endeks, t0=date(2026, 9, 14), pencere=(0, 0)) is None
+
+
+# --------------------------------------------------------- piyasa modeli
+
+
+def test_piyasa_modeli_dusuk_betali_hisseyi_endeksin_tamaminla_cezalandirmaz():
+    """16 Eylül vakası: endeks −%5, hisse −%2, beta 0,4.
+
+    beta=1 bunu −%2 − (−%5) = +%3 "tepki" sayardı; piyasa modeli
+    beklenen düşüşü 0,4 × −%5 = −%2 olarak alır, anormal getiri sıfır.
+    """
+    hisse = seri("100", "98")
+    endeks = seri("1000", "950")
+
+    beta1 = car_hesapla(hisse, endeks, t0=date(2026, 9, 15), pencere=(0, 0))
+    model = car_hesapla(
+        hisse, endeks, t0=date(2026, 9, 15), pencere=(0, 0), beta=Decimal("0.4")
+    )
+
+    assert beta1 == Decimal("0.03")
+    assert model == Decimal("0")
+
+
+def test_alfa_her_gun_beklenen_getiriye_eklenir():
+    hisse = seri("100", "101", "102.01")
+    endeks = seri("1000", "1000", "1000")
+
+    car = car_hesapla(
+        hisse, endeks, t0=date(2026, 9, 15), pencere=(0, 1), alfa=Decimal("0.01")
+    )
+
+    assert car == Decimal("0")
+
+
+def _yapay_gecmis(beta: float, gun_sayisi: int = 200):
+    """Bilinen betayla üretilmiş gürültüsüz getiriler."""
+    gunler = [date(2025, 1, 1) + timedelta(days=i) for i in range(gun_sayisi)]
+    piyasa = {g: 0.01 * math.sin(i) for i, g in enumerate(gunler)}
+    hisse = {g: 0.0005 + beta * r for g, r in piyasa.items()}
+    return gunler, piyasa, hisse
+
+
+def test_beta_tahmini_bilinen_betayi_bulur():
+    gunler, piyasa, hisse = _yapay_gecmis(0.6)
+
+    tahmin = beta_tahmin(hisse, piyasa, gunler, t0=gunler[-1])
+
+    assert tahmin is not None
+    assert abs(tahmin.beta - 0.6) < 1e-9
+    assert abs(tahmin.alfa - 0.0005) < 1e-9
+    assert tahmin.gozlem == BETA_PENCERE
+
+
+def test_beta_tahmin_penceresi_sizinti_tamponunda_biter():
+    """t0'dan önceki BETA_TAMPON gün tahmine girmez (Adım 16 sızıntısı).
+
+    O günlere dev bir hareket konuyor; tampon çalışıyorsa beta etkilenmez.
+    """
+    gunler, piyasa, hisse = _yapay_gecmis(0.6)
+    t0 = gunler[-1]
+    for g in gunler[-BETA_TAMPON:]:
+        hisse[g] = 0.4  # eşiğin altında, filtreye takılmıyor
+
+    tahmin = beta_tahmin(hisse, piyasa, gunler, t0=t0)
+
+    assert tahmin is not None
+    assert abs(tahmin.beta - 0.6) < 1e-9
+
+
+def test_diger_olay_gunleri_tahminden_dislanir():
+    gunler, piyasa, hisse = _yapay_gecmis(0.6)
+    olay = set(gunler[100:103])
+    for g in olay:
+        hisse[g] = 0.3
+
+    tahmin = beta_tahmin(hisse, piyasa, gunler, t0=gunler[-1], haric=olay)
+
+    assert tahmin is not None
+    assert abs(tahmin.beta - 0.6) < 1e-9
+    assert tahmin.gozlem == BETA_PENCERE - 3
+
+
+def test_gecmisi_yetmeyen_hissede_beta_uydurulmaz():
+    """Yeni halka arz: tahmin penceresinde asgari gözlem yok."""
+    gunler, piyasa, hisse = _yapay_gecmis(0.6, gun_sayisi=BETA_ASGARI_GOZLEM + 5)
+
+    assert beta_tahmin(hisse, piyasa, gunler, t0=gunler[-1]) is None
+
+
+def test_vasicek_kotu_olculmus_betayi_capaya_ceker():
+    iyi = BetaTahmini(beta=1.2, alfa=0.0, gozlem=120, r2=0.5, se=0.05)
+    kotu = BetaTahmini(beta=-0.4, alfa=0.0, gozlem=120, r2=0.01, se=0.8)
+    orta = BetaTahmini(beta=0.7, alfa=0.0, gozlem=120, r2=0.2, se=0.1)
+
+    capa, kucuk = vasicek_kucult([iyi, kotu, orta])
+
+    assert abs(capa - 0.5) < 1e-12
+    # İyi ölçülen yerinde kalıyor, negatif beta çapaya yaklaşıp pozitifleşiyor.
+    assert abs(kucuk[0] - 1.2) < abs(kucuk[1] - (-0.4))
+    assert kucuk[1] > 0
+    # Her küçültülmüş beta ham değer ile çapa arasında.
+    for ham, k in zip((1.2, -0.4, 0.7), kucuk):
+        assert min(ham, capa) <= k <= max(ham, capa)

@@ -575,8 +575,9 @@
       <h4>Bulgu 8 — Sistematik boyut yanlılığı yok</h4>
       <p>Mekanik bir kaygı vardı: <em>r = tutar / hasılat</em> olduğuna göre skor küçük şirketleri kayırabilir. Veri bunu doğrulamıyor. S ile ln(TTM hasılat) arasındaki Pearson korelasyonu −0,057 (p = 0,212); Spearman −0,094 (p = 0,040) ile sınırda. Ama üçlükler <strong>monoton değil</strong> — ortalama S sırasıyla 1,79 · 1,22 · 1,55 — yani küçükten büyüğe düzenli bir eğilim yok. Zayıf bir sıra düzeyi eğilimi var, sistematik kayırma yok.</p>
 
-      <h4>Bulgu 9 — Beta = 1 varsayımı yanlış</h4>
-      <p>Anormal getiri şu an endeksin düz farkı olarak hesaplanıyor, yani her hissenin betası 1 kabul ediliyor. 106 hisse için piyasa modeli tahmin edildiğinde ortalama beta <strong>0,790</strong>, medyan 0,819, çeyreklikler 0,643 – 0,959 ve <strong>106 hissenin 89'u (%84) 1'in altında</strong>. Piyasa hareketi sistematik olarak fazla çıkarılıyor. Bu, nottaki hacim bulgularını etkilemiyor (hacim ölçümü betadan bağımsız) ama Modül C'nin getiri panelini etkiliyor.</p>
+      <h4>Bulgu 9 — Beta = 1 varsayımı yanlış <span class="cip cip-y" style="margin-left:6px;">DÜZELTİLDİ</span></h4>
+      <p><strong>Bu bulgu uygulandı.</strong> 22.09.2026'dan beri Modül C piyasa modeliyle hesaplanıyor: <em>AR = r − (α + β·r<sub>XU100</sub>)</em>. β her bildirim için kendi geçmişinden tahmin ediliyor. Tahmin penceresi 120 işlem günü ve sızıntıya karşı t0−10'da bitiyor; aynı hissenin diğer olay pencereleri dışarıda tutuluyor. Ham tahminler gürültülü (medyan R² 0,16, 11 bildirimde negatif beta). Bu yüzden her beta, kendi standart hatasıyla orantılı olarak evren ortalamasına (0,764) küçültülüyor (Vasicek). Çapa 1 değil, çünkü 1'e çekmek bu bulgunun kendisini geri silerdi. Geçmişi 60 gözleme yetmeyen 25 bildirim (yeni halka arzlar) evren ortalaması beta ile hesaplanıyor ve sayfalarında işaretleniyor. Değişiklik uç farkları yarıya indirdi: 3 puandan büyük fark 25'ten 15'e düştü. Eski ölçüyle korelasyon ise 0,979. Aşağıdaki ölçüm ve Bulgu 10–12'deki CAR sayıları değişiklikten önceki hâli (β = 1) anlatıyor.</p>
+      <p>Değişiklikten önce anormal getiri endeksin düz farkı olarak hesaplanıyordu, yani her hissenin betası 1 kabul ediliyordu. 106 hisse için piyasa modeli tahmin edildiğinde ortalama beta <strong>0,790</strong>, medyan 0,819, çeyreklikler 0,643 – 0,959 ve <strong>106 hissenin 89'u (%84) 1'in altında</strong>. Piyasa hareketi sistematik olarak fazla çıkarılıyor. Bu, nottaki hacim bulgularını etkilemiyor (hacim ölçümü betadan bağımsız) ama Modül C'nin getiri panelini etkiliyor.</p>
 
       <h4 id="bulgu10">Bulgu 10 — Spekülatif tahta ölçünün kendisini kırıyor <span class="cip cip-r" style="margin-left:6px;">EN ÖNEMLİ</span></h4>
       <p>Buraya kadarki hacim analizi örtük bir varsayım taşıyordu: <em>hacim, ilginin dürüst bir göstergesidir.</em> Borsa İstanbul'da bu varsayım tartışmalı — hacim imal edilebiliyor. Büyük oyuncuların hareketlendirdiği bir tahtada işlem patlaması habere değil oyuna ait olabilir; tersine, gerçekten büyük bir sözleşme sessiz kalabilir.</p>
@@ -655,7 +656,7 @@
           <p>Bulgu 7 en sağlam ilişki, dolayısıyla onu yok saymak zor. Yine de skora katılmamalı, çünkü aynı gerekçe devre kesici için de geçerliydi: bu <strong>şirketin</strong> özelliği, bildirimin değil. Skora girerse “neden 2,1?” sorusunun cevabı “çünkü bu şirket çok konuşuyor” olur. Doğru yer Modül B'nin yanında <strong>üçüncü bir bağlam etiketi</strong>: “bu şirket son 12 ayda 30 bildirim yaptı”.</p>
         </div>
         <div>
-          <h4 style="margin-top:0;">4 · Modül C piyasa modeline geçmeli</h4>
+          <h4 style="margin-top:0;">4 · Modül C piyasa modeline geçmeli <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
           <p>Bulgu 9: hisselerin %84'ünde beta &lt; 1. Tepki paneli beta düzeltmesi olmadan sistematik olarak yanlı. Düzeltmenin kendisi de gürültülü olacak (medyan R² 0,12) ve bu, panelde gösterilen belirsizlik aralığının genişlemesi anlamına gelir — yani daha dürüst bir panel.</p>
         </div>
         <div>

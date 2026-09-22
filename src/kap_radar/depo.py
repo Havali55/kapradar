@@ -78,15 +78,28 @@ ENDEKS_UPSERT = (
 
 # Tepki türetilmiş veri: fiyat serisi tamamlandıkça ya da pencere tanımı
 # değiştikçe tazelenmeli. Bildirimin aksine dondurulmuyor.
+TEPKI_SUTUNLARI: tuple[str, ...] = (
+    "t0",
+    "car_1g",
+    "car_3g",
+    "car_5g",
+    "pencere_basi",
+    "model",
+    "beta",
+    "alfa",
+    "beta_ham",
+    "beta_gozlem",
+    "beta_r2",
+    "beta_kaynak",
+)
 TEPKI_UPSERT = (
-    "insert into public.tepki "
-    "(kap_id, t0, car_1g, car_3g, car_5g, pencere_basi, hesaplandi_at) "
-    "values (%(kap_id)s, %(t0)s, %(car_1g)s, %(car_3g)s, %(car_5g)s, "
-    "%(pencere_basi)s, now()) "
-    "on conflict (kap_id) do update set "
-    "t0 = excluded.t0, car_1g = excluded.car_1g, car_3g = excluded.car_3g, "
-    "car_5g = excluded.car_5g, pencere_basi = excluded.pencere_basi, "
-    "hesaplandi_at = now()"
+    "insert into public.tepki (kap_id, "
+    + ", ".join(TEPKI_SUTUNLARI)
+    + ", hesaplandi_at) values (%(kap_id)s, "
+    + ", ".join(f"%({s})s" for s in TEPKI_SUTUNLARI)
+    + ", now()) on conflict (kap_id) do update set "
+    + ", ".join(f"{s} = excluded.{s}" for s in TEPKI_SUTUNLARI)
+    + ", hesaplandi_at = now()"
 )
 
 # Yayınlanmış finansal rapor değişmez; düzeltilmiş rapor KAP'a yeni bir
@@ -343,11 +356,18 @@ class Depo:
         car_3g: Decimal | None = None,
         car_5g: Decimal | None = None,
         pencere_basi: int = 0,
+        model: str = "beta1",
+        beta: Decimal | None = None,
+        alfa: Decimal | None = None,
+        beta_ham: Decimal | None = None,
+        beta_gozlem: int | None = None,
+        beta_r2: Decimal | None = None,
+        beta_kaynak: str | None = None,
     ) -> None:
         """Tepkiyi yazar; varsa günceller.
 
         Bildirimin kendisi dondurulur ama tepki türetilmiş veri: fiyat
-        serisi tamamlandıkça ya da pencere tanımı değiştikçe tazelenir.
+        serisi tamamlandıkça ya da pencere/model tanımı değiştikçe tazelenir.
         """
         with self._baglanti.cursor() as imlec:
             imlec.execute(
@@ -359,22 +379,27 @@ class Depo:
                     "car_3g": car_3g,
                     "car_5g": car_5g,
                     "pencere_basi": pencere_basi,
+                    "model": model,
+                    "beta": beta,
+                    "alfa": alfa,
+                    "beta_ham": beta_ham,
+                    "beta_gozlem": beta_gozlem,
+                    "beta_r2": beta_r2,
+                    "beta_kaynak": beta_kaynak,
                 },
             )
 
     def tepki_oku(self, kap_id: str) -> dict | None:
         with self._baglanti.cursor() as imlec:
             imlec.execute(
-                "select t0, car_1g, car_3g, car_5g, pencere_basi "
+                f"select {', '.join(TEPKI_SUTUNLARI)} "
                 "from public.tepki where kap_id = %s",
                 (kap_id,),
             )
             satir = imlec.fetchone()
         if satir is None:
             return None
-        return dict(
-            zip(("t0", "car_1g", "car_3g", "car_5g", "pencere_basi"), satir)
-        )
+        return dict(zip(TEPKI_SUTUNLARI, satir))
 
     # ------------------------------------------------------------ çıkarım
 

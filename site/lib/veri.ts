@@ -66,6 +66,15 @@ export type AkisSatiri = {
    * skorlayabildiğimizden bağımsız bir gerçek.
    */
   bildirim_sikligi: number | null;
+  /** car_Ng'nin formülü: piyasa = Σ r − (α + β·r_m); beta1 = Σ r − r_m. */
+  tepki_modeli: "piyasa" | "beta1" | null;
+  /** CAR'da kullanılan (Vasicek-küçültülmüş) beta. */
+  beta: number | null;
+  /**
+   * evren_ort: hisse yeni halka açıldı, tahmin penceresinde 60 gözlem yok;
+   * beta evren ortalaması, α = 0. Kullanıcıya söylenmesi gereken bir şey.
+   */
+  beta_kaynak: "tahmin" | "evren_ort" | null;
 };
 
 export type TepkiPaneli = {

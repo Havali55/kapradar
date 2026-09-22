@@ -284,6 +284,17 @@ export default function BildirimDetayi({
               Geçmiş veridir, tahmin değildir.
             </p>
           )}
+          {b.tepki_modeli === "piyasa" && b.beta !== null && (
+            <p className="tutar-yok-not">
+              Anormal getiri piyasa modeliyle hesaplanır: beklenen getiri
+              hissenin endekse duyarlılığına (β) göre düşülür, endeksin tamamı
+              değil. Bu hissede{" "}
+              <strong className="mono">β = {sayi(b.beta, 2)}</strong>
+              {b.beta_kaynak === "evren_ort"
+                ? " — hisse yeni halka açıldığı için kendi betası tahmin edilemedi; evrenin ortalama betası kullanıldı."
+                : " (bildirimden önceki 120 işlem gününden, evren ortalamasına küçültülmüş)."}
+            </p>
+          )}
         </>
       )}
     </>
