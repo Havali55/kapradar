@@ -935,6 +935,18 @@ a:hover {
   color: var(--ink-2);
   white-space: nowrap;
 }
+/* Dar ekranda uzun değerler ("43 Mn TL · 5 fon · ≈ 0,4 günlük işlem
+   hacmi") 390 px'te kutudan taşıyordu: etiket üstte, değer altta. */
+@media (max-width: 640px) {
+  .kutu-satir {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .kutu-satir dd {
+    text-align: left;
+    white-space: normal;
+  }
+}
 .ozet-madde {
   display: flex;
   gap: 10px;
