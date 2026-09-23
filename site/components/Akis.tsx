@@ -3,16 +3,33 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Bildirim } from "@/lib/veri";
 import { gunEtiketi } from "@/lib/bicim";
+import { MEGA_ESIGI, ONEMLI_ESIGI } from "@/lib/skor";
 import Kart from "./Kart";
 import DetayPanel from "./DetayPanel";
 
-type Siralama = "yeni" | "skor";
+type Siralama = "yeni" | "buyuk";
 type Aralik = "24" | "7" | "tum";
-type SkorEsigi = 0 | 2 | 3;
+// Filtre kartın diliyle aynı: kademe adları, S eşiği değil. Eşikler
+// kademelerin kendisi — eskiden 2,0/3,0'dı ve "S ≥ 3" filtresi kartında
+// "Önemli iş" yazan bildirimleri de getiriyordu.
+type Buyukluk = "tum" | "onemli" | "mega";
+const BUYUKLUK_ESIGI: Record<Buyukluk, number> = {
+  tum: 0,
+  onemli: ONEMLI_ESIGI,
+  mega: MEGA_ESIGI,
+};
+const BUYUKLUK_ADI: Record<Buyukluk, string> = {
+  tum: "Tümü",
+  onemli: "Önemli iş ve üstü",
+  mega: "Mega iş",
+};
 
 type Durum = {
   arama: string;
-  skor: SkorEsigi;
+  buyukluk: Buyukluk;
+  /** Skorsuzlar varsayılan gizli: kartta yalnız "skor yok" diyen bir kutu,
+      akışta yer kaplıyordu. Saklanmıyorlar — tek tıkla açılıyorlar. */
+  skorsuzlar: boolean;
   aralik: Aralik;
   yalnizTemiz: boolean;
   yalnizAcik: boolean;
@@ -21,7 +38,8 @@ type Durum = {
 
 const BASLANGIC: Durum = {
   arama: "",
-  skor: 0,
+  buyukluk: "tum",
+  skorsuzlar: false,
   aralik: "tum",
   yalnizTemiz: false,
   yalnizAcik: false,
@@ -64,14 +82,15 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
         const saat = (simdi - new Date(b.yayin_zamani).getTime()) / 3600000;
         if (saat > enFazlaSaat) return false;
       }
-      if (durum.skor && (b.etki_skoru === null || b.etki_skoru < durum.skor))
-        return false;
+      if (b.etki_skoru === null) {
+        if (!durum.skorsuzlar || durum.buyukluk !== "tum") return false;
+      } else if (b.etki_skoru < BUYUKLUK_ESIGI[durum.buyukluk]) return false;
       if (durum.yalnizTemiz && b.tahta !== "temiz") return false;
       if (durum.yalnizAcik && b.karsi_taraf === null) return false;
       return true;
     });
 
-    if (durum.sirala === "skor") {
+    if (durum.sirala === "buyuk") {
       // Skorsuzlar sona: "—" bir değer değil, eksiklik.
       return [...liste].sort((a, b) => {
         const x = a.etki_skoru ?? -1;
@@ -155,10 +174,15 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
   const cipler: { ad: string; temizle: () => void }[] = [];
   if (durum.arama)
     cipler.push({ ad: `"${durum.arama}"`, temizle: () => guncelle({ arama: "" }) });
-  if (durum.skor)
+  if (durum.buyukluk !== "tum")
     cipler.push({
-      ad: `S ≥ ${durum.skor.toFixed(1)}`,
-      temizle: () => guncelle({ skor: 0 }),
+      ad: BUYUKLUK_ADI[durum.buyukluk],
+      temizle: () => guncelle({ buyukluk: "tum" }),
+    });
+  if (durum.skorsuzlar)
+    cipler.push({
+      ad: "Skoru olmayanlar görünür",
+      temizle: () => guncelle({ skorsuzlar: false }),
     });
   if (durum.aralik !== "tum")
     cipler.push({
@@ -175,6 +199,8 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
       ad: "Karşı taraf açık",
       temizle: () => guncelle({ yalnizAcik: false }),
     });
+
+  const skorsuzSayisi = bildirimler.filter((b) => b.etki_skoru === null).length;
 
   // Gün ayraçları: liste tarihe göre sıralıyken anlamlı, skora göre değil.
   const gunlu = durum.sirala === "yeni";
@@ -198,15 +224,15 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
         </div>
 
         <div className="segment">
-          <span className="segment-et mono">SKOR</span>
-          {([0, 2, 3] as SkorEsigi[]).map((e) => (
+          <span className="segment-et mono">BÜYÜKLÜK</span>
+          {(["tum", "onemli", "mega"] as Buyukluk[]).map((e) => (
             <button
               key={e}
               type="button"
-              aria-pressed={durum.skor === e}
-              onClick={() => guncelle({ skor: e })}
+              aria-pressed={durum.buyukluk === e}
+              onClick={() => guncelle({ buyukluk: e })}
             >
-              {e === 0 ? "Tümü" : `S ≥ ${e.toFixed(1)}`}
+              {BUYUKLUK_ADI[e]}
             </button>
           ))}
         </div>
@@ -236,7 +262,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
           {(
             [
               ["yeni", "En yeni"],
-              ["skor", "En yüksek S"],
+              ["buyuk", "En büyük iş"],
             ] as [Siralama, string][]
           ).map(([d, ad]) => (
             <button
@@ -257,6 +283,15 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
           onClick={() => guncelle({ yalnizTemiz: !durum.yalnizTemiz })}
         >
           Sadece temiz tahta
+        </button>
+        <button
+          type="button"
+          className="anahtar"
+          aria-pressed={durum.skorsuzlar}
+          onClick={() => guncelle({ skorsuzlar: !durum.skorsuzlar })}
+          title="Tutarı açıklanmamış ya da cirosu bilinmeyen bildirimler"
+        >
+          Skoru olmayanlar ({skorsuzSayisi})
         </button>
         <button
           type="button"

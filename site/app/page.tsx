@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Akis from "@/components/Akis";
 import { bildirimleriGetir, ozetCikar } from "@/lib/veri";
-import { gunEtiketi, sayi, yuzde } from "@/lib/bicim";
+import { gunEtiketi, yuzde } from "@/lib/bicim";
 
 // Veri hattı toplu koşuyor; saatlik tazeleme yeterli.
 export const revalidate = 3600;
@@ -30,6 +30,9 @@ export default async function AnaSayfa() {
               : "ARŞİV"}
           </span>
           <div className="bas-bos" />
+          <Link href="/film" className="bag">
+            Filmi izle ▸
+          </Link>
           <Link href="/profil" className="bag">
             Profil
           </Link>
@@ -61,21 +64,23 @@ export default async function AnaSayfa() {
             <div className="olcu-alt">yayına hazır bildirim</div>
           </div>
           <div className="olcu">
-            <div className="olcu-et mono">MEDYAN BÜYÜKLÜK S</div>
+            <div className="olcu-et mono">MEDYAN CİRO ORANI</div>
             <div
               className="olcu-deger mono"
               style={{ color: "var(--mavi-k)" }}
             >
-              {ozet.medyanSkor === null ? "—" : sayi(ozet.medyanSkor)}
+              {ozet.medyanOran === null ? "—" : yuzde(ozet.medyanOran, 1)}
             </div>
-            <div className="olcu-alt">{ozet.skorlu} skorlanabilir kayıt</div>
+            <div className="olcu-alt">
+              sözleşme / son 12 ay ciro · {ozet.skorlu} bildirim
+            </div>
           </div>
           <div className="olcu">
             <div className="olcu-et mono">TEMİZ TAHTA</div>
             <div className="olcu-deger mono" style={{ color: "var(--yes)" }}>
               {ozet.temizOran === null ? "—" : yuzde(ozet.temizOran, 0)}
             </div>
-            <div className="olcu-alt">limit yakını hareket yok</div>
+            <div className="olcu-alt">devre kesici seyrek, tedbir yok</div>
           </div>
           {/* "Son 24 saat" yerine bu: arşiv toplu yüklendiği için o sayaç
               çoğu zaman 0 gösterirdi. Skorsuz oranı ise ürünün duruşunu
@@ -86,7 +91,7 @@ export default async function AnaSayfa() {
               {yuzde((ozet.toplam - ozet.skorlu) / Math.max(1, ozet.toplam), 0)}
             </div>
             <div className="olcu-alt">
-              tutar ya da payda yoksa skor gösterilmiyor
+              tutar ya da ciro yok · akışta gizli, filtreden açılır
             </div>
           </div>
         </div>
