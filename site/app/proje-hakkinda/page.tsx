@@ -216,8 +216,9 @@ export default async function ProjeHakkinda() {
           </ul>
           <p>
             Bulguların tamamı, sağlamlık sınavları ve sınırlar{" "}
-            <Link href="/metodoloji">araştırma notunda</Link>; hepsi tek komutla
-            yeniden üretilebiliyor.
+            <Link href="/metodoloji">araştırma notunda</Link>. Analiz betikleri
+            repoda; veritabanının açık bir kopyası yayımlanana kadar yeniden
+            üretmek için veritabanı erişimi gerekiyor.
           </p>
         </section>
 
@@ -227,7 +228,9 @@ export default async function ProjeHakkinda() {
           <p>
             Çıkarılan her tutarın kaynak cümlesi saklanıyor ve arayüzde
             gösteriliyor; tek tıkla KAP&apos;taki orijinal bildirime gidip sayıyı
-            doğrulayabilirsiniz. Aynı girdi her koşuda aynı çıktıyı veriyor.
+            doğrulayabilirsiniz. Dil modelinin çıkarımı bir kez yapılıp
+            saklanıyor; kur, oran ve skor bu saklı çıkarımdan her seferinde
+            aynı sonucu veriyor.
           </p>
           <div className="olcuum">
             <div className="olcu">
