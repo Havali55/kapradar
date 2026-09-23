@@ -240,11 +240,12 @@
       <ol>
         <li><strong>Bildirimler gerçekten materyal olay.</strong> Bildirim günü işlem hacmi normalin <strong>%47,3 üzerine</strong> çıkıyor (t = +10,10) ve etki beş günde sönüyor.</li>
         <li><strong>Hacim, bildirimden önce zaten yükselmiş.</strong> t₀−4 ile t₀−1 arasında hacim %10–14 fazla ve bu istatistiksel olarak anlamlı. Resmî açıklamadan önce bilgi sızıyor ya da bekleniyor.</li>
-        <li><strong>Skor bir getiri tahmini değil — ve gerçekten de değil.</strong> S ile işaretli anormal getiri arasında hiçbir ilişki yok (kümelenmiş t = +0,52, p = 0,61). İddia ile veri burada tam örtüşüyor.</li>
+        <li><strong>Skor bir getiri tahmini değil — ve gerçekten de değil.</strong> S ile işaretli anormal getiri arasında hiçbir ilişki yok (güncel ölçüyle kümelenmiş t = +0,57, p = 0,57). İddia ile veri burada tam örtüşüyor.</li>
         <li><strong>Skorun hacimle ilişkisi, yalnızca temiz tahtalarda var.</strong> Havuzlanmış örneklemde eşiği geçmiyor (t = +1,05); ama spekülatif tahtalar ayrıştırılınca S'nin etkisi anlamlı hâle geliyor (<strong>t = +2,35</strong>). Katsayı temiz tahtada +0,083, spekülatif tahtada −0,039 — <strong>ölçü, oynatılan tahtalarda kırılıyor.</strong></li>
-        <li><strong>Büyük haber, küçük haberden ölçülebilir biçimde daha çok fiyatlanmıyor.</strong> S ≥ 3 olanların 3 günlük tepkisi +%1,18, S &lt; 1 olanlarınki +%0,79 ve ikisi de sıfırdan ayrılamıyor. Spekülatif tahtalarda mutlak hareket çok daha büyük (t = +4,80) ama <strong>yönü tamamen rastgele</strong> (t = −0,13) — “oynatılan tahta” olgusunun istatistiksel karşılığı.</li>
+        <li><strong>Büyük haber, küçük haberden ölçülebilir biçimde daha çok fiyatlanmıyor.</strong> S ≥ 3 olanların 3 günlük tepkisi +%1,03, S &lt; 1 olanlarınki +%1,69 ve ikisi de sıfırdan ayrılamıyor (kümelenmiş t = 1,60 ve 1,50).</li>
+        <li><strong>Tedbirli tahtada tepki hem büyük hem aşağı yönlü — bu bulgu güncellemeyle değişti.</strong> Gerçek devre kesici kayıtlarıyla her ek devre kesici günü mutlak hareketi büyütüyor (t = +2,92) ve ortalama tepkiyi aşağı çekiyor (t = −2,59). İlk sürüm, vekil ölçüyle “yön rastgele” diyordu; kriz dışlandığında ve skor kontrol edildiğinde de yeni sonuç ayakta. Mekanizma bilinmiyor.</li>
         <li><strong>%1 tabanı veriyle çelişiyordu — düzeltildi.</strong> Formül r &lt; %1 olan 61 bildirime 0,00 veriyordu; oysa bu bildirimlerde hacim yine <strong>%33,4 artıyor</strong> (t = +3,39) ve taban üstündekilerden ayırt edilemiyor (p = 0,51). Taban 22.09.2026'da <strong>%0,25</strong>'e indirildi, kademe eşikleri de ölçek kaymasını telafi edecek biçimde 3,5/2,5'e taşındı.</li>
-        <li><strong>En sağlam bulgu skorun kendisi değil: bildirim yorgunluğu.</strong> Sık bildirim yapan şirketlerde tepki sönüyor (kümelenmiş t = −2,48, p = 0,013). 22.09.2026'da arayüze <strong>bağlam etiketi</strong> olarak eklendi; skora bilerek girmiyor, çünkü bu şirketin özelliği, bildirimin değil.</li>
+        <li><strong>En sağlam bulgu skorun kendisi değil: bildirim yorgunluğu.</strong> Sık bildirim yapan şirketlerde tepki sönüyor (bildirimden önceki 12 ayla sayıldığında kümelenmiş t = −2,29, p = 0,022). 22.09.2026'da arayüze <strong>bağlam etiketi</strong> olarak eklendi; skora bilerek girmiyor, çünkü bu şirketin özelliği, bildirimin değil.</li>
       </ol>
     </div>
 
@@ -577,7 +578,7 @@
       <p>Mekanik bir kaygı vardı: <em>r = tutar / hasılat</em> olduğuna göre skor küçük şirketleri kayırabilir. Veri bunu doğrulamıyor. S ile ln(TTM hasılat) arasındaki Pearson korelasyonu −0,057 (p = 0,212); Spearman −0,094 (p = 0,040) ile sınırda. Ama üçlükler <strong>monoton değil</strong> — ortalama S sırasıyla 1,79 · 1,22 · 1,55 — yani küçükten büyüğe düzenli bir eğilim yok. Zayıf bir sıra düzeyi eğilimi var, sistematik kayırma yok.</p>
 
       <h4>Bulgu 9 — Beta = 1 varsayımı yanlış <span class="cip cip-y" style="margin-left:6px;">DÜZELTİLDİ</span></h4>
-      <p><strong>Bu bulgu uygulandı.</strong> 22.09.2026'dan beri Modül C piyasa modeliyle hesaplanıyor: <em>AR = r − (α + β·r<sub>XU100</sub>)</em>. β her bildirim için kendi geçmişinden tahmin ediliyor. Tahmin penceresi 120 işlem günü ve sızıntıya karşı t0−10'da bitiyor; aynı hissenin diğer olay pencereleri dışarıda tutuluyor. Ham tahminler gürültülü (medyan R² 0,16, 11 bildirimde negatif beta). Bu yüzden her beta, kendi standart hatasıyla orantılı olarak evren ortalamasına (0,764) küçültülüyor (Vasicek). Çapa 1 değil, çünkü 1'e çekmek bu bulgunun kendisini geri silerdi. Geçmişi 60 gözleme yetmeyen 25 bildirim (yeni halka arzlar) evren ortalaması beta ile hesaplanıyor ve sayfalarında işaretleniyor. Değişiklik uç farkları yarıya indirdi: 3 puandan büyük fark 25'ten 15'e düştü. Eski ölçüyle korelasyon ise 0,979. Aşağıdaki ölçüm ve Bulgu 10–12'deki CAR sayıları değişiklikten önceki hâli (β = 1) anlatıyor.</p>
+      <p><strong>Bu bulgu uygulandı.</strong> 22.09.2026'dan beri Modül C piyasa modeliyle hesaplanıyor: <em>AR = r − (α + β·r<sub>XU100</sub>)</em>. β her bildirim için kendi geçmişinden tahmin ediliyor. Tahmin penceresi 120 işlem günü ve sızıntıya karşı t0−10'da bitiyor; aynı hissenin diğer olay pencereleri dışarıda tutuluyor. Ham tahminler gürültülü (medyan R² 0,16, 11 bildirimde negatif beta). Bu yüzden her beta, kendi standart hatasıyla orantılı olarak evren ortalamasına (0,764) küçültülüyor (Vasicek). Çapa 1 değil, çünkü 1'e çekmek bu bulgunun kendisini geri silerdi. Geçmişi 60 gözleme yetmeyen 25 bildirim (yeni halka arzlar) evren ortalaması beta ile hesaplanıyor ve sayfalarında işaretleniyor. Değişiklik uç farkları yarıya indirdi: 3 puandan büyük fark 25'ten 15'e düştü. Eski ölçüyle korelasyon ise 0,979. Aşağıdaki beta ölçümü değişiklikten önceki hâli (β = 1) anlatıyor. Bulgu 11 ve 12 ise 23.09.2026'da güncel ölçüyle yeniden koşuldu: eşit ağırlıklı BIST'e karşı piyasa modeli ve Borsa İstanbul'un gerçek devre kesici ve VBTS kayıtları (<code>scripts/bulgu_11_12.py</code>).</p>
       <p><strong>İkinci düzeltme: kıyas endeksi (22.09.2026).</strong> Beta düzeltmesinden sonra bir soru kaldı: hangi endekse göre? 8–18 Eylül fon krizinde XU100 −%7,8 düştü, bildirim evrenimizdeki hisselerin medyanı ise −%19,8. Tahtası temiz olanlar bile −%17,8 düştü. yfinance'te küçük hisse endeksi olmadığı için KAP arşivindeki yaklaşık 630 hissenin <strong>eşit ağırlıklı</strong> getirisini kendimiz kurduk. Bu seri aynı dönemde −%15,5 düştü. İki faktörlü bir modelde hisselerimizin bu seriye duyarlılığı ortalama +0,98 çıktı ve hisselerin %98'inde pozitifti. XU100'ün net ağırlığı ise yaklaşık 0,09'da kaldı. Yani bu hisseler büyük endeksi değil, <em>küçük hisselerin ortak hareketini</em> izliyor. Modül C artık eşit ağırlıklı BIST'e göre hesaplanıyor. Bu seriye karşı ortalama beta 1,05; medyan R² 0,163'ten 0,216'ya çıktı. Aşağıdaki "beta 1'in altında" bulgusu da büyük ölçüde yanlış kıyas endeksinden geliyordu: hisseler kendi piyasalarıyla birebir hareket ediyor, yalnızca o piyasa XU100 değil.</p>
       <p>Değişiklikten önce anormal getiri endeksin düz farkı olarak hesaplanıyordu, yani her hissenin betası 1 kabul ediliyordu. 106 hisse için piyasa modeli tahmin edildiğinde ortalama beta <strong>0,790</strong>, medyan 0,819, çeyreklikler 0,643 – 0,959 ve <strong>106 hissenin 89'u (%84) 1'in altında</strong>. Piyasa hareketi sistematik olarak fazla çıkarılıyor. Bu, nottaki hacim bulgularını etkilemiyor (hacim ölçümü betadan bağımsız) ama Modül C'nin getiri panelini etkiliyor.</p>
 
@@ -631,54 +632,65 @@
       <p>Havuzlanmış modelde S'nin t değeri +1,05 idi; spekülatif tahtalar ayrıştırılınca <strong>+2,35'e çıkıyor.</strong> Etkileşim teriminin kendisi p = 0,13 ile eşiği geçmiyor (spekülatif grupta yalnız 108 gözlem ve 30 hisse var), ama alt grup tablosuyla birlikte okunduğunda desen net: <strong>spekülatif tahtaların gürültüsü, gerçek bir ilişkiyi havuzlanmış tahminde boğuyordu.</strong></p>
       <p>Neden boğuyor, onu da ölçebiliyoruz. Spekülatif tahtalarda taban hacim zaten şişkin olduğu için bildirim <em>göreli olarak</em> daha az fark yaratıyor: temiz tahtada bildirim hacmi %58,3 artırıyor, spekülatif tahtada %31,5. Sıra korelasyonu bunu doğruluyor (ρ = −0,126, p = 0,009).</p>
 
-      <h4>Bulgu 11 — “Büyük haber daha çok fiyatlanmıyor”</h4>
-      <p>Aynı itirazın ikinci yarısı — iyi sözleşme yapan şirketlerin gerektiği ölçüde fiyatlanmaması — doğrudan sınanabilir. Skoru yüksek bildirimler, skoru düşük olanlardan daha güçlü bir getiri tepkisi alıyor mu?</p>
+      <h4>Bulgu 11 — “Büyük haber daha çok fiyatlanmıyor” <span class="cip cip-y" style="margin-left:6px;">GÜNCEL ÖLÇÜYLE AYAKTA</span></h4>
+      <p>Aynı itirazın ikinci yarısı — iyi sözleşme yapan şirketlerin gerektiği ölçüde fiyatlanmaması — doğrudan sınanabilir. Skoru yüksek bildirimler, skoru düşük olanlardan daha güçlü bir getiri tepkisi alıyor mu? Tepki, eşit ağırlıklı BIST'e karşı piyasa modeliyle 3 günlük anormal getiri; t değerleri hisse bazında kümelenmiş.</p>
       <div class="tablo-sar" style="margin-bottom:16px;">
         <table>
-          <thead><tr><th>GRUP</th><th class="sag">n</th><th class="sag">CAR(3g) ORT.</th><th class="sag">MEDYAN</th><th class="sag">POZİTİF ORANI</th><th class="sag">t</th></tr></thead>
+          <thead><tr><th>GRUP</th><th class="sag">n</th><th class="sag">HİSSE</th><th class="sag">CAR(3g) ORT.</th><th class="sag">MEDYAN</th><th class="sag">POZİTİF ORANI</th><th class="sag">t (KÜMELENMİŞ)</th></tr></thead>
           <tbody>
-            <tr><td>S ≥ 3 (büyük haber)</td><td class="s">60</td><td class="s">+%1,18</td><td class="s">+%1,30</td><td class="s">%60</td><td class="s">+1,57</td></tr>
-            <tr><td>S &lt; 1 (küçük haber)</td><td class="s">182</td><td class="s">+%0,79</td><td class="s">+%0,09</td><td class="s">%51</td><td class="s">+1,95</td></tr>
+            <tr><td>S ≥ 3 (büyük haber)</td><td class="s">94</td><td class="s">37</td><td class="s">+%1,03</td><td class="s">+%1,25</td><td class="s">%62</td><td class="s">+1,60</td></tr>
+            <tr><td>S ≥ 3,5 (“mega iş”)</td><td class="s">55</td><td class="s">27</td><td class="s">+%1,28</td><td class="s">+%2,55</td><td class="s">%64</td><td class="s">+1,60</td></tr>
+            <tr><td>S &lt; 1 (küçük haber)</td><td class="s">65</td><td class="s">16</td><td class="s">+%1,69</td><td class="s">+%0,81</td><td class="s">%58</td><td class="s">+1,50</td></tr>
           </tbody>
         </table>
       </div>
-      <p><strong>Hiçbiri sıfırdan istatistiksel olarak ayrılmıyor</strong> (t = 1,57 ve 1,95; ikisi de eşiğin altında). Aradaki 0,39 puanlık fark, dağılımların genişliği yanında gürültü. Yani cirosunun yarısı kadar iş alan bir şirket ile %1'i kadar iş alan şirket, <strong>ölçülebilir biçimde farklı bir fiyat tepkisi almıyor.</strong></p>
-      <p>Pozitif oranlarda küçük bir fark var (%60'a %51) ve yön doğru; ama 60 gözlemle bu farkın kendisi de anlamlı değil. Skorun bir getiri tahmini olarak kurulmamasının gerekçesi buradan daha net görülemezdi.</p>
+      <p><strong>Hiçbiri sıfırdan istatistiksel olarak ayrılmıyor.</strong> CAR'ı doğrudan skora bağlayan regresyonda eğim skor puanı başına +0,18 puan, t = +0,57 (p = 0,57). Yani cirosunun yarısı kadar iş alan bir şirket ile %1'i kadar iş alan şirket, <strong>ölçülebilir biçimde farklı bir fiyat tepkisi almıyor.</strong></p>
+      <p>İlk ölçümde (β = 1, XU100 farkı) sayılar S ≥ 3 için +%1,18 (t = 1,57), S &lt; 1 için +%0,79 (t = 1,95) idi; sonuç değişmedi. S &lt; 1 grubunun 182'den 65'e küçülmesi, tabanın %0,25'e inmesiyle skorların yukarı kaymasından. Pozitif oranlarda küçük bir fark var ve yön doğru, ama bu farkın kendisi de anlamlı değil. Skorun bir getiri tahmini olarak kurulmamasının gerekçesi buradan daha net görülemezdi.</p>
 
-      <h4>Bulgu 12 — Spekülatif tahta: oynaklık var, yön yok</h4>
-      <p>Son olarak, limit günü sayısının tepkiyle ilişkisi iki farklı sonuç veriyor ve ikisi birlikte okunmalı:</p>
-      <ul>
-        <li><strong>Mutlak tepki:</strong> her ek limit günü, 3 günlük mutlak anormal getiriyi <strong>+0,30 puan</strong> artırıyor (t = +4,80, p &lt; 0,0001). Bu nottaki en güçlü t değerlerinden biri.</li>
-        <li><strong>İşaretli tepki:</strong> aynı değişkenin yönle ilişkisi sıfır (katsayı −0,00014, t = −0,13, p = 0,90).</li>
-      </ul>
-      <p>Yani spekülatif tahtalar <strong>çok daha fazla hareket ediyor ama rastgele yönde.</strong> Bu, “büyük oyuncular bazı hisseleri oynatıyor” gözleminin istatistiksel karşılığı: oynaklık haberden değil, tahtanın kendisinden geliyor.</p>
+      <h4 id="bulgu12">Bulgu 12 — Oynak tahta: daha çok hareket, ve yönü aşağı <span class="cip cip-r" style="margin-left:6px;">SONUÇ DEĞİŞTİ</span></h4>
+      <p><strong>Güncel ölçüyle yeniden sınama (23.09.2026).</strong> Bu bulgunun ilk sürümü vekil ölçüyle kurulmuştu ve “spekülatif tahta çok daha fazla hareket ediyor ama rastgele yönde” diyordu. Gerçek devre kesici kayıtları ve güncel tepki ölçüsüyle ilk yarısı ayakta kaldı, <strong>ikinci yarısı kalmadı:</strong></p>
+      <div class="tablo-sar" style="margin-bottom:16px;">
+        <table>
+          <thead><tr><th>MODEL (n = 585, hisse-kümelenmiş)</th><th class="sag">KATSAYI</th><th class="sag">t</th><th class="sag">p</th></tr></thead>
+          <tbody>
+            <tr><td>|CAR3| ~ devre kesici günü (90 seans)</td><td class="s">+0,26 puan/gün</td><td class="s">+2,92<span class="yildiz">**</span></td><td class="s">0,004</td></tr>
+            <tr class="vurgu"><td>CAR3 (işaretli) ~ devre kesici günü</td><td class="s v" style="color:var(--kir);">−0,29 puan/gün</td><td class="s">−2,59<span class="yildiz">**</span></td><td class="s">0,010</td></tr>
+            <tr><td>|CAR3| ~ yürürlükte VBTS</td><td class="s">+2,78 puan</td><td class="s">+2,34<span class="yildiz">*</span></td><td class="s">0,019</td></tr>
+            <tr><td>CAR3 (işaretli) ~ yürürlükte VBTS</td><td class="s">−3,13 puan</td><td class="s">−1,88</td><td class="s">0,060</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Temiz tahtalarda (devre kesici ≤ 4 gün, VBTS yok; n = 216) ortalama 3 günlük tepki <strong>+%1,49</strong>, tedbirli tahtalarda (devre kesici &gt; 8 gün ya da yürürlükte VBTS; n = 181) <strong>−%1,06</strong>. Ortalama mutlak hareket ise %3,57'den %5,99'a çıkıyor. Yani tedbirli tahtalar hem daha çok hareket ediyor hem de bildirimden sonra eşit ağırlıklı piyasanın gerisinde kalıyor.</p>
+      <p>İki sağlamlık sınavı yapıldı. <strong>Kriz hariç:</strong> Eylül 2026 fon krizi penceresindeki bildirimler (t0 ≥ 08.09.2026) çıkarıldığında katsayı −0,31 puan/gün, t = −2,82. Kriz sonucu üretmiyor; bu pencerede 3 günlük tepkisi oluşmuş yalnız 5 bildirim var. <strong>Skor kontrolü:</strong> skor modele eklendiğinde devre kesici katsayısı −0,30, t = −2,30; skorun kendi katsayısı ise sıfır (t = +0,27). Etki bildirimin büyüklüğünden değil, tahtadan geliyor.</p>
+      <p>Yorumu ihtiyatlı olmalı. Veri <em>neden</em> aşağı olduğunu söylemiyor: oynatılmış bir dönemin ardından gelen geri dönüş, tahtaya yeni giren alıcının azalması ya da sık devre kesici gören hisselerin başka bir ortak özelliği olabilir. Bu bir manipülasyon kanıtı değil. Vekil ölçünün bu yönü neden görmediği de açık bir soru: vekil “|getiri| ≥ %9 olan gün” sayıyordu, devre kesici ise Borsa İstanbul'un kendi tetik kurallarına bağlı; ikisi aynı günleri yakalamıyor.</p>
+      <p><strong>Ürün karşılığı:</strong> bu bulgu tahta bayrağını daha da önemli kılıyor, ama bir tahmin aracına dönüştürmüyor. Kartta tedbirli tahta için yazan cümle — “fiyat hareketi bu haberle ilgili olmayabilir” — bulguyla uyumlu ve tahmin içermiyor. Tahtayı skora sokmak ya da “tedbirli = düşer” demek, bir ortalamayı tekil bir bildirime yüklemek olurdu: tedbirli grubun 181 bildiriminin 81'inde (%45) tepki yine pozitif.</p>
     </section>
 
     <!-- ============================ V ============================ -->
     <section>
       <h2>V · SONUÇLAR</h2>
-      <h3>Veriden çıkan dört değişiklik</h3>
+      <h3>Veriden çıkan beş öneri ve akıbetleri</h3>
       <div class="yigin">
         <div>
-          <h4 style="margin-top:0;">1 · Taban %1'den aşağı çekilmeli</h4>
-          <p>Bulgu 5 doğrudan bunu söylüyor. Taban altındaki bildirimler piyasada anlamlı hacim üretiyor ve taban üstündekilerden ayırt edilemiyor. Öneri: tabanı <strong>%0,1 – %0,25 bandına</strong> indirmek ve <em>f(r)</em>'yi yeniden ölçeklemek. Bu, şu an 0,00 alan 61 bildirimi ölçeğe geri sokar. Tabanı tümüyle kaldırmak önerilmiyor — bir alt sınır olmadan logaritma patlar ve r → 0 tanımsızlaşır.</p>
+          <h4 style="margin-top:0;">1 · Taban %1'den aşağı çekilmeli <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
+          <p><strong>22.09.2026'da taban %0,25'e indi;</strong> 0,00 alan bildirim sayısı 62'den 7'ye düştü. Öneri metni aşağıda olduğu gibi duruyor. Bulgu 5 doğrudan bunu söylüyor. Taban altındaki bildirimler piyasada anlamlı hacim üretiyor ve taban üstündekilerden ayırt edilemiyor. Öneri: tabanı <strong>%0,1 – %0,25 bandına</strong> indirmek ve <em>f(r)</em>'yi yeniden ölçeklemek. Bu, şu an 0,00 alan 61 bildirimi ölçeğe geri sokar. Tabanı tümüyle kaldırmak önerilmiyor — bir alt sınır olmadan logaritma patlar ve r → 0 tanımsızlaşır.</p>
         </div>
         <div>
-          <h4 style="margin-top:0;">2 · Tavan %50'ye çekilmeli</h4>
-          <p>Bulgu 6: mevcut tavan 613 bildirimde 4 kez bağlıyor, ölçeğin üst dörtte biri ölü. Tavan %50'ye indirilirse 10 bildirim (%2,4) tavana dayanır ve dağılım ölçeğin tamamına yayılır. Maliyeti kabul edilmeli: %50 ile %120 arasındaki ayrım kaybolur — ama o aralıkta zaten 5 gözlem var.</p>
+          <h4 style="margin-top:0;">2 · Tavan %50'ye çekilmeli <span class="cip cip-m" style="margin-left:6px;">GERİ ÇEKİLDİ</span></h4>
+          <p><strong>Öneri 22.09.2026'da geri çekildi, tavan %100'de kaldı</strong> — gerekçesi Bulgu 6'da. Aşağıdaki ilk metin, neyin yanlış çıkarıldığını görmek için duruyor. Bulgu 6: mevcut tavan 613 bildirimde 4 kez bağlıyor, ölçeğin üst dörtte biri ölü. Tavan %50'ye indirilirse 10 bildirim (%2,4) tavana dayanır ve dağılım ölçeğin tamamına yayılır. Maliyeti kabul edilmeli: %50 ile %120 arasındaki ayrım kaybolur — ama o aralıkta zaten 5 gözlem var.</p>
         </div>
         <div>
-          <h4 style="margin-top:0;">3 · Bildirim sıklığı görünür olmalı — ama skora girmemeli</h4>
-          <p>Bulgu 7 en sağlam ilişki, dolayısıyla onu yok saymak zor. Yine de skora katılmamalı, çünkü aynı gerekçe devre kesici için de geçerliydi: bu <strong>şirketin</strong> özelliği, bildirimin değil. Skora girerse “neden 2,1?” sorusunun cevabı “çünkü bu şirket çok konuşuyor” olur. Doğru yer Modül B'nin yanında <strong>üçüncü bir bağlam etiketi</strong>: “bu şirket son 12 ayda 30 bildirim yaptı”.</p>
+          <h4 style="margin-top:0;">3 · Bildirim sıklığı görünür olmalı — ama skora girmemeli <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
+          <p><strong>Akış kartında “Şirket bunu sık yapıyor mu?” satırı olarak eklendi; skora girmedi.</strong> Bulgu 7 en sağlam ilişki, dolayısıyla onu yok saymak zor. Yine de skora katılmamalı, çünkü aynı gerekçe devre kesici için de geçerliydi: bu <strong>şirketin</strong> özelliği, bildirimin değil. Skora girerse “neden 2,1?” sorusunun cevabı “çünkü bu şirket çok konuşuyor” olur. Doğru yer Modül B'nin yanında <strong>üçüncü bir bağlam etiketi</strong>: “bu şirket son 12 ayda 30 bildirim yaptı”.</p>
         </div>
         <div>
           <h4 style="margin-top:0;">4 · Modül C piyasa modeline geçmeli <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
-          <p>Bulgu 9: hisselerin %84'ünde beta &lt; 1. Tepki paneli beta düzeltmesi olmadan sistematik olarak yanlı. Düzeltmenin kendisi de gürültülü olacak (medyan R² 0,12) ve bu, panelde gösterilen belirsizlik aralığının genişlemesi anlamına gelir — yani daha dürüst bir panel.</p>
+          <p>Bulgu 9: hisselerin %84'ünde XU100'e karşı beta &lt; 1 çıkıyordu. Modül C artık eşit ağırlıklı BIST'e karşı piyasa modeliyle hesaplanıyor; beta her bildirim için tahmin edilip evren ortalamasına küçültülüyor. Düzeltmenin kendisi gürültülü (medyan R² 0,216) ve bu, panelde gösterilen belirsizlik aralığının geniş kalması demek — yani daha dürüst bir panel.</p>
         </div>
         <div>
-          <h4 style="margin-top:0;">5 · Tahta bayrağı süs değil, geçerlilik koşulu</h4>
-          <p>Bulgu 10–12 tasarımdaki en büyük değişikliği gerektiriyor. Tahta kalitesi şu an skorun <em>yanında</em> duran bir bilgi etiketi. Oysa veri, onun <strong>skorun anlamlı olup olmadığını belirleyen koşul</strong> olduğunu söylüyor: spekülatif tahtalarda skorun piyasa ilgisiyle ilişkisi kayboluyor, mutlak hareket ise üç katına çıkıyor — ama yönsüz.</p>
-          <p style="margin-bottom:0;">Ürün karşılığı: spekülatif tahtalarda Modül C'nin <strong>tepki panelinin hiç gösterilmemesi</strong> ya da açıkça “bu tahtada geçmiş tepki fiyat oluşumunu değil oynaklığı yansıtıyor” uyarısıyla verilmesi. Büyüklük skoru gösterilmeye devam etmeli — o zaten piyasa tepkisi iddia etmiyor, şirketin kendi ölçeğini ölçüyor.</p>
+          <h4 style="margin-top:0;">5 · Tahta bayrağı süs değil, geçerlilik koşulu <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
+          <p>Bulgu 10–12 tasarımdaki en büyük değişikliği gerektirdi. Tahta kalitesi skorun <em>yanında</em> duran bir bilgi etiketi değil, <strong>skorun anlamlı olup olmadığını belirleyen koşul</strong>: tedbirli tahtalarda skorun piyasa ilgisiyle ilişkisi tersine dönüyor (Bulgu 10), mutlak hareket artıyor ve ortalama tepki eşit ağırlıklı piyasanın altına iniyor (Bulgu 12).</p>
+          <p style="margin-bottom:0;">Ürün karşılığı: akış kartında “Fiyata bakmak anlamlı mı?” satırı tedbirli tahtada “fiyat hareketi bu haberle ilgili olmayabilir” diyor; geçmiş tepki paneli karttan kaldırıldı ve detayda uyarıyla veriliyor. Büyüklük skoru gösterilmeye devam ediyor — o zaten piyasa tepkisi iddia etmiyor, şirketin kendi ölçeğini ölçüyor.</p>
         </div>
       </div>
       <div class="not" style="margin-top:18px;">
@@ -694,13 +706,15 @@
       <ul>
         <li><strong>Örneklem küçük ve tek rejimli.</strong> 613 bildirim, 12 ay, tek bir piyasa rejimi, 70–111 küme. Bulgu 4'ün sonuçsuz kalmasının başlıca nedeni bu; daha uzun bir arşivle aynı analiz farklı sonuç verebilir.</li>
         <li><strong>Hacim ölçüsü tek bir tanıma dayanıyor.</strong> AV'nin taban penceresi, logaritmik dönüşümü ve olay penceresi makul ama seçilmiş kararlar. Alternatif tanımlar (turnover, ölçeklenmiş hacim, piyasa hacmiyle düzeltilmiş hacim) denenmedi.</li>
-        <li><strong>Tahta kalitesi ölçüsü vekil.</strong> Bulgu 10–12 VBTS verisiyle değil, “önceki 90 günde |getiri| ≥ %9 olan gün sayısı” vekiliyle kuruldu, çünkü VBTS henüz çekilmedi. Vekil, limit yakını hareketi yakalar ama SPK tedbirlerinin tamamını değil. VBTS bağlandığında bu üç bulgu <strong>yeniden koşulmalı</strong> — sonuçların yönü değil, eşikleri değişebilir.</li>
+        <li><strong>Tahta ölçüsü vekilden gerçek kayda geçti ve bir sonuç değişti.</strong> Bulgu 10–12 ilk olarak “önceki 90 günde |getiri| ≥ %9 olan gün sayısı” vekiliyle kurulmuştu. Borsa İstanbul'un devre kesici ve VBTS kayıtlarıyla yeniden koşulduğunda Bulgu 10 güçlendi, Bulgu 11 değişmedi, Bulgu 12'nin “yön yok” yarısı çöktü. İlk sürümdeki “sonuçların yönü değil, eşikleri değişebilir” öngörüsü bu yüzden yanlış çıktı.</li>
+        <li><strong>Tahta eşikleri sonuç görüldükten sonra seçildi.</strong> 4/8 devre kesici günü eşikleri, 2/6 ile karşılaştırıldıktan sonra benimsendi (Bulgu 10). Bulgu 12'nin regresyonları eşik kullanmıyor (sürekli değişken), ama grup ortalamaları kullanıyor.</li>
+        <li><strong>Bulgu 12'nin mekanizması bilinmiyor.</strong> Tedbirli tahtadaki negatif ortalama tepki geri dönüş, alıcı azlığı ya da gözlenmeyen bir ortak özellik olabilir; veri bunları ayırt edemiyor.</li>
         <li><strong>Spekülatif alt grup küçük.</strong> Bulgu 10'un etkileşim terimi 108 gözlem ve 30 hisseye dayanıyor; p = 0,13 ile eşiği geçmiyor. Alt grup tablosuyla birlikte desen ikna edici, ama tek başına etkileşim katsayısı kanıt sayılmamalı.</li>
         <li><strong>Örneklem bir fon dönemini kapsıyor.</strong> 2026-09-16 Pusula/Tera krizi robustluk sınavıyla dışlandı ve sonuç değişmedi; ancak fon kaynaklı akımlar 12 ayın tamamına yayılmışsa dışlanacak bir “pencere” yoktur — bu, bu örneklemle ayrıştırılamaz.</li>
         <li><strong>Nedensellik iddiası yok.</strong> Bulgu 2'deki bildirim öncesi hacim artışı sızıntı, beklenti ya da karşı tarafın kendi duyurusu olabilir; elimizdeki veri ayrım yapamaz.</li>
         <li><strong>Bildirim sıklığı bir şirket özelliği.</strong> Bulgu 7'deki ilişki sektör, likidite ve piyasa değeri gibi gözlenmeyen şirket özellikleriyle karışık olabilir; hisse sabit etkileriyle ayrıştırılmadı.</li>
         <li><strong>Çıkarım doğruluğu %100 değil.</strong> Elle etiketlenmiş 50 bildirimlik altın kümede çıkarımın 47'si tam doğru (%94), 2'si kısmi, 1'i yanlış; skor 49/50'de elle etiketle birebir aynı. Üç sapmanın üçünde de kapı doğru davrandı ve tek skor sapması güvenli yöndeydi.</li>
-        <li><strong>“Benzer bildirim” tanımı hâlâ açık.</strong> Modül C'nin akran grubunu neye göre seçtiği (sektör, büyüklük bandı, skor aralığı) kalibrasyonun kapanmamış maddesi.</li>
+        <li><strong>“Benzer bildirim” tanımı bir karar, ölçüm değil.</strong> Modül C'nin akran grubu aynı skor kademesi ve aynı tahta; hücre 20 gözlemin altına düşerse yalnız kademeye geriliyor. Sektör ya da büyüklük bandı denenmedi.</li>
         <li><strong>p değerleri normal yaklaşımıyla.</strong> scipy bağımlılık değil; n &gt; 400 ve serbestlik derecesi yüksek olduğundan fark ihmal edilebilir, ama her tabloda n basılıyor ki kontrol edilebilsin.</li>
       </ul>
     </section>
@@ -708,11 +722,12 @@
     <!-- ============================ VII ============================ -->
     <section>
       <h2>VII · YENİDEN ÜRETİLEBİLİRLİK</h2>
-      <h3>Her sayı tek komutla yeniden üretilebilir</h3>
-      <p>Bu nottaki bütün istatistikler tek bir betikten çıkıyor ve hiçbir ücretli çağrı yapmıyor:</p>
+      <h3>Betikler repoda, açık veri kopyası henüz yok</h3>
+      <p>Bu nottaki istatistikler üç betikten çıkıyor; hiçbiri veritabanına yazmıyor ve hiçbiri ücretli çağrı yapmıyor:</p>
       <div class="formul" style="text-align:left; margin-bottom:18px;">
-        <div class="formul-ana" style="font-size:14px; font-weight:500;">python scripts/skor_gecerlilik.py</div>
+        <div class="formul-ana" style="font-size:14px; font-weight:500;">python scripts/skor_gecerlilik.py · python scripts/analiz_baglam.py · python scripts/bulgu_11_12.py</div>
       </div>
+      <p>Dürüst sınır: betikler şu an projenin veritabanına bağlanıyor. Türetilmiş tabloların (ham KAP metni hariç) açık bir kopyası yayımlanana kadar bu sayıları dışarıdan yeniden üretmek mümkün değil.</p>
       <p>Skorun kendisi <code>src/kap_radar/skor.py</code> içinde saf fonksiyon olarak duruyor: aynı girdi her koşuda aynı çıktıyı verir, LLM kanaati içermez. Her skorun yanında çıkarımın yapıldığı ham cümle alıntısıyla saklanır ve arayüzde gösterilir; tek tıkla KAP'taki orijinal bildirime gidilip sayı doğrulanabilir.</p>
       <p>Veri hattının kaynakları: KAP bildirim API'si (613 bildirim, 935 finansal rapor), TCMB günlük kur arşivi (5.610 satır), yfinance günlük kapanış ve hacim (27.607 satır, 111 hisse + XU100).</p>
     </section>
@@ -723,7 +738,7 @@
       <div class="et">KÜNYE</div>
       <p><strong>Hüseyin Dinçer</strong> — proje tasarımı, kapsam ve metodoloji kararları, veri hattı mimarisi, tüm karar onayları.<br>
       <strong>Claude (Opus 5)</strong> — uygulama, istatistiksel analiz, bu notun yazımı. Depoda ortak yazarlık <code>Co-Authored-By</code> ile işaretli.</p>
-      <p>Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır. Bu bir kişisel araştırma projesidir, <strong>yatırım tavsiyesi değildir</strong> ve hiçbir alım-satım önerisi içermez. Bulgular 21 Eylül 2026 tarihli veri kesitine aittir.</p>
+      <p>Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır. Bu bir kişisel araştırma projesidir, <strong>yatırım tavsiyesi değildir</strong> ve hiçbir alım-satım önerisi içermez. Bulgu 1–10 21–22 Eylül, Bulgu 11–12 23 Eylül 2026 tarihli veri kesitine aittir.</p>
     </section>
 
   </main>
