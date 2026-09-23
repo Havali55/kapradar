@@ -26,6 +26,16 @@ export function yuzde(oran: number, ondalik = 1): string {
   return `%${sayi(oran * 100, ondalik)}`;
 }
 
+/**
+ * İyelik ekli yüzde: "%2,3'ü", "%37,6'sı". Tek ondalık basıldığı için
+ * ek her zaman son rakamın okunuşuna uyar (üç → 'ü, altı → 'sı).
+ */
+const SON_RAKAM_EKI = ["'ı", "'i", "'si", "'ü", "'ü", "'i", "'sı", "'si", "'i", "'u"];
+export function yuzdeIyelik(oran: number): string {
+  const metin = yuzde(oran, 1);
+  return metin + SON_RAKAM_EKI[Number(metin.slice(-1))];
+}
+
 export function isaretliYuzde(oran: number, ondalik = 2): string {
   const s = oran > 0 ? "+" : "";
   return `${s}%${sayi(oran * 100, ondalik)}`;

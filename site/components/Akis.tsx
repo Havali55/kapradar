@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Bildirim } from "@/lib/veri";
 import { gunEtiketi } from "@/lib/bicim";
 import Kart from "./Kart";
@@ -97,21 +97,60 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     [seciliIndeks, suzulmus],
   );
 
+  // Klavye: panel açıkken J/K bildirimler arasında gezer; kapalıyken
+  // akışta bir imleç gezdirir, Enter açar. "/" aramaya odaklanır.
+  // Yazı yazılırken (input) yalnız Esc dinlenir.
+  const [imlec, setImlec] = useState(-1);
+  const aramaRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
-    if (!seciliBildirim) return;
+    setImlec(-1);
+  }, [durum]);
+
+  useEffect(() => {
     const tus = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSecili(null);
-      else if (e.key === "ArrowDown" || e.key === "j") {
+      const hedef = e.target as HTMLElement | null;
+      const yaziyor = hedef?.tagName === "INPUT" || hedef?.tagName === "TEXTAREA";
+      if (e.key === "Escape") {
+        if (yaziyor) hedef?.blur();
+        else setSecili(null);
+        return;
+      }
+      if (yaziyor || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "/") {
         e.preventDefault();
-        gezin(1);
-      } else if (e.key === "ArrowUp" || e.key === "k") {
+        aramaRef.current?.focus();
+        return;
+      }
+      const ileri = e.key === "j" || e.key === "ArrowDown";
+      const geri = e.key === "k" || e.key === "ArrowUp";
+      if (seciliBildirim) {
+        if (ileri || geri) {
+          e.preventDefault();
+          gezin(ileri ? 1 : -1);
+        }
+        return;
+      }
+      if (ileri || geri) {
+        if (suzulmus.length === 0) return;
         e.preventDefault();
-        gezin(-1);
+        setImlec((i) =>
+          Math.max(0, Math.min(suzulmus.length - 1, i < 0 ? 0 : i + (ileri ? 1 : -1))),
+        );
+      } else if (e.key === "Enter" && imlec >= 0 && suzulmus[imlec]) {
+        e.preventDefault();
+        setSecili(suzulmus[imlec].kap_id);
       }
     };
     window.addEventListener("keydown", tus);
     return () => window.removeEventListener("keydown", tus);
-  }, [seciliBildirim, gezin]);
+  }, [seciliBildirim, gezin, suzulmus, imlec]);
+
+  // Panelde gezinirken imleç de takip etsin: panel kapanınca kullanıcı
+  // listede kaldığı yerden devam eder.
+  useEffect(() => {
+    if (seciliIndeks >= 0) setImlec(seciliIndeks);
+  }, [seciliIndeks]);
 
   const cipler: { ad: string; temizle: () => void }[] = [];
   if (durum.arama)
@@ -149,11 +188,13 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
             ⌕
           </span>
           <input
+            ref={aramaRef}
             value={durum.arama}
             onChange={(e) => guncelle({ arama: e.target.value })}
             placeholder="ASELS, THYAO…"
             aria-label="Hisse kodu veya şirket adı ara"
           />
+          <kbd className="tus">/</kbd>
         </div>
 
         <div className="segment">
@@ -265,8 +306,23 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
         </div>
       )}
 
+      <p className="tus-yardim">
+        <span>
+          <kbd className="tus">J</kbd> <kbd className="tus">K</kbd> gez
+        </span>
+        <span>
+          <kbd className="tus">↵</kbd> aç
+        </span>
+        <span>
+          <kbd className="tus">/</kbd> ara
+        </span>
+        <span>
+          <kbd className="tus">Esc</kbd> kapat
+        </span>
+      </p>
+
       <div className="liste">
-        {suzulmus.map((b) => {
+        {suzulmus.map((b, i) => {
           const gun = gunEtiketi(b.yayin_zamani);
           const ayracGoster = gunlu && gun !== oncekiGun;
           if (ayracGoster) oncekiGun = gun;
@@ -277,7 +333,11 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
                   <span className="mono">{gun.toLocaleUpperCase("tr")}</span>
                 </div>
               )}
-              <Kart bildirim={b} onAc={() => setSecili(b.kap_id)} />
+              <Kart
+                bildirim={b}
+                imlec={i === imlec}
+                onAc={() => setSecili(b.kap_id)}
+              />
             </div>
           );
         })}

@@ -44,11 +44,13 @@ export default async function AnaSayfa() {
 
       <main className="govde">
         <div className="baslik-blok">
+          <p className="baslik-ust mono">BİLDİRİM AKIŞI</p>
           <h1>Yeni iş ilişkisi bildirimleri</h1>
           <p>
-            Her bildirim üç bağımsız modülle boyutlandırılır: sözleşmenin şirket
-            cirosuna oranı, hissenin tahta kalitesi ve benzer bildirimlerin
-            geçmiş tepki dağılımı. Fiyat tahmini üretilmez.
+            Her haberde dört soru: iş şirket için ne kadar büyük, bilgi ne
+            kadar net, fiyata bakmak anlamlı mı, şirket bunu sık yapıyor mu.
+            Ayrıntı ve hesabın tamamı karta tıklayınca açılır. Fiyat tahmini
+            üretilmez.
           </p>
         </div>
 
