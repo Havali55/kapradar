@@ -412,6 +412,8 @@ export type Ozet = {
   toplam: number;
   skorlu: number;
   medyanSkor: number | null;
+  /** Skorlu bildirimlerde sözleşme / TTM hasılat medyanı — ana sayfa bunu gösteriyor, S'yi değil. */
+  medyanOran: number | null;
   temizOran: number | null;
   son24: number;
   /** Arşivdeki en yeni bildirimin zamanı — başlıktaki tazelik rozeti. */
@@ -424,6 +426,11 @@ export function ozetCikar(bildirimler: Bildirim[]): Ozet {
     .filter((s): s is number => s !== null)
     .sort((a, b) => a - b);
 
+  const oranlar = bildirimler
+    .filter((b) => b.etki_skoru !== null && b.ciro_orani !== null)
+    .map((b) => b.ciro_orani as number)
+    .sort((a, b) => a - b);
+
   const tahtali = bildirimler.filter((b) => b.tahta !== null);
   const esik = Date.now() - 24 * 3600 * 1000;
 
@@ -431,6 +438,7 @@ export function ozetCikar(bildirimler: Bildirim[]): Ozet {
     toplam: bildirimler.length,
     skorlu: skorlar.length,
     medyanSkor: skorlar.length ? yuzdelik(skorlar, 0.5) : null,
+    medyanOran: oranlar.length ? yuzdelik(oranlar, 0.5) : null,
     temizOran: tahtali.length
       ? tahtali.filter((b) => b.tahta === "temiz").length / tahtali.length
       : null,

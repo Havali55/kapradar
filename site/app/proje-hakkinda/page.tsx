@@ -31,6 +31,9 @@ export default async function ProjeHakkinda() {
             <span className="logo-alt mono">PROJE HAKKINDA</span>
           </Link>
           <div className="bas-bos" />
+          <Link href="/film" className="bag">
+            Filmi izle ▸
+          </Link>
           <Link href="/profil" className="bag">
             Profil
           </Link>

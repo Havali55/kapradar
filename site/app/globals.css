@@ -1277,3 +1277,13 @@ a:hover {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Film sayfası — oynatıcı kâğıt kart gibi durur. */
+.film {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ken);
+  border-radius: var(--r-kart);
+  background: var(--kart);
+}
