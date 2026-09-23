@@ -1,20 +1,21 @@
 /* KAP·RADAR tasarım sistemi.
-   Değerler Hüseyin'in maketinden (KAP-Radar.dc.html) birebir alındı;
+   Değerler Hüseyin'in maketinden (KAP-Radar v2.dc.html, 2026-09-23:
+   filmle aynı kâğıt paleti) birebir alındı;
    inline stiller token'lara ve sınıflara taşındı. Yeni renk üretilmedi. */
 
 :root {
-  --ink: #191b19;
-  --ink-2: #3b3e39;
-  --mut: #5f6259;
-  --mut-2: #6b6e66;
-  --mut-3: #70736a;
-  --zem: #f6f6f3;
-  --kart: #fff;
-  --kart-2: #fcfcfa;
-  --ken: #e3e2dc;
-  --ken-2: #e9e8e2;
-  --ken-3: #d9d8d1;
-  --ken-4: #b6b9af;
+  --ink: #1d1c19;
+  --ink-2: #33312b;
+  --mut: #5f5b50;
+  --mut-2: #5f5b50;
+  --mut-3: #6a665b;
+  --zem: #f3efe4;
+  --kart: #fbf9f3;
+  --kart-2: #f6f2e8;
+  --ken: #d8d1bf;
+  --ken-2: #e2dac6;
+  --ken-3: #cfc7b3;
+  --ken-4: #9b9480;
 
   --uyari-z: #f3f1e9;
   --uyari-k: #e0dccb;
@@ -49,7 +50,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--zem);
+  background-color: var(--zem);
+}
+/* Noktalı kâğıt — filmle aynı doku. */
+body {
+  background-image: radial-gradient(#e0d8c4 1.2px, transparent 1.4px);
+  background-size: 24px 24px;
 }
 
 body {
@@ -136,7 +142,7 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgb(246 246 243 / 0.93);
+  background: rgb(243 239 228 / 0.94);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--ken);
 }
@@ -241,10 +247,18 @@ a:hover {
   margin-bottom: 22px;
 }
 .baslik-blok h1 {
-  margin: 0 0 6px;
-  font-size: 22px;
-  font-weight: 600;
+  margin: 0 0 8px;
+  font-family: var(--yazi-serif), Georgia, serif;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 400;
   letter-spacing: -0.02em;
+}
+.baslik-ust {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--mut-2);
+  margin: 0 0 8px;
 }
 .baslik-blok p {
   margin: 0;
@@ -543,76 +557,124 @@ a:hover {
   margin-bottom: 4px;
   text-wrap: pretty;
 }
-.kart-karsi {
-  font-size: 12.5px;
-  color: var(--mut-2);
-  margin-bottom: 14px;
+
+/* J/K imleci: odak halkasıyla aynı dil, ama kalıcı. */
+.kart-imlec {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
 }
 
-.moduller {
+/* Dört soru — kartın gövdesi. Solda soru, sağda tek satırlık cevap. */
+.dort-soru {
+  margin: 12px 0 0;
+  border-top: 1px solid var(--ken-2);
+}
+.dort-soru > div {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 1px;
+  grid-template-columns: 190px 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--ken-2);
+}
+.dort-soru > div:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.dort-soru dt {
+  font-size: 13px;
+  color: var(--mut-2);
+}
+.dort-soru dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 0;
+}
+.buyukluk {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.buyukluk strong {
+  font-weight: 600;
+}
+.buyukluk-cubuk {
+  display: inline-block;
+  width: 120px;
+  height: 6px;
+  border-radius: 3px;
   background: var(--ken-2);
-  border: 1px solid var(--ken-2);
-  border-radius: var(--r-ic);
   overflow: hidden;
 }
-.modul {
-  background: var(--kart-2);
-  padding: 13px 15px;
+.buyukluk-cubuk > span {
+  display: block;
+  height: 100%;
 }
-.modul-et {
-  font-size: 9.5px;
+.netlik {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.etiket {
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ken-2);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.skorsuz {
   color: var(--mut-2);
-  letter-spacing: 0.11em;
-  margin-bottom: 9px;
+  font-weight: 400;
+}
+.tahta-cumle {
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .dort-soru > div {
+    grid-template-columns: 1fr;
+  }
+  .dort-soru dt {
+    font-size: 12px;
+  }
 }
 
-.skor-satiri {
+/* Klavye tuşu — maketteki basılabilir düğme görünümü. */
+.tus {
+  display: inline-block;
+  font-family: var(--yazi-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  background: var(--kart);
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  padding: 0 6px;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.tus-yardim {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: -4px 0 14px;
+  font-size: 12px;
+  color: var(--mut-2);
+}
+/* Dokunmatik cihazda klavye yok: ipucu da yok. */
+@media (hover: none) {
+  .tus-yardim,
+  .arama .tus {
+    display: none;
+  }
 }
 .skor {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
-}
-.skor-max {
-  font-size: 11px;
-  color: var(--mut-3);
-}
-.skor-kademe {
-  font-size: 11px;
-  color: var(--mut-2);
-  margin-left: auto;
-}
-.skor-cubuk {
-  height: 5px;
-  background: #eceae3;
-  border-radius: 3px;
-  margin: 10px 0 12px;
-  overflow: hidden;
-}
-.skor-dolgu {
-  height: 100%;
-  border-radius: 3px;
-}
-.kv {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 12px;
-  font-size: 11.5px;
-}
-.kv dt {
-  color: var(--mut-2);
-  margin: 0;
-}
-.kv dd {
-  margin: 0;
-  text-align: right;
 }
 .kv dd.vurgu {
   font-weight: 600;
@@ -657,69 +719,6 @@ a:hover {
   font-size: 12px;
   color: var(--mut-2);
   margin: 9px 0 12px;
-  text-wrap: pretty;
-}
-
-.panel-medyan {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.panel-deger {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-.panel-et {
-  font-size: 11px;
-  color: var(--mut-2);
-}
-.kutu-cizgi {
-  position: relative;
-  height: 26px;
-  margin: 12px 0 8px;
-}
-.kutu-taban {
-  position: absolute;
-  top: 11px;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: #eceae3;
-  border-radius: 2px;
-}
-.kutu-iqr {
-  position: absolute;
-  top: 11px;
-  height: 4px;
-  border-radius: 2px;
-  background: #cdd6e4;
-}
-.kutu-medyan {
-  position: absolute;
-  top: 4px;
-  width: 2px;
-  height: 18px;
-  background: #4a4d47;
-}
-.kutu-sifir {
-  position: absolute;
-  top: 11px;
-  width: 1px;
-  height: 4px;
-  background: var(--ken-4);
-  left: 50%;
-}
-.kutu-uc {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--mut-2);
-}
-.panel-alt {
-  font-size: 11.5px;
-  color: var(--mut-2);
-  margin: 9px 0 0;
   text-wrap: pretty;
 }
 .panel-uyari {
@@ -838,7 +837,7 @@ a:hover {
 .panel-bas {
   position: sticky;
   top: 0;
-  background: rgb(255 255 255 / 0.95);
+  background: rgb(251 249 243 / 0.96);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--ken-2);
   padding: 14px 22px;
@@ -850,6 +849,19 @@ a:hover {
 .panel-ticker {
   font-size: 15px;
   font-weight: 700;
+}
+.panel-sirket {
+  font-size: 12.5px;
+  color: var(--mut-2);
+  min-width: 0;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.panel-konum {
+  font-size: 11px;
+  color: var(--mut-2);
 }
 .panel-gezin {
   display: flex;
@@ -1063,27 +1075,6 @@ a:hover {
   padding: 1px 5px;
   border-radius: 4px;
   color: var(--ink-2);
-}
-
-/* ------------------------------------------------ bildirim sikligi */
-
-/* Modül B'nin ikinci bağlamı. Ayraçla ayrılıyor ama aynı modülde
-   kalıyor: ikisi de şirketin özelliği ve ikisi de skora girmiyor. */
-.baglam-ek {
-  margin-top: 13px;
-  padding-top: 12px;
-  border-top: 1px solid var(--ken-2);
-}
-.baglam-ad {
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-.baglam-sayi {
-  font-size: 10.5px;
-  color: var(--mut-2);
-  margin-left: auto;
-  white-space: nowrap;
 }
 
 /* ------------------------------------------- hisse / kalici bildirim */

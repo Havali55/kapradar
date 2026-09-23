@@ -72,9 +72,10 @@ export default function DetayPanel({
           <Link href={`/hisse/${b.ticker}`} className="panel-ticker mono">
             {b.ticker}
           </Link>
-          <span className="mono" style={{ fontSize: 11, color: "var(--mut-2)" }}>
-            {konum}
+          <span className="panel-sirket" title={b.sirket}>
+            {b.sirket}
           </span>
+          <span className="mono panel-konum">{konum}</span>
           <div className="panel-gezin">
             <button
               type="button"
@@ -82,7 +83,7 @@ export default function DetayPanel({
               onClick={onOnceki}
               disabled={!oncekiVar}
               aria-label="Önceki bildirim"
-              title="Önceki (↑)"
+              title="Önceki (K)"
             >
               ↑
             </button>
@@ -92,7 +93,7 @@ export default function DetayPanel({
               onClick={onSonraki}
               disabled={!sonrakiVar}
               aria-label="Sonraki bildirim"
-              title="Sonraki (↓)"
+              title="Sonraki (J)"
             >
               ↓
             </button>

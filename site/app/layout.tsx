@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { isaretliYuzde, kisaTarih } from "@/lib/bicim";
 import { piyasaBandiGetir } from "@/lib/veri";
@@ -10,6 +10,15 @@ const sans = IBM_Plex_Sans({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
   variable: "--yazi-sans",
+  display: "swap",
+});
+
+// Başlıklar: filmle aynı serif.
+const serif = IBM_Plex_Serif({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--yazi-serif",
   display: "swap",
 });
 
@@ -37,7 +46,7 @@ export default async function RootLayout({
 }) {
   const bant = await piyasaBandiGetir();
   return (
-    <html lang="tr" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="tr" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
       <body>
         <div className="serit">
           <div className="serit-ic">
