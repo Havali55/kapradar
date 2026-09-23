@@ -267,7 +267,11 @@ export default function BildirimDetayi({
       )}
 
       {/* ------------------------------- fon sahipliği (bildirim anı) */}
-      {b.fon_sayisi !== null && b.fon_tl !== null && (
+      {/* `!= null`, `!==` değil: fon sütunları view'a sonradan eklendi ve
+          Next'in fetch önbelleği eski şekilli satırları (alan hiç yok,
+          yani undefined) bir süre daha sunabiliyor. 2026-09-23'te build
+          664 eski kayıt yüzünden buyukTl(undefined) ile düştü. */}
+      {b.fon_sayisi != null && b.fon_tl != null && (
         <>
           <h3 className="bolum-bas mono">B · ŞİRKET BAĞLAMI · FONLAR (BİLDİRİM ANINDA)</h3>
           <dl className="kutu">
