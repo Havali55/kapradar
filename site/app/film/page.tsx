@@ -8,10 +8,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * Tanıtım filmi. Dosya `public/film/` altında: 720p, sessiz, ~1,9 MB
- * (kaynak 16 MB; crf 27, SSIM 0,989). Sessiz olduğu için otomatik
- * oynatma engellenmiyor, ama kullanıcı başlatsın diye `controls` var
- * ve `autoPlay` yok — sayfaya gelen herkes izlemeye gelmedi.
+ * Tanıtım filmi. Dosya `public/film/` altında: 720p, 49 sn, ~2,8 MB
+ * (kaynak 16 MB; crf 27). Tasarım aracının dışa aktarımı sesi yazmıyor;
+ * müzik ffmpeg ile sonradan eklendi (AAC 128k, 0,4 sn giriş, son 2,5 sn
+ * kısılarak çıkış). Sesli olduğu için `autoPlay` yok — tarayıcılar sesli
+ * otomatik oynatmayı zaten engelliyor, kullanıcı `controls` ile başlatır.
  */
 export default function FilmSayfasi() {
   return (
