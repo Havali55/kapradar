@@ -286,12 +286,13 @@
         <div class="formul-ana">TTM = FY(önceki yıl) + YTD(cari) − YTD(geçen yıl, aynı dönem)</div>
         <div class="formul-alt">nokta anahtarı: raporun publishDate'i ≤ bildirimin yayın zamanı</div>
       </div>
-      <p>935 finansal rapor arşivlendi; 613 bildirimin <strong>597'sinde</strong> (%97,4) payda çözülüyor. Çözülemeyen 16 bildirim, yeterli geçmişi olmayan 8 yeni halka açılmış şirkete ait — skorsuz kalırlar, uydurma paydayla skorlanmazlar.</p>
+      <p>Analiz örnekleminde (613 bildirim) 935 finansal rapor arşivlendi ve <strong>597'sinde</strong> (%97,4) payda çözüldü. Arşiv 2024-09'a uzatılınca 1.304 bildirimin <strong>1.211'inde</strong> (%92,9) çözülüyor; oran düştü çünkü eski yılda yeni halka arz daha çok: ilk yıllık raporu KAP'a düşmeden gelen bildirimin köprüsü kurulamaz (DCTTR'nin 21 bildiriminin 19'u böyle). Bunlar skorsuz kalır, uydurma paydayla skorlanmaz.</p>
       <div class="uyar" style="margin-top:18px;">
-        <div class="et">PAYDAYI SESSİZCE BOZAN ÜÇ ŞEY</div>
+        <div class="et">PAYDAYI SESSİZCE BOZAN DÖRT ŞEY</div>
         <p><strong>Sunum para birimi.</strong> Künye “1.000 TL” ya da “1.000.000 TL” diyebiliyor (935 raporun 79'u). Çarpan uygulanmazsa TOASO, DOAS ve AKENR bin kat küçük okunur.</p>
         <p><strong>Gelir tablosunun rolü sabit değil.</strong> <em>310000</em> (fonksiyon esaslı), <em>310003</em> (çeşit esaslı), <em>holding_role_310030</em> — yalnız ilkine bakınca 935 raporun 577'si sessizce atlanıyordu.</p>
-        <p style="margin-bottom:0;"><strong>Şirket kendi beyanını yanlış yazabiliyor</strong> (ONCSM, ALTNY). Yükleyici her şirketin kendi serisindeki yıllıklandırılmış medyana bakar; 100 katı aşan raporu kabul etmez.</p>
+        <p><strong>Şirket kendi beyanını yanlış yazabiliyor</strong> (ONCSM, ALTNY). Yükleyici her şirketin kendi serisindeki yıllıklandırılmış medyana bakar; 100 katı aşan raporu kabul etmez.</p>
+        <p style="margin-bottom:0;"><strong>Enflasyon muhasebesi (TMS 29) köprünün birimlerini ayırıyor.</strong> Her rapor geçen yılın aynı dönemini kendi tarihinin satın alma gücüyle yeniden ifade ediyor: DCTTR'nin 2024 hasılatı ilk raporunda 2,51, bir yıl sonraki karşılaştırmalı sütunda 3,28 milyar TL. Formüldeki iki YTD cari TL'yle, yıllık terim eski TL'yle geliyordu; payda küçük, oran %7–25 büyük çıkıyordu. Arşivdeki 1.074 rapor çiftinin ~%91'i yeniden ifade edilmiş, 12 aylık katsayı medyanı 1,33. 24.09.2026'dan beri yıllık terim şirketin <em>kendi</em> katsayısıyla cari birime taşınıyor: aynı dönemin ilk yayını ile yeniden ifadesinin oranı, k<sup>ay/12</sup>. Dış veri yok, point-in-time bozulmuyor. Katsayı çözülemezse (ilk yayın arşivde yok ya da oran 0,95–2,2 dışında) köprü düzeltmesiz kalıyor. Düzeltme sitede 35 bildirimin kademesini bir basamak indirdi, yayın kararını hiç değiştirmedi.</p>
       </div>
 
       <h4>Pay: hangi tutar “yeni iş” sayılır</h4>
@@ -363,49 +364,52 @@
         <div class="hesap">
           <div class="hesap-bas"><span class="hesap-tic">ASELS</span>
             <span class="hesap-not">10.07.2026 · açık · ilk bildirim</span>
-            <span class="hesap-skor">4,07 / 5,00</span></div>
+            <span class="hesap-skor">4,23 / 5,00</span></div>
           <div class="hesap-g">
             <div class="satir"><span class="satir-a">Net tutar (TL karşılığı)</span><span class="satir-d">78.700.425.412,57</span></div>
-            <div class="satir"><span class="satir-a">TTM hasılat</span><span class="satir-d">184.925.592.000</span></div>
-            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%42,56</span></div>
-            <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,4256) + 2) / 2</span><span class="satir-d">0,8145</span></div>
+            <div class="satir"><span class="satir-a">TTM hasılat (TMS 29 düzeltmeli)</span><span class="satir-d">197.477.665.463</span>
+              <span class="satir-alt">FY2025 × 1,0696 + 3A2026 − 3A2025. Çarpan şirketin kendi yeniden ifadesinden: 3A2025 ilk yayında 22,79, bir yıl sonra 29,83 milyar TL (k = 1,309; üç aylık pay k<sup>3/12</sup>).</span></div>
+            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%39,85</span></div>
+            <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,3985) + 2,602) / 2,602</span><span class="satir-d">0,8465</span></div>
             <div class="satir"><span class="satir-a">K (açık + ilk)</span><span class="satir-d">1,00</span></div>
-            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,8145 × 1,00</span><span class="satir-d">4,07</span>
+            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,8465 × 1,00</span><span class="satir-d">4,23</span>
               <span class="satir-alt">78 milyar TL'lik bir sözleşme bile tavana çıkmıyor — ölçüt mutlak tutar değil, kendi cirosuna oranı.</span></div>
           </div>
         </div>
         <div class="hesap">
           <div class="hesap-bas"><span class="hesap-tic">CEOEM</span>
             <span class="hesap-not">09.04.2026 · açık · güncelleme</span>
-            <span class="hesap-skor">4,02 / 5,00</span></div>
+            <span class="hesap-skor">4,07 / 5,00</span></div>
           <div class="hesap-g">
             <div class="satir"><span class="satir-a">Net tutar</span><span class="satir-d">689.500.000</span></div>
-            <div class="satir"><span class="satir-a">TTM hasılat</span><span class="satir-d">884.571.536</span></div>
+            <div class="satir"><span class="satir-a">TTM hasılat (FY2025, doğrudan yıllık)</span><span class="satir-d">884.571.536</span></div>
             <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%77,95</span></div>
-            <div class="satir"><span class="satir-a">f(r)</span><span class="satir-d">0,9459</span></div>
+            <div class="satir"><span class="satir-a">f(r)</span><span class="satir-d">0,9584</span></div>
             <div class="satir"><span class="satir-a">K (açık + güncelleme)</span><span class="satir-d">0,85</span></div>
-            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,9459 × 0,85</span><span class="satir-d">4,02</span>
+            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,9584 × 0,85</span><span class="satir-d">4,07</span>
               <span class="satir-alt">K'nın işleyişi burada görünür: oran ASELS'inkinin neredeyse iki katı, ama güncelleme olduğu için skor onun altında kalıyor.</span></div>
           </div>
         </div>
         <div class="hesap">
           <div class="hesap-bas"><span class="hesap-tic">ORGE</span>
             <span class="hesap-not">18.09.2026 · açık · güncelleme</span>
-            <span class="hesap-skor">0,77 / 5,00</span></div>
+            <span class="hesap-skor">1,49 / 5,00</span></div>
           <div class="hesap-g">
-            <div class="satir"><span class="satir-a">FY2025 hasılat</span><span class="satir-d">3.495.512.127</span></div>
+            <div class="satir"><span class="satir-a">FY2025 hasılat (Aralık 2025 TL'si)</span><span class="satir-d">3.495.512.127</span></div>
+            <div class="satir"><span class="satir-a">× TMS 29 çarpanı √1,321</span><span class="satir-d">4.017.720.492</span>
+              <span class="satir-alt">6A2025 ilk yayında 1.566.607.068, bu yılın raporunda 2.069.654.707: şirketin kendi 12 aylık katsayısı 1,321. Yıllık terim altı ay ileri taşınıyor (× 1,149).</span></div>
             <div class="satir"><span class="satir-a">+ 6A2026 hasılat</span><span class="satir-d">2.597.519.683</span></div>
-            <div class="satir"><span class="satir-a">− 6A2025 hasılat</span><span class="satir-d">2.069.654.707</span></div>
-            <div class="satir"><span class="satir-a">= TTM hasılat</span><span class="satir-d">4.023.377.103</span>
-              <span class="satir-alt">İki rapor da bildirimden önce yayınlanmış; lookahead yok.</span></div>
+            <div class="satir"><span class="satir-a">− 6A2025 hasılat (yeniden ifade)</span><span class="satir-d">2.069.654.707</span></div>
+            <div class="satir"><span class="satir-a">= TTM hasılat (Haziran 2026 TL'si)</span><span class="satir-d">4.545.585.468</span>
+              <span class="satir-alt">Düzeltmesiz köprü 4.023.377.103 verirdi. Üç rapor da bildirimden önce yayınlanmış; lookahead yok.</span></div>
             <div class="satir"><span class="satir-a">863.000 EUR × 55,7981 (TCMB alış)</span><span class="satir-d">48.153.760</span></div>
             <div class="satir"><span class="satir-a">+ TL kalem</span><span class="satir-d">44.645.758</span></div>
             <div class="satir"><span class="satir-a">= Net tutar</span><span class="satir-d">92.799.518</span>
               <span class="satir-alt">940.002 USD'lik kümülatif proje bedeli <em>toplam_sozlesme</em> olduğu için toplama girmedi.</span></div>
-            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%2,31</span></div>
-            <div class="satir"><span class="satir-a">f(r) × K (0,1814 × 0,85)</span><span class="satir-d">0,1542</span></div>
-            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,1814 × 0,85</span><span class="satir-d">0,77</span>
-              <span class="satir-alt">Rutin bir iş: tutar 92,8 milyon TL ama yıllık hasılatın %2,3'ü.</span></div>
+            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%2,04</span></div>
+            <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,0204) + 2,602) / 2,602</span><span class="satir-d">0,3505</span></div>
+            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,3505 × 0,85</span><span class="satir-d">1,49</span>
+              <span class="satir-alt">Rutin bir iş: tutar 92,8 milyon TL ama yıllık hasılatın %2'si.</span></div>
           </div>
         </div>
       </div>
