@@ -19,6 +19,12 @@ export default async function ProjeHakkinda() {
   const bildirimler = await bildirimleriGetir();
   const ozet = ozetCikar(bildirimler);
   const skorsuz = ozet.toplam - ozet.skorlu;
+  const hisseSayisi = new Set(bildirimler.map((b) => b.ticker)).size;
+  const zamanlar = bildirimler.map((b) => new Date(b.yayin_zamani).getTime());
+  // Arşivin kapsadığı ay sayısı, ilk ve son bildirim arasından.
+  const aySayisi = zamanlar.length
+    ? Math.round((Math.max(...zamanlar) - Math.min(...zamanlar)) / (30.44 * 86400000))
+    : 0;
 
   return (
     <>
@@ -64,7 +70,7 @@ export default async function ProjeHakkinda() {
           <div className="olcu">
             <div className="olcu-et mono">VERİ</div>
             <div className="olcu-deger" style={{ fontSize: 15, fontWeight: 500 }}>
-              613 bildirim · 111 hisse · 12 ay
+              {sayi(ozet.toplam, 0)} bildirim · {hisseSayisi} hisse · {aySayisi} ay
             </div>
           </div>
           <div className="olcu">
@@ -163,8 +169,9 @@ export default async function ProjeHakkinda() {
             </p>
             <h4>Tek sayı yerine dağılım</h4>
             <p style={{ marginBottom: 20 }}>
-              613 bildirimlik örneklem tekil getiri tahminini taşımıyor —
-              ölçtük: tüm sinyaller 3 günlük tepkinin %6,4&apos;ünü açıklıyor.
+              İlk 613 bildirimlik analiz örneklemi tekil getiri tahminini
+              taşımıyor — ölçtük: tüm sinyaller 3 günlük tepkinin
+              %6,4&apos;ünü açıklıyor.
               Bu yüzden Modül C medyan ve çeyreklik aralığını, örneklem
               boyutuyla birlikte gösteriyor.
             </p>

@@ -1,0 +1,92 @@
+# Canlı koşu (Adım 15): hafta içi her akşam seans kapanışından sonra.
+# Ayrıntı ve adım sırası: scripts/gunluk.py
+name: gunluk
+
+on:
+  schedule:
+    # 16:30 UTC = 19:30 İstanbul. Seans 18:10'da kapanıyor; fiyat zaten
+    # düne kadar çekiliyor, saat KAP'ın akşam bildirimlerini yakalamak için.
+    - cron: "30 16 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      llm:
+        description: "Ücretli çıkarımı koş (Gemini)"
+        type: boolean
+        default: true
+
+# Aynı anda iki koşu arşivi ve veritabanını birlikte yazmasın.
+concurrency:
+  group: gunluk
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  kos:
+    runs-on: ubuntu-latest
+    # Soğuk başlangıç (önbellek yok) KAP'tan ~2 saat istek atıyor.
+    timeout-minutes: 330
+    env:
+      TZ: Europe/Istanbul
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -e .
+
+      # Ham arşiv (liste, detay, finansal, kur, VBTS, evren) koşudan koşuya
+      # taşınıyor. Anahtar her koşuda yeni; en son kaydedilen geri yükleniyor.
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/ham/liste
+            data/ham/detay
+            data/ham/finansal
+            data/ham/kur
+            data/ham/vbts
+            data/ham/evren
+          key: ham-${{ github.run_id }}
+          restore-keys: ham-
+
+      - name: .env
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          KAP_USER_AGENT: ${{ secrets.KAP_USER_AGENT }}
+        run: |
+          umask 077
+          {
+            echo "DATABASE_URL=$DATABASE_URL"
+            echo "GEMINI_API_KEY=$GEMINI_API_KEY"
+            echo "GEMINI_KATMAN1_MODEL=gemini-3.1-flash-lite"
+            echo "GEMINI_KATMAN2_MODEL=gemini-3.8-flash"
+            echo "KAP_USER_AGENT=$KAP_USER_AGENT"
+            echo "KAP_ISTEK_ARALIGI_MS=1200"
+            echo "KAP_MAKS_YENIDEN_DENEME=5"
+          } > .env
+
+      - name: koşu
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.llm }}" != "true" ]; then
+            python scripts/gunluk.py
+          else
+            python scripts/gunluk.py --llm
+          fi
+
+      # Koşu düşse de kaydet: soğuk başlangıcın yarısı bir sonraki koşuya kalsın.
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: |
+            data/ham/liste
+            data/ham/detay
+            data/ham/finansal
+            data/ham/kur
+            data/ham/vbts
+            data/ham/evren
+          key: ham-${{ github.run_id }}

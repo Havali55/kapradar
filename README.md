@@ -76,12 +76,17 @@ katına çıkar ve A5 bunu göremez, çünkü para birimleri farklı.
 ## Skor
 
 ```
-S = clamp(5 · f(r) · K, 0, 5)      f(r) = clamp((log10(r) + 2) / 2, 0, 1)
+S = clamp(5 · f(r) · K, 0, 5)      f(r) = clamp((log10(r) + 2,602) / 2,602, 0, 1)
 ```
 
 `r` = net tutar / TTM hasılat. Logaritmik, çünkü materyallik çarpımsal:
-%1 taban, %100 tavan. `K` güvenilirlik çarpanı (karşı taraf açık/gizli ×
-ilk/güncelleme), 1,00'dan 0,50'ye.
+%0,25 taban, %100 tavan (taban başta %1'di; hacim sınaması o eşiğin altındaki
+bildirimlerin de ilgi gördüğünü gösterince indirildi). `K` güvenilirlik
+çarpanı (karşı taraf açık/gizli × ilk/güncelleme), 1,00'dan 0,50'ye.
+
+Sitede görünen **kademe S'den değil doğrudan r'den** okunuyor: %5 ve üstü
+"önemli", %15 ve üstü "mega". K bir güvenilirlik ayarı; büyüklük etiketine
+karışırsa gizli karşı taraflı dev bir iş "rutin" görünebiliyordu.
 
 Skor bir **getiri tahmini değil, büyüklük ölçüsüdür.** Bunun sebebi ölçüldü:
 601 bildirimlik örneklemde tüm sinyaller birlikte 3 günlük anormal getirinin

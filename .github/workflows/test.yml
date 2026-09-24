@@ -1,0 +1,24 @@
+# Birim testleri + betik taraması. Canlı veritabanı testleri DATABASE_URL
+# olmadığında kendiliğinden atlanıyor (tests/test_depo.py).
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: python -m pytest -q
+      # pytest scripts/ altını koşturmuyor; tanımsız ad oradan kaçabiliyor.
+      - run: python -m pyflakes scripts src

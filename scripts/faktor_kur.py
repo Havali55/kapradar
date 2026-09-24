@@ -3,6 +3,8 @@
 Kullanım:
     python scripts/faktor_kur.py            # indir (arşivde yoksa) + özet bas
     python scripts/faktor_kur.py --yaz      # faktor_gunluk tablosuna da yaz
+    python scripts/faktor_kur.py --yeniden --baslangic 2024-01-01 --yaz
+    python scripts/faktor_kur.py --guncelle 10 --yaz   # canlı koşu: son 10 gün
 
 Neden: 8–18 Eylül 2026'da XU100 −%7,8 düşerken bizim 111 hissemizin
 medyanı −%19,8 düştü; "temiz" tahtalar dahil. XU100 büyük hisse endeksi,
@@ -23,7 +25,7 @@ import json
 import re
 import sys
 import warnings
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -34,7 +36,7 @@ sys.path.insert(0, str(KOK / "src"))
 LISTE_KLASORU = KOK / "data" / "ham" / "liste"
 EVREN_KLASORU = KOK / "data" / "ham" / "evren"
 KAPANIS_CSV = EVREN_KLASORU / "kapanis.csv"
-BASLANGIC = "2024-06-01"
+BASLANGIC = "2024-01-01"
 PARCA = 40
 SICRAMA = 0.50
 ASGARI_HISSE = 100  # o gün bu kadar hisse yoksa seri yazılmaz
@@ -59,7 +61,7 @@ def evren() -> list[str]:
     return sorted(kodlar)
 
 
-def indir(kodlar: list[str], bitis: str) -> pd.DataFrame:
+def indir(kodlar: list[str], baslangic: str, bitis: str) -> pd.DataFrame:
     import yfinance as yf
 
     parcalar = []
@@ -68,7 +70,7 @@ def indir(kodlar: list[str], bitis: str) -> pd.DataFrame:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             veri = yf.download(
-                semboller, start=BASLANGIC, end=bitis, auto_adjust=True,
+                semboller, start=baslangic, end=bitis, auto_adjust=True,
                 progress=False, threads=True,
             )
         kapanis = veri["Close"] if "Close" in veri else veri
@@ -96,15 +98,32 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--yaz", action="store_true")
+    ap.add_argument("--baslangic", default=BASLANGIC)
+    ap.add_argument("--yeniden", action="store_true", help="arşivi baştan indir")
+    ap.add_argument(
+        "--guncelle", type=int, metavar="GUN",
+        help="arşivdeki hisseler için son GUN günü yeniden indirip ekle",
+    )
     secenek = ap.parse_args()
 
     EVREN_KLASORU.mkdir(parents=True, exist_ok=True)
-    if KAPANIS_CSV.exists():
+    # yfinance'in `end` sınırı hariç: bugünü de almak için yarın.
+    yarin = (date.today() + timedelta(days=1)).isoformat()
+    if KAPANIS_CSV.exists() and not secenek.yeniden:
         kapanis = pd.read_csv(KAPANIS_CSV, index_col=0, parse_dates=True)
+        if secenek.guncelle:
+            # Son günler yeniden iniyor ve eskisinin ÜSTÜNE yazılıyor:
+            # yfinance seans içinde yarım kapanış verebiliyor, dünkü satır
+            # bugün düzelmiş olabilir.
+            bas = (kapanis.index.max() - timedelta(days=secenek.guncelle)).date()
+            yeni = indir(list(kapanis.columns), bas.isoformat(), yarin)
+            yeni.index = pd.to_datetime(yeni.index)
+            kapanis = yeni.combine_first(kapanis)[kapanis.columns]
+            kapanis.to_csv(KAPANIS_CSV)
     else:
         kodlar = evren()
         print(f"evren: {len(kodlar)} pay kodu", flush=True)
-        kapanis = indir(kodlar, date.today().isoformat())
+        kapanis = indir(kodlar, secenek.baslangic, yarin)
         kapanis = kapanis.dropna(axis=1, how="all")
         kapanis.to_csv(KAPANIS_CSV)
     print(f"fiyatı gelen hisse: {kapanis.shape[1]}, gün: {kapanis.shape[0]}")

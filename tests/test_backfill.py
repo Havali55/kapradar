@@ -429,3 +429,72 @@ def test_liste_penceresi_dusse_bile_kosu_devam_eder(tmp_path):
 
     assert ozet.hatali_pencereler == [(date(2026, 1, 4), date(2026, 1, 6))]
     assert ozet.pencere == 3  # kalan pencereler işlendi
+
+
+# ------------------------------------------------------------ açık pencere
+
+
+def test_bugunu_iceren_pencere_arsive_yazilmaz(tmp_path):
+    """Gün bitmeden yazılan liste yarımdır; arşivlenirse o günün sonraki
+    bildirimleri bir daha hiç sorulmaz (canlı koşunun kalıcı deliği)."""
+    arsiv = HamArsiv(tmp_path)
+    islevci, _ = sahte_kap(liste_fixture())
+
+    backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 9, 17),
+        bitis=date(2026, 9, 18),
+        bugun=date(2026, 9, 18),
+    )
+
+    assert not arsiv.liste_var_mi(date(2026, 9, 17), date(2026, 9, 18))
+
+
+def test_dunu_iceren_pencere_de_acik_sayilir(tmp_path):
+    """KAP akşam geç saatte de bildirim düşürüyor; sabah koşusu dünü
+    yeniden sormalı."""
+    arsiv = HamArsiv(tmp_path)
+    arsiv.liste_yaz(date(2026, 9, 17), date(2026, 9, 18), [])
+    islevci, istekler = sahte_kap(liste_fixture())
+
+    backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 9, 17),
+        bitis=date(2026, 9, 18),
+        bugun=date(2026, 9, 19),
+    )
+
+    assert [i for i in istekler if i.url.path == LISTE_YOLU] != []
+
+
+def test_kapanmis_pencere_arsivlenir(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    islevci, _ = sahte_kap(liste_fixture())
+
+    backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 9, 17),
+        bitis=date(2026, 9, 18),
+        bugun=date(2026, 9, 20),
+    )
+
+    assert arsiv.liste_var_mi(date(2026, 9, 17), date(2026, 9, 18))
+
+
+def test_finansal_backfill_acik_pencereyi_arsivlemez(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    islevci, _ = sahte_kap(liste_fixture())
+
+    finansal_backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 9, 17),
+        bitis=date(2026, 9, 18),
+        tickerlar=set(),
+        bugun=date(2026, 9, 18),
+    )
+
+    assert not arsiv.liste_var_mi(date(2026, 9, 17), date(2026, 9, 18))
