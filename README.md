@@ -1,5 +1,16 @@
 # KAP Radar
 
+> **In English:** A data pipeline that turns Borsa Istanbul "New Business
+> Relation" disclosures (KAP) into a measurable size: contract value divided
+> by the company's point-in-time trailing-twelve-month revenue, parsed from
+> XBRL filings. An LLM only extracts amounts from free text; every number it
+> returns must quote the source sentence verbatim or the disclosure is
+> withheld (deterministic gate A1–A6, B1–B3). FX conversion, ratios and the
+> score are plain code. Runs daily on GitHub Actions for a few cents a month.
+> Live site: [kap.calibresolve.com](https://kap.calibresolve.com) · Methodology
+> and validation (Turkish): [/metodoloji](https://kap.calibresolve.com/metodoloji).
+> Identifiers are Turkish; see the glossary at the end.
+
 **KAP bildirimi düşer, ne anlama geldiği ölçülebilir hâle gelir.**
 
 KAP bildirimleri ham metindir: *"45.200.000 USD tutarında sözleşme imzalanmıştır."*
@@ -122,6 +133,30 @@ raporu almıyor).
 | Çıkarım doğruluğu | 47/50 tam doğru (%94); skor 49/50'de elle etiketle aynı |
 | Test | 221 |
 
+## Canlı koşu
+
+`.github/workflows/gunluk.yml` hafta içi her akşam 19:30'da (İstanbul)
+`scripts/gunluk.py`'yi koşar. Orkestratör yeni bir hat değil; yukarıdaki
+betikleri kısa aralıkla ve sırayla çağırır:
+
+```
+liste+detay → DB → kur → finansal → fiyat → faktör → VBTS → çıkarım (LLM) → tepki → bağlam
+```
+
+Üç tasarım kararı:
+
+- **Açık pencere arşivlenmez.** Dünü ya da bugünü içeren liste penceresi
+  yarımdır; arşive girerse o günün sonraki bildirimleri bir daha sorulmaz.
+- **Fiyat düne kadar çekilir.** Kapanışlar üzerine yazılmıyor; seans içinde
+  gelen yarım bir kapanış kalıcı olurdu.
+- **Soğuk başlangıç korumalı.** Ham arşiv CI önbelleğinde taşınıyor. Önbellek
+  yoksa arşiv önce tam aralıkla yeniden kuruluyor (tamamlandığında
+  `data/ham/liste/.tam` yazılır); yarım arşivle bağlam hesabı koşarsa
+  veritabanındaki tahta ve sıklık değerlerini eksik sayımla ezerdi.
+
+Sırlar (`DATABASE_URL`, `GEMINI_API_KEY`) GitHub Secrets'ta; iş akışı koşu
+başında geçici bir `.env` yazar.
+
 ## Kurulum
 
 ```bash
@@ -166,3 +201,22 @@ doğruluyor.
 
 KAP (Kamuyu Aydınlatma Platformu), TCMB günlük döviz kurları, Yahoo Finance
 (BIST kapanışları). Ham arşivler depoya girmiyor.
+
+## Terim sözlüğü
+
+| Türkçe | English |
+|---|---|
+| bildirim | disclosure |
+| çıkarım | extraction (LLM) |
+| kapı | gate (validation) |
+| ciro / hasılat | revenue |
+| tepki | market reaction (CAR) |
+| tahta | trading board state (circuit breakers, VBTS) |
+| sıklık | disclosure frequency |
+| depo / arşiv | repository layer / raw archive |
+| yayına hazır | publishable |
+
+## Lisans
+
+Kod MIT lisanslı (`LICENSE`). KAP metinleri ve ham veriler depoda yok ve bu
+lisansın kapsamında değil.
