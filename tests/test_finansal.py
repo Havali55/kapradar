@@ -364,3 +364,85 @@ def test_holding_taksonomisindeki_gelir_tablosu_da_taninir():
         ]
     }
     assert "gelir tablosu" in gelir_tablosu_govdesi(detay)
+
+
+# ------------------------------------------------------------- TMS 29
+
+# Geçen yılın aynı dönemi, İLK yayınlandığı hâliyle (Haziran 2025 TL'si).
+# YARIM2026 aynı dönemi 2.069.654.707 olarak yeniden ifade ediyor; oran
+# k = 2.069.654.707 / 1.556.131.358 = 1,33 (yıllık ~%33 enflasyon).
+YARIM2025_ILK = donem(
+    sonu=date(2025, 6, 30),
+    ay=6,
+    hasilat="1556131358",
+    onceki="1200000000",
+    yayin=datetime(2025, 8, 12, 18, 0, tzinfo=ISTANBUL),
+    indeks=1470000,
+)
+
+
+def test_kopru_yillik_terimi_yeniden_ifade_katsayisiyla_tasir():
+    """TMS 29: YTD'ler cari dönem sonu TL'sinde, FY önceki Aralık TL'sinde.
+
+    Yıllık terim 6 ay ileri taşınıyor: × k^(6/12). Düzeltmesiz köprü
+    payda'yı küçültür, ciro oranını şişirirdi.
+    """
+    sonuc = ttm_coz(
+        [YARIM2025_ILK, FY2025, YARIM2026],
+        datetime(2026, 9, 18, 18, 58, tzinfo=ISTANBUL),
+    )
+
+    k = Decimal("2069654707") / Decimal("1556131358")
+    carpan = k ** (Decimal(6) / Decimal(12))
+    beklenen = (
+        Decimal("3495512127") * carpan + Decimal("2597519683") - Decimal("2069654707")
+    ).quantize(Decimal(1))
+    assert sonuc.hasilat == beklenen
+    assert sonuc.enflasyon_carpani == carpan
+    assert sonuc.kaynak_indeksler == (1470000, 1557898, 1649471)
+    # Düzeltme payda'yı büyütür: ~4,02 milyar → ~4,56 milyar.
+    assert sonuc.hasilat > Decimal("4023377103")
+
+
+def test_orijinal_rapor_yoksa_kopru_duzeltmesiz_ve_isaretli():
+    """Karşılaştırılacak ilk yayın yoksa k bilinmiyor; uydurulmuyor."""
+    sonuc = ttm_coz(
+        [FY2025, YARIM2026], datetime(2026, 9, 18, 18, 58, tzinfo=ISTANBUL)
+    )
+
+    assert sonuc.hasilat == Decimal("4023377103")
+    assert sonuc.enflasyon_carpani is None
+
+
+def test_yeniden_ifade_etmeyen_sirkette_kopru_degismez():
+    """Banka gibi TMS 29 dışındaki raporlayıcı: k = 1, çarpan 1."""
+    ilk = donem(
+        sonu=date(2025, 6, 30), ay=6, hasilat="2069654707",
+        yayin=datetime(2025, 8, 12, tzinfo=ISTANBUL), indeks=1470000,
+    )
+    sonuc = ttm_coz(
+        [ilk, FY2025, YARIM2026], datetime(2026, 9, 18, tzinfo=ISTANBUL)
+    )
+
+    assert sonuc.hasilat == Decimal("4023377103")
+    assert sonuc.enflasyon_carpani == Decimal(1)
+
+
+def test_makul_araligin_disindaki_katsayi_uygulanmaz():
+    """k = 3: enflasyon değil, yeniden sınıflama ya da birim hatası."""
+    ilk = donem(
+        sonu=date(2025, 6, 30), ay=6, hasilat="689884902",
+        yayin=datetime(2025, 8, 12, tzinfo=ISTANBUL), indeks=1470000,
+    )
+    sonuc = ttm_coz(
+        [ilk, FY2025, YARIM2026], datetime(2026, 9, 18, tzinfo=ISTANBUL)
+    )
+
+    assert sonuc.hasilat == Decimal("4023377103")
+    assert sonuc.enflasyon_carpani is None
+
+
+def test_yillik_yontemde_enflasyon_carpani_yok():
+    sonuc = ttm_coz([FY2025], datetime(2026, 5, 1, tzinfo=ISTANBUL))
+
+    assert sonuc.enflasyon_carpani is None
