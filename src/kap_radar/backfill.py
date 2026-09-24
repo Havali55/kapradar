@@ -68,20 +68,35 @@ def haftalik_pencereler(
     return pencereler
 
 
+# Bitişi bugünden en çok bu kadar gün önce olan pencere "açık": arşivden
+# okunmaz, arşive yazılmaz. Gün bitmeden çekilen liste yarımdır; arşive
+# girerse o günün sonraki bildirimleri bir daha hiç sorulmaz. Dün de açık
+# sayılıyor çünkü KAP akşam geç saatte de bildirim düşürüyor ve sabah
+# koşusu dünü yeniden görmeli.
+ACIK_PENCERE_GUN = 1
+
+
+def acik_mi(bitis: date, bugun: date) -> bool:
+    return bitis >= bugun - timedelta(days=ACIK_PENCERE_GUN)
+
+
 def pencere_kayitlari(
     istemci: KapIstemcisi,
     arsiv: HamArsiv,
     baslangic: date,
     bitis: date,
     ozet: BackfillOzeti,
+    bugun: date | None = None,
 ) -> list[dict]:
     """Bir pencerenin liste kayıtlarını verir; sınıra dayanırsa böler.
 
     Önbellekteki pencere yeniden sorulmaz. Yanıt 2.000'e dayandıysa
     pencere ikiye bölünüp yeniden sorulur — tam olduğu doğrulanamayan
-    liste arşive yazılmaz, yoksa eksik veri kalıcılaşır.
+    liste arşive yazılmaz, yoksa eksik veri kalıcılaşır. Aynı sebeple
+    açık pencere (bkz. `ACIK_PENCERE_GUN`) de yazılmaz.
     """
-    if arsiv.liste_var_mi(baslangic, bitis):
+    acik = acik_mi(bitis, bugun or date.today())
+    if not acik and arsiv.liste_var_mi(baslangic, bitis):
         return arsiv.liste_oku(baslangic, bitis)
 
     kayitlar = istemci.liste(baslangic, bitis)
@@ -93,12 +108,13 @@ def pencere_kayitlari(
         else:
             orta = baslangic + (bitis - baslangic) // 2
             return pencere_kayitlari(
-                istemci, arsiv, baslangic, orta, ozet
+                istemci, arsiv, baslangic, orta, ozet, bugun
             ) + pencere_kayitlari(
-                istemci, arsiv, orta + timedelta(days=1), bitis, ozet
+                istemci, arsiv, orta + timedelta(days=1), bitis, ozet, bugun
             )
 
-    arsiv.liste_yaz(baslangic, bitis, kayitlar)
+    if not acik:
+        arsiv.liste_yaz(baslangic, bitis, kayitlar)
     return kayitlar
 
 
@@ -109,6 +125,7 @@ def _guvenli_pencere(
     bitis: date,
     ozet: BackfillOzeti,
     yaz: Callable[[str], None],
+    bugun: date | None = None,
 ) -> list[dict] | None:
     """Pencereyi çeker; WAF ısırırsa koşuyu kesmeden özete yazar.
 
@@ -117,7 +134,7 @@ def _guvenli_pencere(
     tam da böyle düştü ve o ana kadar inen 151 rapor özetsiz kaldı.
     """
     try:
-        return pencere_kayitlari(istemci, arsiv, baslangic, bitis, ozet)
+        return pencere_kayitlari(istemci, arsiv, baslangic, bitis, ozet, bugun)
     except KapErisimHatasi as hata:
         ozet.hatali_pencereler.append((baslangic, bitis))
         yaz(f"  PENCERE HATASI {baslangic} — {bitis}: {hata}")
@@ -133,6 +150,7 @@ def backfill(
     konu: str = YENI_IS_ILISKISI,
     pencere_gun: int = 7,
     gunluk: Callable[[str], None] | None = None,
+    bugun: date | None = None,
 ) -> BackfillOzeti:
     """Verilen aralıktaki hedef şablon bildirimlerini arşive indirir.
 
@@ -148,7 +166,7 @@ def backfill(
     ):
         ozet.pencere += 1
         kayitlar = _guvenli_pencere(
-            istemci, arsiv, pencere_basi, pencere_sonu, ozet, yaz
+            istemci, arsiv, pencere_basi, pencere_sonu, ozet, yaz, bugun
         )
         if kayitlar is None:
             continue
@@ -213,6 +231,7 @@ def finansal_backfill(
     tickerlar: set[str],
     pencere_gun: int = 3,
     gunluk: Callable[[str], None] | None = None,
+    bugun: date | None = None,
 ) -> BackfillOzeti:
     """Hedef şirketlerin finansal raporlarını arşive indirir (Adım 7).
 
@@ -228,7 +247,7 @@ def finansal_backfill(
     ):
         ozet.pencere += 1
         kayitlar = _guvenli_pencere(
-            istemci, arsiv, pencere_basi, pencere_sonu, ozet, yaz
+            istemci, arsiv, pencere_basi, pencere_sonu, ozet, yaz, bugun
         )
         if kayitlar is None:
             continue
