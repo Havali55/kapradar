@@ -33,9 +33,6 @@ export default async function AnaSayfa() {
           <Link href="/film" className="bag">
             Filmi izle ▸
           </Link>
-          <Link href="/profil" className="bag">
-            Profil
-          </Link>
           <Link href="/proje-hakkinda" className="bag">
             Proje hakkında
           </Link>

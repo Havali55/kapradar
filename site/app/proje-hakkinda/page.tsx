@@ -34,9 +34,6 @@ export default async function ProjeHakkinda() {
           <Link href="/film" className="bag">
             Filmi izle ▸
           </Link>
-          <Link href="/profil" className="bag">
-            Profil
-          </Link>
           <Link href="/metodoloji" className="bag">
             Metodoloji
           </Link>
@@ -269,7 +266,14 @@ export default async function ProjeHakkinda() {
             />
             <p style={{ marginBottom: 0 }}>
               <strong>
-                <Link href="/profil">Hüseyin Dinçer</Link>
+                {/* Profil sitede değil LinkedIn'de: site yalnız projeyi anlatıyor. */}
+                <a
+                  href="https://www.linkedin.com/in/h%C3%BCseyin-din%C3%A7er-663345247"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Hüseyin Dinçer
+                </a>
               </strong>{" "}
               — proje tasarımı, kapsam ve metodoloji kararları, veri hattı
               mimarisi, arayüz tasarımı ve tüm karar onayları.
