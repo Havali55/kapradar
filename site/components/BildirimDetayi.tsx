@@ -257,10 +257,11 @@ export default function BildirimDetayi({
           </dl>
           <p className="tutar-yok-not">
             Bildirim sıklığı skora girmez — tahta kalitesi gibi bu da
-            şirketin özelliği, bildirimin değil. Ölçümde ln(sıklık)
-            katsayısı −0,111, hisse-kümelenmiş t = −2,48 (p = 0,013): sık
-            bildirim yapan şirketlerde bildirim başına tepki belirgin
-            biçimde daha sönük.
+            şirketin özelliği, bildirimin değil. İlk ölçümde (2025-09 →
+            2026-09, 613 bildirim) sık bildirim yapan şirketlerde bildirim
+            başına ilgi belirgin biçimde daha sönüktü (t = −2,48). Önceki 12
+            ayda (690 bildirim) aynı ilişki tekrarlanmadı (t = −0,74). Etiket
+            bilgi için duruyor; tepki hakkında bir şey söylemiyor.
           </p>
         </>
       )}
@@ -330,9 +331,11 @@ export default function BildirimDetayi({
           </dl>
           {!b.panel.guvenilir && (
             <p className="panel-uyari">
-              Bu hisse tedbirli tahtada. Ölçümlerimizde limit günü sayısı mutlak
-              hareketi güçlü biçimde artırıyor ama yönle ilişkisi sıfır — yani
-              buradaki dağılım fiyat oluşumunu değil oynaklığı anlatıyor.
+              Bu hisse tedbirli tahtada. İki ayrı yılın ölçümünde de devre
+              kesici ve VBTS gören tahtalarda bildirim sonrası ortalama tepki
+              temiz tahtalardan belirgin biçimde düşük çıktı; mekanizması
+              bilinmiyor. Buradaki dağılım yalnız tedbirli tahtaların
+              geçmişini anlatıyor.
             </p>
           )}
           {b.car_3g !== null && (

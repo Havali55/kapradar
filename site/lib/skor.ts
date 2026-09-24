@@ -139,10 +139,10 @@ export const SIKLIK_SIK_ESIGI = 18;
 
 /**
  * Şirketin bildirim sıklığı — **skora girmez**. Adım 16'nın en sağlam
- * bulgusu: ln(sıklık) katsayısı −0,111, hisse-kümelenmiş t = −2,48
- * (p = 0,013). Sık bildirim yapan şirketlerde bildirim başına tepki
- * belirgin biçimde daha sönük. Skora katılmamasının sebebi tahta
- * bayrağıyla aynı: bu şirketin özelliği, bildirimin değil.
+ * bulgusuydu — örneklem dışı yılda TEKRARLANMADI (t = −0,74), yalnız
+ * olgu olarak gösteriliyor. İlk ölçüm: ln(sıklık) −0,111, t = −2,48
+ * (p = 0,013). Skora katılmamasının sebebi tahta bayrağıyla aynı: bu
+ * şirketin özelliği, bildirimin değil.
  */
 export function siklikBayragi(adet: number | null): SiklikBayragi | null {
   if (adet === null) return null;

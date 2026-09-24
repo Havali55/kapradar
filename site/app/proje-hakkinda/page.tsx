@@ -207,10 +207,14 @@ export default async function ProjeHakkinda() {
               İşaretli getiriyle ilişkisi sıfır. İddia ile ölçüm örtüşüyor.
             </li>
             <li>
-              <strong>Ölçü spekülatif tahtalarda kırılıyor.</strong> Skorun piyasa
-              ilgisiyle ilişkisi temiz tahtalarda var, sık limit gören
-              tahtalarda kayboluyor. Bu yüzden tahta bayrağı süs değil,
-              panelin geçerlilik koşulu.
+              <strong>Bulguları görmediğimiz bir yılda yeniden sınadık —
+              ikisi çöktü.</strong> Arşiv 2024-09&apos;a uzatılınca önceki 12
+              ay (690 bildirim) gerçek bir örneklem dışı sınama oldu. Hacim
+              artışı, bildirim öncesi sızıntı, skorun getiri tahmini olmadığı
+              ve tedbirli tahtada tepkinin aşağı yönlü olduğu tekrarlandı.
+              &ldquo;Sık bildirimcide tepki sönük&rdquo; ve &ldquo;skor
+              spekülatif tahtada kırılıyor&rdquo; tekrarlanmadı; ikisi de
+              artık iddia edilmiyor.
             </li>
             <li>
               <strong>Kendi eşiklerimizden biri çürüdü — ve düzeltildi.</strong>{" "}

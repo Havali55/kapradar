@@ -162,14 +162,15 @@ export const SIKLIK_ADI: Record<string, string> = {
 };
 
 /**
- * Notlar bulguyu anlatıyor, tahmin kurmuyor. Adım 16: ln(sıklık)
- * katsayısı −0,111, kümelenmiş t = −2,48 (p = 0,013).
+ * Notlar yalnız olguyu söylüyor. "Sık bildirimcide tepki sönük" iddiası
+ * 2026-09-24'te kaldırıldı: ilk yılda t = −2,48 iken örneklem dışı yılda
+ * t = −0,74 — tekrarlanmayan bir bulgu kullanıcıya olgu diye sunulmaz.
  */
 export const SIKLIK_NOTU: Record<string, string> = {
   seyrek:
-    "Bu şirket seyrek bildirim yapıyor. Ölçümlerimizde seyrek bildirimcilerde bildirim başına piyasa ilgisi daha yüksek.",
+    "Bu şirket seyrek bildirim yapıyor.",
   orta: "Bu şirketin bildirim sıklığı arşivin orta bandında.",
-  sik: "Bu şirket sık bildirim yapıyor. Ölçümlerimizde sık bildirimcilerde bildirim başına tepki belirgin biçimde daha sönük — bildirimin kendisi küçük olduğu için değil, alışıldığı için.",
+  sik: "Bu şirket sık bildirim yapıyor.",
 };
 
 export const KADEME_ADI: Record<string, string> = {
