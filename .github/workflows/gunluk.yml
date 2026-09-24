@@ -1,5 +1,5 @@
 # Canlı koşu (Adım 15): hafta içi her akşam seans kapanışından sonra.
-# Ayrıntı ve adım sırası: scripts/gunluk.py
+# Ayrıntı ve adım sırası: scripts/gunluk.py (yerelde: python scripts/gunluk.py)
 name: gunluk
 
 on:
