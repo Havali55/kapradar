@@ -1180,44 +1180,14 @@ a:hover {
   text-wrap: pretty;
 }
 
-/* ----------------------------------------------------------- profil */
+/* ---------------------------------------------------------- yapanlar */
 
-.profil-bas {
-  display: flex;
-  align-items: flex-start;
-  gap: 26px;
-  margin-bottom: 34px;
-}
 .profil-foto {
   flex: none;
   border-radius: 50%;
   border: 1px solid var(--ken-3);
   background: var(--kart);
   object-fit: cover;
-}
-.profil-kimlik {
-  min-width: 0;
-}
-.profil-kimlik h1 {
-  margin-bottom: 10px;
-}
-.profil-alt {
-  font-size: 15px;
-}
-.profil-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px 16px;
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  color: var(--mut-2);
-  margin-bottom: 14px;
-}
-.cip-dizi {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 13px;
 }
 .yapan-satiri {
   display: flex;
@@ -1240,11 +1210,6 @@ a:hover {
 @media (max-width: 720px) {
   .kart-sirket {
     max-width: 180px;
-  }
-  .profil-bas {
-    flex-direction: column;
-    gap: 18px;
-    margin-bottom: 28px;
   }
   .govde {
     padding: 20px 16px 60px;

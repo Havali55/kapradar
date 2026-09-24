@@ -47,9 +47,6 @@ export default async function Metodoloji() {
             <span className="logo-alt mono">ARAŞTIRMA NOTU</span>
           </Link>
           <div className="bas-bos" />
-          <Link href="/profil" className="bag">
-            Profil
-          </Link>
           <Link href="/proje-hakkinda" className="bag">
             Proje hakkında
           </Link>
