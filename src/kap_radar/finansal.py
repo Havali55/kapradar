@@ -299,6 +299,10 @@ class Ttm:
     donem_sonu: date
     yontem: str  # "yillik" | "ytd_koprusu"
     kaynak_indeksler: tuple[int, ...]
+    # Köprüde yıllık terime uygulanan TMS 29 çarpanı. None: uygulanmadı
+    # (yıllık yöntem ya da katsayı çözülemedi); 1: şirket yeniden ifade
+    # etmiyor. Bkz. `_yeniden_ifade_katsayisi`.
+    enflasyon_carpani: Decimal | None = None
 
 
 def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
@@ -333,13 +337,71 @@ def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
     if yillik is None or yillik.para_birimi != son.para_birimi:
         return None
 
+    # TMS 29: iki YTD terimi cari dönem sonunun TL'sinde, yıllık terim bir
+    # önceki Aralık'ın TL'sinde. Yıllık terim `ay_sayisi` ay ileri taşınır.
+    # Katsayı çözülemezse düzeltmesiz köprü kullanılıyor ve bu işaretleniyor
+    # (enflasyon_carpani=None) — payda yine de eskisi kadar doğru.
+    katsayi = _yeniden_ifade_katsayisi(acik, son)
+    yillik_terim = yillik.hasilat
+    carpan = None
+    # Sıra kronolojik ve en güncel rapor SONDA: çağıranlar kaynak
+    # bağlantısı için `kaynak_indeksler[-1]` kullanıyor.
+    kaynak = (yillik.kap_index, son.kap_index)
+    if katsayi is not None:
+        k, ilk_yayin = katsayi
+        carpan = k ** (Decimal(son.ay_sayisi) / Decimal(12))
+        yillik_terim = yillik.hasilat * carpan
+        kaynak = (ilk_yayin, yillik.kap_index, son.kap_index)
+
     return Ttm(
-        hasilat=yillik.hasilat + son.hasilat - son.onceki_yil_hasilat,
+        hasilat=(yillik_terim + son.hasilat - son.onceki_yil_hasilat).quantize(Decimal(1)),
         para_birimi=son.para_birimi,
         donem_sonu=son.donem_sonu,
         yontem="ytd_koprusu",
-        kaynak_indeksler=(yillik.kap_index, son.kap_index),
+        kaynak_indeksler=kaynak,
+        enflasyon_carpani=carpan,
     )
+
+
+# Yeniden ifade katsayısının kabul aralığı. Arşivde 2024 dönemleri için
+# medyan 1,44 (üst çeyrek 1,79), 2025–26 için ~1,31–1,33. Aralık dışı bir
+# oran enflasyon değil: yeniden sınıflama, durdurulan faaliyet ya da birim
+# hatası. Öyle bir oranla ölçeklemek paydayı yanlış yönde bozar.
+YENIDEN_IFADE_ALT = Decimal("0.95")
+YENIDEN_IFADE_UST = Decimal("2.2")
+
+
+def _yeniden_ifade_katsayisi(
+    acik: Sequence[DonemHasilat], son: DonemHasilat
+) -> tuple[Decimal, int] | None:
+    """Şirketin kendi 12 aylık TMS 29 katsayısı ve dayandığı rapor.
+
+    `son`, geçen yılın aynı dönemini cari birimle veriyor
+    (`onceki_yil_hasilat`); o dönemin İLK yayını aynı rakamı kendi
+    döneminin birimiyle vermişti. Oran, 12 aylık satın alma gücü
+    düzeltmesi. Dış veri (TÜFE) gerekmiyor ve point-in-time bozulmuyor:
+    iki rapor da `an`dan önce açıklanmış olmak zorunda (`acik`).
+
+    İlk yayın alınıyor, son revizyon değil: sonraki bir revizyon
+    yeniden ifade edilmiş rakam taşıyabilir ve oranı 1'e çekerdi.
+    """
+    if son.onceki_donem_sonu is None or not son.onceki_yil_hasilat:
+        return None
+    adaylar = [
+        d
+        for d in acik
+        if d.donem_sonu == son.onceki_donem_sonu
+        and d.ay_sayisi == son.ay_sayisi
+        and d.para_birimi == son.para_birimi
+        and d.hasilat > 0
+    ]
+    if not adaylar:
+        return None
+    ilk = min(adaylar, key=lambda d: d.yayin_zamani)
+    k = son.onceki_yil_hasilat / ilk.hasilat
+    if not YENIDEN_IFADE_ALT <= k <= YENIDEN_IFADE_UST:
+        return None
+    return k, ilk.kap_index
 
 
 # Bir dönemin yıllıklandırılmış hasılatı, şirketin medyanından bu kadar

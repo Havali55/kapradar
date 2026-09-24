@@ -39,7 +39,10 @@ __all__ = [
     "SiklikBayragi",
     "TahtaBayragi",
     "TepkiPaneli",
+    "MEGA_ORAN",
+    "ONEMLI_ORAN",
     "VARSAYILAN_AGIRLIKLAR",
+    "buyukluk_kademesi",
     "buyukluk_skoru",
     "f_oran",
     "guvenilirlik",
@@ -211,8 +214,30 @@ def buyukluk_skoru(
     return _yuvarla(max(Decimal("0"), min(agirliklar.azami, ham)))
 
 
+# Kullanıcının GÖRDÜĞÜ kademe 2026-09-24'ten beri S'den değil doğrudan
+# ciro oranından (`site/lib/skor.ts::buyuklukBul` bunun kopyası). K çarpanı
+# bir güvenilirlik ayarı; büyüklük etiketine karışınca gizli karşı taraflı
+# dev bir iş "rutin" görünüyordu. S kademesi (`kademe`) Modül C'nin akran
+# grubu için yaşıyor. K = 1'de %5 ↔ S 2,5; üst eşik %16,6 ↔ S 3,5 idi,
+# okunabilirlik için %15'e yuvarlandı.
+ONEMLI_ORAN = Decimal("0.05")
+MEGA_ORAN = Decimal("0.15")
+
+
+def buyukluk_kademesi(oran: Decimal | None) -> str | None:
+    """Ciro oranını sitede görünen etikete çevirir; oran yoksa kademe yok."""
+    if oran is None:
+        return None
+    if oran >= MEGA_ORAN:
+        return "mega"
+    if oran >= ONEMLI_ORAN:
+        return "onemli"
+    return "rutin"
+
+
 def kademe(skor: Decimal | None) -> str | None:
-    """Skoru kullanıcının gördüğü etikete çevirir.
+    """Skoru S kademesine çevirir (akran grubu; sitede görünen etiket
+    artık `buyukluk_kademesi`).
 
     Skorsuz bildirim kademesiz: `None` "rutin" değildir. Tutarı
     açıklanmamış bir bildirime "rutin" demek, ölçmediğimiz şeyi küçük

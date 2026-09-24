@@ -39,7 +39,12 @@ import psycopg  # noqa: E402
 from kap_radar.ayarlar import dsn_bul  # noqa: E402
 from kap_radar.degerlendirme import degerlendir_bildirim  # noqa: E402
 from kap_radar.depo import Depo  # noqa: E402
-from kap_radar.skor import MEGA_ESIGI, ONEMLI_ESIGI, kademe  # noqa: E402
+from kap_radar.skor import (  # noqa: E402
+    MEGA_ESIGI,
+    ONEMLI_ESIGI,
+    buyukluk_kademesi,
+    kademe,
+)
 
 ALANLAR = """
        c.id, c.kap_id, b.ticker, b.ham_metin_tr, b.yayin_zamani,
@@ -81,12 +86,12 @@ update public.cikarim
 """
 
 
-# Eski skorları eski eşikleriyle kovalamak için. Karşılaştırma ancak
-# her skor kendi döneminin etiketiyle sayılırsa anlamlı: yeni eşikleri
-# eski skorlara uygularsak "mega 60 → 55" yerine uydurma bir "32 → 55"
-# çıkar ve değişiklik olduğundan büyük görünür.
-ONCEKI_MEGA = Decimal("3.0")
-ONCEKI_ONEMLI = Decimal("2.0")
+# Eski skorların etiketlendiği eşikler. 2026-09-22'deki eşik geçişinde
+# 3,0/2,0 idi (her skor kendi döneminin etiketiyle sayılmalıydı); geçiş
+# bitti, artık eski ve yeni skor AYNI eşiklerle etiketleniyor. Bir sonraki
+# eşik değişikliğinde burası o değişikliğin eski değerlerine çekilmeli.
+ONCEKI_MEGA = MEGA_ESIGI
+ONCEKI_ONEMLI = ONEMLI_ESIGI
 
 
 def _kademe_esikli(
@@ -172,7 +177,11 @@ def main(argv: list[str] | None = None) -> int:
         yeni_skorlar: list[Decimal | None] = []
         guncellenecek: list[dict] = []
         kapi_degisenler: list[str] = []
+        # Yayın kararı aynı, yalnız ret gerekçesindeki sayı değişmiş (ör.
+        # "B1: ciro orani %220" → "%205"): payda değişince beklenen şey.
+        gerekce_degisenler: list[str] = []
         kademe_degisenler = 0
+        buyukluk_gecis: Counter = Counter()
         skor_kazanan = 0
 
         for satir in satirlar:
@@ -207,9 +216,13 @@ def main(argv: list[str] | None = None) -> int:
 
             # Kapı kararı değişmemeli. Değiştiyse formül değişikliği
             # yayın kararını kaydırmış demektir — sessiz geçilemez.
-            if bool(eski_hazir) != bool(karar.yayina_hazir) or (
+            if bool(eski_hazir) == bool(karar.yayina_hazir) and (
                 (eski_red or None) != (karar.red_nedeni or None)
             ):
+                gerekce_degisenler.append(
+                    f"{ticker} {kap_id[:8]}: {eski_red!r} -> {karar.red_nedeni!r}"
+                )
+            elif bool(eski_hazir) != bool(karar.yayina_hazir):
                 kapi_degisenler.append(
                     f"{ticker} {kap_id[:8]}: "
                     f"hazir {eski_hazir}->{karar.yayina_hazir} "
@@ -223,6 +236,14 @@ def main(argv: list[str] | None = None) -> int:
                 karar.etki_skoru
             ):
                 kademe_degisenler += 1
+
+            # Sitede görünen etiket (ciro oranından); yalnız yayına hazır
+            # satırlar kullanıcıya ulaşıyor.
+            if karar.yayina_hazir:
+                eski_b = buyukluk_kademesi(eski_oran)
+                yeni_b = buyukluk_kademesi(karar.ciro_orani)
+                if eski_b != yeni_b:
+                    buyukluk_gecis[(eski_b, yeni_b)] += 1
 
             if eski_skor is None and karar.etki_skoru is not None:
                 skor_kazanan += 1
@@ -264,6 +285,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\nskoru degisen  : {len(guncellenecek)}")
         print(f"kademesi degisen: {kademe_degisenler}  (her skor kendi esigiyle)")
         print(f"skorsuzken skorlanan: {skor_kazanan}")
+        print(
+            "\nsitedeki kademe (ciro orani, yayina hazir) degisen: "
+            f"{sum(buyukluk_gecis.values())}"
+        )
+        for (a, b), n in sorted(buyukluk_gecis.items(), key=lambda x: -x[1]):
+            print(f"  {a or '-':>7} -> {b or '-':<7} {n}")
+        if gerekce_degisenler:
+            print(f"\nyalniz ret gerekcesindeki sayi degisen: {len(gerekce_degisenler)}")
+            for g in gerekce_degisenler[:10]:
+                print(f"  {g}")
 
         if kapi_degisenler:
             print(
