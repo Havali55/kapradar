@@ -1,6 +1,13 @@
 """Bulgu 7 ve 16b'yi gerçek bağlam verisiyle yeniden sınar. Hiçbir şey yazmaz.
 
-Kullanım:  python scripts/analiz_baglam.py
+Kullanım:
+    python scripts/analiz_baglam.py                  # analiz örneklemi (2025-09-22 →)
+    python scripts/analiz_baglam.py --donem sinama   # örneklem dışı: 2024-09 → 2025-09-21
+    python scripts/analiz_baglam.py --donem tumu
+
+Bulgular 2025-09-22 → 2026-09-18 örnekleminde (613 bildirim) kuruldu. Arşiv
+2026-09-24'te 2024-09'a uzatıldı; önceki 12 ay o bulguları KURARKEN hiç
+görülmedi, yani onlar için gerçek bir örneklem dışı sınama.
 
 İki soru:
   1. Bildirim yorgunluğu (Bulgu 7) ileriye bakan sayımın ürünü müydü?
@@ -18,6 +25,7 @@ AV, OLS ve kümelenmiş standart hata `skor_gecerlilik.py`'den geliyor —
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -41,6 +49,8 @@ from skor_gecerlilik import (  # noqa: E402
 
 # baglam_hesapla.py --kuru çıktısı: bayrak canlı tabloya yazılmadan sınanabilsin.
 BAGLAM_CSV = KOK / "data" / "baglam_kap_v1.csv"
+# Analiz örnekleminin ilk bildirimi; öncesi örneklem dışı sınama dönemi.
+ANALIZ_BASI = pd.Timestamp("2025-09-22", tz="Europe/Istanbul")
 
 
 def satir(ad: str, sonuc: pd.DataFrame, terim: str, n: int, hisse: int) -> None:
@@ -62,6 +72,9 @@ def grup_sinavi(sv: pd.DataFrame, gruplar) -> None:
 
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--donem", choices=("analiz", "sinama", "tumu"), default="analiz")
+    secenek = ap.parse_args()
     dsn = dsn_bul()
     if dsn is None:
         print("DATABASE_URL yok", file=sys.stderr)
@@ -83,6 +96,13 @@ def main() -> int:
     olay["ln_siklik_eski"] = np.log(olay["siklik_eski"])
     olay["ln_siklik_pit"] = np.log(olay["yeni_is_12a"])
     olay["ln_oda"] = np.log(olay["kap_oda_12a"].clip(lower=1))
+
+    zaman = pd.to_datetime(olay["yayin_zamani"], utc=True)
+    if secenek.donem == "analiz":
+        olay = olay[zaman >= ANALIZ_BASI]
+    elif secenek.donem == "sinama":
+        olay = olay[zaman < ANALIZ_BASI]
+    print(f"dönem: {secenek.donem} · {len(olay)} bildirim")
 
     tum = olay[olay["av"].notna()].copy()
     sv = tum[tum["etki_skoru"].notna()].copy()
