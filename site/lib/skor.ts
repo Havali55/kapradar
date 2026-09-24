@@ -52,6 +52,10 @@ export function kademeBul(skor: number | null): Kademe | null {
  *
  * `kademeBul(skor)` yaşamaya devam ediyor: Modül C'nin akran grubu
  * metodolojide S kademesiyle tanımlı.
+ *
+ * Kanonik tanım `skor.ONEMLI_ORAN` / `skor.MEGA_ORAN` /
+ * `skor.buyukluk_kademesi`; `scripts/skor_yenile.py` değişiklik
+ * raporunu onunla veriyor.
  */
 export const ONEMLI_ORAN = 0.05;
 export const MEGA_ORAN = 0.15;
