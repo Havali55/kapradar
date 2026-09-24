@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { hisseFonGetir, hisseGetir, hisseleriGetir } from "@/lib/veri";
-import { siklikRenk, skorRengi, tahtaRenk, yuzdelik } from "@/lib/skor";
+import { oranRengi, siklikRenk, tahtaRenk, yuzdelik } from "@/lib/skor";
 import {
   KADEME_ADI,
   SIKLIK_ADI,
@@ -53,18 +53,13 @@ export default async function HisseSayfasi({
   if (bildirimler.length === 0) notFound();
 
   const sirket = bildirimler[0].sirket;
-  const skorlar = bildirimler
-    .map((b) => b.etki_skoru)
-    .filter((s): s is number => s !== null)
+  // Başlıktaki büyüklük ölçüsü de kart gibi ciro oranından — S değil.
+  const oranlar = bildirimler
+    .map((b) => b.ciro_orani)
+    .filter((r): r is number => r !== null)
     .sort((a, b) => a - b);
-  const medyan = skorlar.length ? yuzdelik(skorlar, 0.5) : null;
-  const enBuyuk = bildirimler.reduce<(typeof bildirimler)[number] | null>(
-    (e, b) =>
-      b.etki_skoru !== null && (e === null || b.etki_skoru > (e.etki_skoru ?? 0))
-        ? b
-        : e,
-    null,
-  );
+  const medyan = oranlar.length ? yuzdelik(oranlar, 0.5) : null;
+  const enBuyuk = oranlar.length ? oranlar[oranlar.length - 1] : null;
 
   // Tahta ve hasılat hissenin özelliği, bildirimin değil: en yeni
   // bildirimden okunuyor. Liste yeniden eskiye sıralı geliyor.
@@ -133,21 +128,21 @@ export default async function HisseSayfasi({
             </div>
             <div className="olcu-alt">
               {siklik ? `${SIKLIK_ADI[siklik].toLocaleLowerCase("tr")} · ` : ""}
-              12 ayda, {skorlar.length} tanesi skorlanabildi
+              12 ayda, {oranlar.length} tanesi skorlanabildi
             </div>
           </div>
           <div className="olcu">
-            <div className="olcu-et mono">MEDYAN BÜYÜKLÜK S</div>
+            <div className="olcu-et mono">MEDYAN BÜYÜKLÜK</div>
             <div
               className="olcu-deger mono"
-              style={{ color: skorRengi(medyan) }}
+              style={{ color: oranRengi(medyan) }}
             >
-              {medyan === null ? "—" : sayi(medyan)}
+              {medyan === null ? "—" : yuzde(medyan, 1)}
             </div>
             <div className="olcu-alt">
-              {enBuyuk?.etki_skoru != null
-                ? `en yükseği ${sayi(enBuyuk.etki_skoru)}`
-                : "skorlanan bildirim yok"}
+              {enBuyuk !== null
+                ? `hasılata oranla · en büyüğü ${yuzde(enBuyuk, 1)}`
+                : "büyüklüğü hesaplanan bildirim yok"}
             </div>
           </div>
           <div className="olcu">
@@ -265,7 +260,7 @@ export default async function HisseSayfasi({
             <Link key={b.kap_id} href={`/kap/${b.kap_id}`} className="hisse-satir">
               <span
                 className="kart-ray"
-                style={{ background: skorRengi(b.etki_skoru) }}
+                style={{ background: oranRengi(b.ciro_orani) }}
                 aria-hidden="true"
               />
               <span className="hisse-satir-ic">
@@ -277,12 +272,12 @@ export default async function HisseSayfasi({
                     <span className="cip cip-notr mono">GÜNCELLEME</span>
                   )}
                   <span className="kart-bos" />
-                  {b.etki_skoru !== null ? (
+                  {b.ciro_orani !== null ? (
                     <span className="hisse-satir-skor mono">
-                      <strong style={{ color: skorRengi(b.etki_skoru) }}>
-                        {sayi(b.etki_skoru)}
+                      <strong style={{ color: oranRengi(b.ciro_orani) }}>
+                        {yuzde(b.ciro_orani, 2)}
                       </strong>
-                      <span style={{ color: "var(--mut-3)" }}> / 5,00</span>
+                      <span style={{ color: "var(--mut-3)" }}> hasılatın</span>
                       {b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : ""}
                     </span>
                   ) : (
@@ -292,8 +287,8 @@ export default async function HisseSayfasi({
                 <span className="hisse-satir-is">{b.is_tanimi ?? "—"}</span>
                 <span className="hisse-satir-alt">
                   Karşı taraf: {b.karsi_taraf ?? "açıklanmadı"}
-                  {b.ciro_orani !== null && (
-                    <> · hasılatın {yuzde(b.ciro_orani, 2)}&apos;i</>
+                  {b.etki_skoru !== null && (
+                    <> · S {sayi(b.etki_skoru)}/5</>
                   )}
                   {b.car_3g !== null && (
                     <> · 3 günlük anormal getiri {isaretliYuzde(b.car_3g)}</>

@@ -26,17 +26,16 @@ export async function generateMetadata({
   const b = await bildirimGetir(kap_id);
   if (!b) return { title: "Bildirim bulunamadı" };
 
-  const skor =
-    b.etki_skoru !== null
-      ? `Büyüklük skoru ${sayi(b.etki_skoru)}/5` +
-        (b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : "")
-      : "Skor üretilmedi (tutar ya da hasılat çözülemedi)";
-  const oran =
-    b.ciro_orani !== null ? ` Hasılatın ${yuzde(b.ciro_orani, 2)}'i.` : "";
+  // Kademe ciro oranından (kart ve filtreyle aynı kaynak); S yalnız ek bilgi.
+  const buyukluk =
+    b.ciro_orani !== null && b.kademe
+      ? `Hasılatın ${yuzde(b.ciro_orani, 2)}'i · ${KADEME_ADI[b.kademe]}` +
+        (b.etki_skoru !== null ? ` (S ${sayi(b.etki_skoru)}/5)` : "")
+      : "Büyüklük hesaplanamadı (tutar ya da hasılat çözülemedi)";
 
   return {
     title: `${b.ticker} — ${b.is_tanimi ?? "yeni iş ilişkisi"}`,
-    description: `${b.sirket}, ${tamTarih(b.yayin_zamani)}. ${skor}.${oran} Fiyat tahmini içermez.`,
+    description: `${b.sirket}, ${tamTarih(b.yayin_zamani)}. ${buyukluk}. Fiyat tahmini içermez.`,
   };
 }
 

@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import type { Bildirim } from "@/lib/veri";
-import { skorRengi, tahtaRenk } from "@/lib/skor";
+import { fOran, oranRengi, tahtaRenk } from "@/lib/skor";
 import { KADEME_ADI, gecenSure, yuzdeIyelik } from "@/lib/bicim";
 
-// skorRengi / tahtaRenk lib/skor.ts'te — hem istemci bileşenleri
+// oranRengi / tahtaRenk lib/skor.ts'te — hem istemci bileşenleri
 // hem sunucuda render edilen /kap sayfası kullanıyor.
-export { skorRengi, tahtaRenk };
+export { oranRengi, tahtaRenk };
 
 /**
  * Akış kartı — yatırımcının dört sorusu, jargon yok.
@@ -34,7 +34,7 @@ export default function Kart({
   imlec?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
-  const renk = skorRengi(b.etki_skoru);
+  const renk = oranRengi(b.ciro_orani);
 
   useEffect(() => {
     if (imlec) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -104,7 +104,7 @@ export default function Kart({
 }
 
 function Buyukluk({ b, renk }: { b: Bildirim; renk: string }) {
-  if (b.etki_skoru !== null && b.ciro_orani !== null && b.kademe) {
+  if (b.ciro_orani !== null && b.kademe) {
     const ad = b.kademe === "rutin" ? "Rutin iş" : KADEME_ADI[b.kademe];
     return (
       <span className="buyukluk">
@@ -113,7 +113,7 @@ function Buyukluk({ b, renk }: { b: Bildirim; renk: string }) {
         </strong>
         <span className="buyukluk-cubuk" aria-hidden="true">
           <span
-            style={{ width: `${(b.etki_skoru / 5) * 100}%`, background: renk }}
+            style={{ width: `${fOran(b.ciro_orani) * 100}%`, background: renk }}
           />
         </span>
       </span>

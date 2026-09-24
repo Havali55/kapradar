@@ -3,20 +3,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Bildirim } from "@/lib/veri";
 import { gunEtiketi } from "@/lib/bicim";
-import { MEGA_ESIGI, ONEMLI_ESIGI } from "@/lib/skor";
+import { MEGA_ORAN, ONEMLI_ORAN } from "@/lib/skor";
 import Kart from "./Kart";
 import DetayPanel from "./DetayPanel";
 
 type Siralama = "yeni" | "buyuk";
 type Aralik = "24" | "7" | "tum";
 // Filtre kartın diliyle aynı: kademe adları, S eşiği değil. Eşikler
-// kademelerin kendisi — eskiden 2,0/3,0'dı ve "S ≥ 3" filtresi kartında
-// "Önemli iş" yazan bildirimleri de getiriyordu.
+// kademelerin kendisi ve kart gibi CİRO ORANINA bakıyor — S'ye bakan bir
+// filtre, K çarpanı yüzünden kartında "Mega iş" yazan bildirimi saklardı.
 type Buyukluk = "tum" | "onemli" | "mega";
 const BUYUKLUK_ESIGI: Record<Buyukluk, number> = {
   tum: 0,
-  onemli: ONEMLI_ESIGI,
-  mega: MEGA_ESIGI,
+  onemli: ONEMLI_ORAN,
+  mega: MEGA_ORAN,
 };
 const BUYUKLUK_ADI: Record<Buyukluk, string> = {
   tum: "Tümü",
@@ -82,9 +82,9 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
         const saat = (simdi - new Date(b.yayin_zamani).getTime()) / 3600000;
         if (saat > enFazlaSaat) return false;
       }
-      if (b.etki_skoru === null) {
+      if (b.ciro_orani === null) {
         if (!durum.skorsuzlar || durum.buyukluk !== "tum") return false;
-      } else if (b.etki_skoru < BUYUKLUK_ESIGI[durum.buyukluk]) return false;
+      } else if (b.ciro_orani < BUYUKLUK_ESIGI[durum.buyukluk]) return false;
       if (durum.yalnizTemiz && b.tahta !== "temiz") return false;
       if (durum.yalnizAcik && b.karsi_taraf === null) return false;
       return true;
@@ -93,8 +93,8 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     if (durum.sirala === "buyuk") {
       // Skorsuzlar sona: "—" bir değer değil, eksiklik.
       return [...liste].sort((a, b) => {
-        const x = a.etki_skoru ?? -1;
-        const y = b.etki_skoru ?? -1;
+        const x = a.ciro_orani ?? -1;
+        const y = b.ciro_orani ?? -1;
         return y - x;
       });
     }
@@ -200,7 +200,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
       temizle: () => guncelle({ yalnizAcik: false }),
     });
 
-  const skorsuzSayisi = bildirimler.filter((b) => b.etki_skoru === null).length;
+  const skorsuzSayisi = bildirimler.filter((b) => b.ciro_orani === null).length;
 
   // Gün ayraçları: liste tarihe göre sıralıyken anlamlı, skora göre değil.
   const gunlu = durum.sirala === "yeni";
