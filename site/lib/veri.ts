@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import {
+  buyuklukBul,
   guvenilirlik,
   kademeBul,
   siklikBayragi,
@@ -14,15 +15,19 @@ import {
 export {
   F_ORAN_METNI,
   MEGA_ESIGI,
+  MEGA_ORAN,
   ONEMLI_ESIGI,
+  ONEMLI_ORAN,
   TABAN_ORAN,
   TAVAN_ORAN,
+  buyuklukBul,
   fOran,
   guvenilirlik,
   kademeBul,
+  kademeRengi,
   siklikBayragi,
   siklikRenk,
-  skorRengi,
+  oranRengi,
   tahtaRenk,
 } from "./skor";
 
@@ -155,7 +160,11 @@ export type TepkiPaneli = {
 };
 
 export type Bildirim = AkisSatiri & {
-  /** Skorun kademesi — akran grubunun da temeli. */
+  /**
+   * Görünen büyüklük kademesi — ciro oranından, S'den değil. Akran
+   * grubu bunu KULLANMIYOR; o `panelleriHesapla` içinde S kademesiyle
+   * ayrıca kuruluyor (metodolojideki tanım).
+   */
   kademe: Kademe | null;
   /** Güvenilirlik çarpanı K; skordan türetilmiyor, yeniden gösteriliyor. */
   k: number;
@@ -299,7 +308,7 @@ async function panelGirdileriGetir(): Promise<PanelGirdi[]> {
 function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
   return {
     ...satir,
-    kademe: kademeBul(satir.etki_skoru),
+    kademe: buyuklukBul(satir.ciro_orani),
     k: guvenilirlik(satir.karsi_taraf !== null, satir.guncelleme_mi),
     siklik: siklikBayragi(satir.bildirim_sikligi),
     panel,

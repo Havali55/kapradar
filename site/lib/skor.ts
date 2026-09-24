@@ -40,6 +40,30 @@ export function kademeBul(skor: number | null): Kademe | null {
 }
 
 /**
+ * Kullanıcının GÖRDÜĞÜ büyüklük kademesi — doğrudan ciro oranından, S'den
+ * değil (2026-09-24 kararı). S içindeki K çarpanı gizli karşı taraflı ya
+ * da güncelleme bildirimlerini aşağı çekiyor; "cirosunun %37'si · Rutin"
+ * gibi kendi içinde çelişen bir kart çıkıyordu. K bir güvenilirlik
+ * ayarı, büyüklük değil — büyüklük etiketine karışmamalı.
+ *
+ * Eşikler S kademeleriyle aynı yerde: K = 1'de S = 2,5 tam %5'e, S = 3,5
+ * %16,6'ya denk düşüyor; üst eşik okunabilirlik için %15'e yuvarlandı.
+ * Skorlu 481 bildirimde: %5+ → 226, %15+ → 88.
+ *
+ * `kademeBul(skor)` yaşamaya devam ediyor: Modül C'nin akran grubu
+ * metodolojide S kademesiyle tanımlı.
+ */
+export const ONEMLI_ORAN = 0.05;
+export const MEGA_ORAN = 0.15;
+
+export function buyuklukBul(oran: number | null): Kademe | null {
+  if (oran === null) return null;
+  if (oran >= MEGA_ORAN) return "mega";
+  if (oran >= ONEMLI_ORAN) return "onemli";
+  return "rutin";
+}
+
+/**
  * f(r) — skoru YENİDEN HESAPLAMAK için değil, veritabanındaki sayının
  * nasıl çıktığını göstermek için. Kullanıcı 5·f(r)·K çarpımını kendi
  * yapıp `etki_skoru` ile karşılaştırabilsin diye duruyor.
@@ -82,14 +106,19 @@ export function yuzdelik(sirali: number[], oran: number): number {
  * Renk kademeden türetiliyor, kendi eşiğini taşımıyor. Eskiden burada
  * 3/2 sabitleri vardı ve eşikler 3,5/2,5'e taşınınca kartın rengiyle
  * üstündeki etiket ayrışıyordu: 3,2 alan bir bildirim "Önemli iş"
- * yazıp "mega" rengiyle çiziliyordu.
+ * yazıp "mega" rengiyle çiziliyordu. Aynı ders kademe ciro oranına
+ * geçince de geçerli: renk ile etiket tek fonksiyondan (`oranRengi`).
  */
-export function skorRengi(skor: number | null): string {
-  const k = kademeBul(skor);
+export function kademeRengi(k: Kademe | null): string {
   if (k === "mega") return "var(--mavi-koyu)";
   if (k === "onemli") return "var(--mavi)";
   if (k === "rutin") return "var(--mut-2)";
   return "var(--ken)";
+}
+
+/** Görünen renk ciro oranının kademesinden — etiketle aynı kaynak. */
+export function oranRengi(oran: number | null): string {
+  return kademeRengi(buyuklukBul(oran));
 }
 
 /* ---------------------------------------------- bildirim yorgunluğu */

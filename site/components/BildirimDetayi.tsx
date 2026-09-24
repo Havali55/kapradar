@@ -5,7 +5,7 @@ import {
   SIKLIK_SIK_ESIGI,
   fOran,
   siklikRenk,
-  skorRengi,
+  oranRengi,
   tahtaRenk,
 } from "@/lib/skor";
 import {
@@ -46,7 +46,7 @@ export default function BildirimDetayi({
   /** Panelde h2, kalıcı sayfada h1 — sayfada başlık bir kez ve en üstte. */
   baslikEtiketi?: "h1" | "h2";
 }) {
-  const renk = skorRengi(b.etki_skoru);
+  const renk = oranRengi(b.ciro_orani);
   const skoraGirenler = (b.tutarlar ?? []).filter((t) => SKORA_GIREN.has(t.tip));
   const disaridakiler = (b.tutarlar ?? []).filter((t) => !SKORA_GIREN.has(t.tip));
   const Baslik = baslikEtiketi;
@@ -100,7 +100,10 @@ export default function BildirimDetayi({
             </div>
             <div className="kutu-satir">
               <dt>Hasılat oranı r</dt>
-              <dd className="mono">{yuzde(b.ciro_orani, 2)}</dd>
+              <dd className="mono" style={{ color: renk, fontWeight: 700 }}>
+                {yuzde(b.ciro_orani, 2)}
+                {b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : ""}
+              </dd>
             </div>
             <div className="kutu-satir">
               <dt>{F_ORAN_METNI}</dt>
@@ -117,12 +120,8 @@ export default function BildirimDetayi({
               <dt style={{ color: "var(--ink)", fontWeight: 600 }}>
                 Büyüklük skoru S
               </dt>
-              <dd
-                className="mono"
-                style={{ color: renk, fontWeight: 700, fontSize: 15 }}
-              >
+              <dd className="mono" style={{ fontWeight: 700, fontSize: 15 }}>
                 {sayi(b.etki_skoru)} / 5,00
-                {b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : ""}
               </dd>
             </div>
           </dl>
