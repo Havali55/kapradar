@@ -286,12 +286,13 @@
         <div class="formul-ana">TTM = FY(önceki yıl) + YTD(cari) − YTD(geçen yıl, aynı dönem)</div>
         <div class="formul-alt">nokta anahtarı: raporun publishDate'i ≤ bildirimin yayın zamanı</div>
       </div>
-      <p>935 finansal rapor arşivlendi; 613 bildirimin <strong>597'sinde</strong> (%97,4) payda çözülüyor. Çözülemeyen 16 bildirim, yeterli geçmişi olmayan 8 yeni halka açılmış şirkete ait — skorsuz kalırlar, uydurma paydayla skorlanmazlar.</p>
+      <p>Analiz örnekleminde (613 bildirim) 935 finansal rapor arşivlendi ve <strong>597'sinde</strong> (%97,4) payda çözüldü. Arşiv 2024-09'a uzatılınca 1.304 bildirimin <strong>1.211'inde</strong> (%92,9) çözülüyor; oran düştü çünkü eski yılda yeni halka arz daha çok: ilk yıllık raporu KAP'a düşmeden gelen bildirimin köprüsü kurulamaz (DCTTR'nin 21 bildiriminin 19'u böyle). Bunlar skorsuz kalır, uydurma paydayla skorlanmaz.</p>
       <div class="uyar" style="margin-top:18px;">
-        <div class="et">PAYDAYI SESSİZCE BOZAN ÜÇ ŞEY</div>
+        <div class="et">PAYDAYI SESSİZCE BOZAN DÖRT ŞEY</div>
         <p><strong>Sunum para birimi.</strong> Künye “1.000 TL” ya da “1.000.000 TL” diyebiliyor (935 raporun 79'u). Çarpan uygulanmazsa TOASO, DOAS ve AKENR bin kat küçük okunur.</p>
         <p><strong>Gelir tablosunun rolü sabit değil.</strong> <em>310000</em> (fonksiyon esaslı), <em>310003</em> (çeşit esaslı), <em>holding_role_310030</em> — yalnız ilkine bakınca 935 raporun 577'si sessizce atlanıyordu.</p>
-        <p style="margin-bottom:0;"><strong>Şirket kendi beyanını yanlış yazabiliyor</strong> (ONCSM, ALTNY). Yükleyici her şirketin kendi serisindeki yıllıklandırılmış medyana bakar; 100 katı aşan raporu kabul etmez.</p>
+        <p><strong>Şirket kendi beyanını yanlış yazabiliyor</strong> (ONCSM, ALTNY). Yükleyici her şirketin kendi serisindeki yıllıklandırılmış medyana bakar; 100 katı aşan raporu kabul etmez.</p>
+        <p style="margin-bottom:0;"><strong>Enflasyon muhasebesi (TMS 29) köprünün birimlerini ayırıyor.</strong> Her rapor geçen yılın aynı dönemini kendi tarihinin satın alma gücüyle yeniden ifade ediyor: DCTTR'nin 2024 hasılatı ilk raporunda 2,51, bir yıl sonraki karşılaştırmalı sütunda 3,28 milyar TL. Formüldeki iki YTD cari TL'yle, yıllık terim eski TL'yle geliyordu; payda küçük, oran %7–25 büyük çıkıyordu. Arşivdeki 1.074 rapor çiftinin ~%91'i yeniden ifade edilmiş, 12 aylık katsayı medyanı 1,33. 24.09.2026'dan beri yıllık terim şirketin <em>kendi</em> katsayısıyla cari birime taşınıyor: aynı dönemin ilk yayını ile yeniden ifadesinin oranı, k<sup>ay/12</sup>. Dış veri yok, point-in-time bozulmuyor. Katsayı çözülemezse (ilk yayın arşivde yok ya da oran 0,95–2,2 dışında) köprü düzeltmesiz kalıyor. Düzeltme 1.303 çıkarımın 645'inde skoru değiştirdi, sitede 51 bildirimin kademesini bir basamak indirdi (önemli→rutin 34, mega→önemli 17) ve yayın kararını hiç değiştirmedi.</p>
       </div>
 
       <h4>Pay: hangi tutar “yeni iş” sayılır</h4>
@@ -363,49 +364,52 @@
         <div class="hesap">
           <div class="hesap-bas"><span class="hesap-tic">ASELS</span>
             <span class="hesap-not">10.07.2026 · açık · ilk bildirim</span>
-            <span class="hesap-skor">4,07 / 5,00</span></div>
+            <span class="hesap-skor">4,23 / 5,00</span></div>
           <div class="hesap-g">
             <div class="satir"><span class="satir-a">Net tutar (TL karşılığı)</span><span class="satir-d">78.700.425.412,57</span></div>
-            <div class="satir"><span class="satir-a">TTM hasılat</span><span class="satir-d">184.925.592.000</span></div>
-            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%42,56</span></div>
-            <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,4256) + 2) / 2</span><span class="satir-d">0,8145</span></div>
+            <div class="satir"><span class="satir-a">TTM hasılat (TMS 29 düzeltmeli)</span><span class="satir-d">197.477.665.463</span>
+              <span class="satir-alt">FY2025 × 1,0696 + 3A2026 − 3A2025. Çarpan şirketin kendi yeniden ifadesinden: 3A2025 ilk yayında 22,79, bir yıl sonra 29,83 milyar TL (k = 1,309; üç aylık pay k<sup>3/12</sup>).</span></div>
+            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%39,85</span></div>
+            <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,3985) + 2,602) / 2,602</span><span class="satir-d">0,8465</span></div>
             <div class="satir"><span class="satir-a">K (açık + ilk)</span><span class="satir-d">1,00</span></div>
-            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,8145 × 1,00</span><span class="satir-d">4,07</span>
+            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,8465 × 1,00</span><span class="satir-d">4,23</span>
               <span class="satir-alt">78 milyar TL'lik bir sözleşme bile tavana çıkmıyor — ölçüt mutlak tutar değil, kendi cirosuna oranı.</span></div>
           </div>
         </div>
         <div class="hesap">
           <div class="hesap-bas"><span class="hesap-tic">CEOEM</span>
             <span class="hesap-not">09.04.2026 · açık · güncelleme</span>
-            <span class="hesap-skor">4,02 / 5,00</span></div>
+            <span class="hesap-skor">4,07 / 5,00</span></div>
           <div class="hesap-g">
             <div class="satir"><span class="satir-a">Net tutar</span><span class="satir-d">689.500.000</span></div>
-            <div class="satir"><span class="satir-a">TTM hasılat</span><span class="satir-d">884.571.536</span></div>
+            <div class="satir"><span class="satir-a">TTM hasılat (FY2025, doğrudan yıllık)</span><span class="satir-d">884.571.536</span></div>
             <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%77,95</span></div>
-            <div class="satir"><span class="satir-a">f(r)</span><span class="satir-d">0,9459</span></div>
+            <div class="satir"><span class="satir-a">f(r)</span><span class="satir-d">0,9584</span></div>
             <div class="satir"><span class="satir-a">K (açık + güncelleme)</span><span class="satir-d">0,85</span></div>
-            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,9459 × 0,85</span><span class="satir-d">4,02</span>
+            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,9584 × 0,85</span><span class="satir-d">4,07</span>
               <span class="satir-alt">K'nın işleyişi burada görünür: oran ASELS'inkinin neredeyse iki katı, ama güncelleme olduğu için skor onun altında kalıyor.</span></div>
           </div>
         </div>
         <div class="hesap">
           <div class="hesap-bas"><span class="hesap-tic">ORGE</span>
             <span class="hesap-not">18.09.2026 · açık · güncelleme</span>
-            <span class="hesap-skor">0,77 / 5,00</span></div>
+            <span class="hesap-skor">1,49 / 5,00</span></div>
           <div class="hesap-g">
-            <div class="satir"><span class="satir-a">FY2025 hasılat</span><span class="satir-d">3.495.512.127</span></div>
+            <div class="satir"><span class="satir-a">FY2025 hasılat (Aralık 2025 TL'si)</span><span class="satir-d">3.495.512.127</span></div>
+            <div class="satir"><span class="satir-a">× TMS 29 çarpanı √1,321</span><span class="satir-d">4.017.720.492</span>
+              <span class="satir-alt">6A2025 ilk yayında 1.566.607.068, bu yılın raporunda 2.069.654.707: şirketin kendi 12 aylık katsayısı 1,321. Yıllık terim altı ay ileri taşınıyor (× 1,149).</span></div>
             <div class="satir"><span class="satir-a">+ 6A2026 hasılat</span><span class="satir-d">2.597.519.683</span></div>
-            <div class="satir"><span class="satir-a">− 6A2025 hasılat</span><span class="satir-d">2.069.654.707</span></div>
-            <div class="satir"><span class="satir-a">= TTM hasılat</span><span class="satir-d">4.023.377.103</span>
-              <span class="satir-alt">İki rapor da bildirimden önce yayınlanmış; lookahead yok.</span></div>
+            <div class="satir"><span class="satir-a">− 6A2025 hasılat (yeniden ifade)</span><span class="satir-d">2.069.654.707</span></div>
+            <div class="satir"><span class="satir-a">= TTM hasılat (Haziran 2026 TL'si)</span><span class="satir-d">4.545.585.468</span>
+              <span class="satir-alt">Düzeltmesiz köprü 4.023.377.103 verirdi. Üç rapor da bildirimden önce yayınlanmış; lookahead yok.</span></div>
             <div class="satir"><span class="satir-a">863.000 EUR × 55,7981 (TCMB alış)</span><span class="satir-d">48.153.760</span></div>
             <div class="satir"><span class="satir-a">+ TL kalem</span><span class="satir-d">44.645.758</span></div>
             <div class="satir"><span class="satir-a">= Net tutar</span><span class="satir-d">92.799.518</span>
               <span class="satir-alt">940.002 USD'lik kümülatif proje bedeli <em>toplam_sozlesme</em> olduğu için toplama girmedi.</span></div>
-            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%2,31</span></div>
-            <div class="satir"><span class="satir-a">f(r) × K (0,1814 × 0,85)</span><span class="satir-d">0,1542</span></div>
-            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,1814 × 0,85</span><span class="satir-d">0,77</span>
-              <span class="satir-alt">Rutin bir iş: tutar 92,8 milyon TL ama yıllık hasılatın %2,3'ü.</span></div>
+            <div class="satir"><span class="satir-a">Hasılat oranı r</span><span class="satir-d">%2,04</span></div>
+            <div class="satir"><span class="satir-a">f(r) = (log₁₀(0,0204) + 2,602) / 2,602</span><span class="satir-d">0,3505</span></div>
+            <div class="satir vurgu"><span class="satir-a">S = 5 × 0,3505 × 0,85</span><span class="satir-d">1,49</span>
+              <span class="satir-alt">Rutin bir iş: tutar 92,8 milyon TL ama yıllık hasılatın %2'si.</span></div>
           </div>
         </div>
       </div>
@@ -451,7 +455,33 @@
       </div>
       <p>Tahmin penceresinin son 10 günü <strong>bilerek dışarıda</strong>; nedeni birazdan gelen grafikte görünüyor. Sıfır hacimli günler (işlem durdurulmuş) tabana katılmıyor, yoksa medyanı sahte biçimde düşürürlerdi. 423 bildirimde yeterli tahmin penceresi var.</p>
 
-      <h4>Bulgu 1 — Bildirimler gerçekten materyal olay</h4>
+      <div class="uyar" style="margin:22px 0 28px;">
+        <div class="et">ÖRNEKLEM DIŞI SINAMA · 24.09.2026</div>
+        <p>Aşağıdaki bulgular 2025-09-22 → 2026-09-18 arasındaki 613 bildirimle kuruldu. Arşiv sonradan 2024-09'a uzatıldı: önceki 12 aydaki <strong>690 bildirim bulgular kurulurken hiç görülmedi</strong>. Aynı betikler aynı tanım ve eşiklerle o yılda yeniden koşuldu (<code>--donem sinama</code>). Sol sütun bugünkü veriyle yeniden koşulan ilk yıl; skorlar TMS 29 düzeltmesinden sonra olduğu için yayımlanan sayılardan küçük farklar var.</p>
+        <div class="tablo-sar" style="margin-bottom:14px;">
+          <table>
+            <thead><tr><th>BULGU</th><th class="sag">İLK YIL (613)</th><th class="sag">ÖRNEKLEM DIŞI (690)</th><th>SONUÇ</th></tr></thead>
+            <tbody>
+            <tr><td>1 · Bildirim hacmi artırıyor (t₀)</td><td class="s">%+49,5 · t = +10,7</td><td class="s">%+60,6 · t = +15,2</td><td><span class="cip cip-y">TEKRARLANDI</span></td></tr>
+            <tr><td>2 · Hacim bildirimden önce yükseliyor (t₀−1)</td><td class="s">%+11,5 · t = +2,9</td><td class="s">%+19,1 · t = +5,2</td><td><span class="cip cip-y">TEKRARLANDI</span></td></tr>
+            <tr><td>3 · S ile 3 günlük getiri ilişkisiz</td><td class="s">r = +0,022</td><td class="s">r = +0,020</td><td><span class="cip cip-y">TEKRARLANDI</span></td></tr>
+            <tr><td>4 · S ~ hacim (kümelenmiş)</td><td class="s">+0,046 · t = +1,13</td><td class="s">+0,041 · t = +1,65</td><td><span class="cip cip-m">AYNI: SONUÇSUZ</span></td></tr>
+            <tr><td>5 · %1 altında da ilgi var</td><td class="s">%+40,9 · t = +3,9</td><td class="s">%+28,5 · t = +3,1</td><td><span class="cip cip-y">TEKRARLANDI</span></td></tr>
+            <tr><td>7 · Bildirim yorgunluğu, ln(sıklık) ~ hacim</td><td class="s">−0,118 · t = −2,29</td><td class="s">−0,019 · t = −0,41</td><td><span class="cip cip-r">TEKRARLANMADI</span></td></tr>
+            <tr><td>10 · Temiz tahtada S ~ hacim</td><td class="s">+0,171 · t = +2,51</td><td class="s">+0,050 · t = +1,01</td><td><span class="cip cip-r">TEKRARLANMADI</span></td></tr>
+            <tr><td>10 · Tedbirli tahtada S ~ hacim</td><td class="s">−0,064 (ters)</td><td class="s">+0,058 (ters değil)</td><td><span class="cip cip-r">TEKRARLANMADI</span></td></tr>
+            <tr><td>11 · CAR3 ~ S (kümelenmiş)</td><td class="s">t = +0,44</td><td class="s">t = +0,39</td><td><span class="cip cip-y">TEKRARLANDI</span></td></tr>
+            <tr><td>12 · Devre kesici günü ~ işaretli CAR3</td><td class="s">−0,29 puan · t = −2,62</td><td class="s">−0,15 puan · t = −2,85</td><td><span class="cip cip-y">TEKRARLANDI</span></td></tr>
+            <tr><td>12 · Devre kesici günü ~ |CAR3|</td><td class="s">+0,28 puan · t = +3,21</td><td class="s">−0,02 puan · t = −0,40</td><td><span class="cip cip-r">TEKRARLANMADI</span></td></tr>
+            <tr><td>K sıralaması (gizli+ilk &lt; açık+ilk hacim)</td><td class="s">0,289 &lt; 0,307</td><td class="s">0,397 &gt; 0,317</td><td><span class="cip cip-r">TERS</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>İki başlık bulgu çöktü: bildirim yorgunluğu (Bulgu 7) ve tahtaya göre ayrışma (Bulgu 10).</strong> İkisi de ilk yılın içinde birden çok tanım ve eşik denenerek kurulmuştu; sınırlar bölümü bunu zaten itiraf ediyordu, örneklem dışı sınama bedelini gösterdi. Sitede ikisine dayanan iddialar kaldırıldı: sıklık etiketi artık yalnız olguyu söylüyor, tedbirli tahta uyarısı yalnız iki yılda da tekrarlanan aşağı yönlü tepkiye dayanıyor.</p>
+        <p style="margin-bottom:0;"><strong>Tekrarlananlar ürünün asıl iddiaları:</strong> bildirimler materyal, bilgi resmî açıklamadan önce hareket ediyor, büyüklük skoru bir getiri tahmini değil, tedbirli tahtada ortalama tepki aşağı yönlü. Bir istisna not edilmeli: örneklem dışı yılda S ile <em>1 günlük</em> tepki arasında zayıf pozitif bir ilişki var (r = +0,146, t = +3,20); ilk yılda yoktu (t = +1,44) ve iki yılda da üçüncü günde kayboluyor.</p>
+      </div>
+
+      <h4>Bulgu 1 — Bildirimler gerçekten materyal olay <span class="cip cip-y" style="margin-left:6px;">ÖRNEKLEM DIŞINDA TEKRARLANDI</span></h4>
       <figure>
         <div class="gr-bas">Olay penceresi boyunca anormal işlem hacmi</div>
         <div class="gr-alt">Normal seviyeden yüzde sapma. Taban = bildirimden 60–11 gün öncesinin medyan hacmi. n = 423 bildirim, 111 hisse. Yıldızlar tek örneklem t sınavı: * p&lt;0,05 · ** p&lt;0,01 · *** p&lt;0,001.</div>
@@ -557,7 +587,8 @@
       <p>Tavan, 613 bildirimin <strong>4'ünde</strong> bağladı; skorlanan 480 kaydın yalnızca birinde (CVKMD, r = %118). Oranı %50'yi aşan bildirim sayısı 10 (%2,4). Yani ölçeğin üst dörtte biri neredeyse hiç kullanılmıyor: skorların çeyrekliği 0,64 – 2,30 ve medyanı 1,39 ile <strong>dağılım ölçeğin alt yarısına sıkışmış</strong>.</p>
       <p><strong>Bu notun ilk sürümü buradan “tavan %50'ye çekilsin” sonucunu çıkarıyordu; öneri 22.09.2026'da geri çekildi.</strong> Ölçüm doğruydu, çıkarım değildi: işlevsiz bir tavan zarar vermiyor, indirmek veriyor. Tavan %100'de 480 kaydın 1'ini bağlıyor, %50'ye çekilseydi 12'sini bağlayacaktı — yani tepedeki bir düzine bildirim 5,00'de birbirine eşitlenip aralarındaki ayrım kaybolacaktı. Bir eşiği “nadiren devreye giriyor” diye değiştirmek, onu değiştirmek için bir sebep değil. Tavan <strong>%100'de kaldı</strong>; dağılımın alt yarısına sıkışması sorunu ise tavandan değil tabandan kaynaklanıyordu ve Bulgu 5'in düzeltmesiyle giderildi (medyan 1,39 → 2,02).</p>
 
-      <h4>Bulgu 7 — En sağlam bulgu skorda yok: bildirim yorgunluğu <span class="cip cip-y" style="margin-left:6px;">SAĞLAM</span> <span class="cip cip-y" style="margin-left:4px;">ETİKET OLARAK EKLENDİ</span></h4>
+      <h4>Bulgu 7 — Bildirim yorgunluğu: ilk yılın en sağlam ilişkisi <span class="cip cip-r" style="margin-left:6px;">ÖRNEKLEM DIŞINDA TEKRARLANMADI</span></h4>
+      <p><strong>Örneklem dışı sınama (24.09.2026): tekrarlanmadı.</strong> Önceki 12 ayda aynı ölçü −0,019 (t = −0,41) veriyor; işaret aynı, büyüklük altıda biri, anlamlılık yok. Aşağıdaki metin ilk yılın ölçümü olarak duruyor. Etiket kartta kaldı ama artık yalnız olguyu söylüyor (“sık bildirim yapıyor”); tepki hakkında bir iddia taşımıyor.</p>
       <p><strong>Lookahead düzeltmesi (22.09.2026).</strong> İlk ölçümde sıklık, şirketin arşivdeki <em>tüm</em> bildirimlerinden sayılıyordu. Bu da Ekim 2025'teki bir bildirimin Ağustos 2026'daki bildirimleri de saymasına yol açıyordu. Artık yalnızca bildirimden önceki 12 ay sayılıyor. Kaynak, KAP'ın 2024-09'dan beri tuttuğu liste arşivi. Bu değişiklik 613 bildirimin 121'inin kademesini değiştirdi, ama bulgu ayakta kaldı: katsayı −0,116, kümelenmiş <strong>t = −2,29 (p = 0,022)</strong>. Şirketin tüm özel durum açıklamalarının sayısı ise hiçbir etki göstermedi (t = −0,57). Yani yorgunluk "çok konuşan şirket" etkisi değil, <em>aynı türden</em> habere alışma etkisi. Aşağıdaki sayılar eski ölçüye ait.</p>
       <p>Bu çalışmanın kümelenmiş standart hatalardan sağ çıkan tek ilişkisi, skorun bileşenlerinden biri değil: <strong>şirketin ne sıklıkta bildirim yaptığı.</strong></p>
       <div class="tablo-sar" style="margin-bottom:14px;">
@@ -583,7 +614,8 @@
       <p><strong>İkinci düzeltme: kıyas endeksi (22.09.2026).</strong> Beta düzeltmesinden sonra bir soru kaldı: hangi endekse göre? 8–18 Eylül fon krizinde XU100 −%7,8 düştü, bildirim evrenimizdeki hisselerin medyanı ise −%19,8. Tahtası temiz olanlar bile −%17,8 düştü. yfinance'te küçük hisse endeksi olmadığı için KAP arşivindeki yaklaşık 630 hissenin <strong>eşit ağırlıklı</strong> getirisini kendimiz kurduk. Bu seri aynı dönemde −%15,5 düştü. İki faktörlü bir modelde hisselerimizin bu seriye duyarlılığı ortalama +0,98 çıktı ve hisselerin %98'inde pozitifti. XU100'ün net ağırlığı ise yaklaşık 0,09'da kaldı. Yani bu hisseler büyük endeksi değil, <em>küçük hisselerin ortak hareketini</em> izliyor. Modül C artık eşit ağırlıklı BIST'e göre hesaplanıyor. Bu seriye karşı ortalama beta 1,05; medyan R² 0,163'ten 0,216'ya çıktı. Aşağıdaki "beta 1'in altında" bulgusu da büyük ölçüde yanlış kıyas endeksinden geliyordu: hisseler kendi piyasalarıyla birebir hareket ediyor, yalnızca o piyasa XU100 değil.</p>
       <p>Değişiklikten önce anormal getiri endeksin düz farkı olarak hesaplanıyordu, yani her hissenin betası 1 kabul ediliyordu. 106 hisse için piyasa modeli tahmin edildiğinde ortalama beta <strong>0,790</strong>, medyan 0,819, çeyreklikler 0,643 – 0,959 ve <strong>106 hissenin 89'u (%84) 1'in altında</strong>. Piyasa hareketi sistematik olarak fazla çıkarılıyor. Bu, nottaki hacim bulgularını etkilemiyor (hacim ölçümü betadan bağımsız) ama Modül C'nin getiri panelini etkiliyor.</p>
 
-      <h4 id="bulgu10">Bulgu 10 — Spekülatif tahta ölçünün kendisini kırıyor <span class="cip cip-r" style="margin-left:6px;">EN ÖNEMLİ</span> <span class="cip cip-y" style="margin-left:4px;">GERÇEK VERİYLE DOĞRULANDI</span></h4>
+      <h4 id="bulgu10">Bulgu 10 — Spekülatif tahta ölçünün kendisini kırıyor <span class="cip cip-r" style="margin-left:6px;">ÖRNEKLEM DIŞINDA TEKRARLANMADI</span></h4>
+      <p><strong>Örneklem dışı sınama (24.09.2026): tekrarlanmadı.</strong> Önceki 12 ayda temiz tahtada S katsayısı +0,050 (t = +1,01), tedbirli tahtada +0,058 — ayrışma yok, tedbirlide işaret de dönmüyor; devre kesicinin üst üçlüğünde ilişki tersine pozitif ve anlamlı (+0,091, t = +2,49). Eşikler (4/8) ilk yılda sonuç görüldükten sonra seçilmişti. Aşağıdaki metin ilk yılın ölçümü olarak duruyor; ürün tasarımında tahtanın rolü artık Bulgu 12'ye (iki yılda da tekrarlanan aşağı yönlü tepki) dayanıyor.</p>
       <p><strong>Gerçek veriyle yeniden sınama (22.09.2026).</strong> Aşağıdaki ilk ölçüm bir vekil kullanıyordu. Artık Borsa İstanbul'un KAP'taki kendi kayıtları kullanılıyor: 23.613 pay bazında devre kesici başlangıcı ve 637 Volatilite Bazlı Tedbir Sistemi (VBTS) duyurusu. Her duyurunun tedbir kademesi ve başlangıç–bitiş seansı ayrıştırıldı. Bulgu vekilde olduğundan daha güçlü çıktı:</p>
       <div class="tablo-sar" style="margin-bottom:16px;">
         <table>
@@ -648,7 +680,8 @@
       <p><strong>Hiçbiri sıfırdan istatistiksel olarak ayrılmıyor.</strong> CAR'ı doğrudan skora bağlayan regresyonda eğim skor puanı başına +0,18 puan, t = +0,57 (p = 0,57). Yani cirosunun yarısı kadar iş alan bir şirket ile %1'i kadar iş alan şirket, <strong>ölçülebilir biçimde farklı bir fiyat tepkisi almıyor.</strong></p>
       <p>İlk ölçümde (β = 1, XU100 farkı) sayılar S ≥ 3 için +%1,18 (t = 1,57), S &lt; 1 için +%0,79 (t = 1,95) idi; sonuç değişmedi. S &lt; 1 grubunun 182'den 65'e küçülmesi, tabanın %0,25'e inmesiyle skorların yukarı kaymasından. Pozitif oranlarda küçük bir fark var ve yön doğru, ama bu farkın kendisi de anlamlı değil. Skorun bir getiri tahmini olarak kurulmamasının gerekçesi buradan daha net görülemezdi.</p>
 
-      <h4 id="bulgu12">Bulgu 12 — Oynak tahta: daha çok hareket, ve yönü aşağı <span class="cip cip-r" style="margin-left:6px;">SONUÇ DEĞİŞTİ</span></h4>
+      <h4 id="bulgu12">Bulgu 12 — Oynak tahta: daha çok hareket, ve yönü aşağı <span class="cip cip-r" style="margin-left:6px;">SONUÇ DEĞİŞTİ</span> <span class="cip cip-y" style="margin-left:4px;">YÖN TEKRARLANDI</span></h4>
+      <p><strong>Örneklem dışı sınama (24.09.2026): yarısı tekrarlandı.</strong> Yön tutuyor: önceki 12 ayda devre kesici günü başına işaretli CAR3 −0,15 puan (t = −2,85), yürürlükte VBTS −3,1 puan (t = −2,21) — etki ilk yılın yarısı ama anlamlı. “Daha çok hareket” tutmuyor: |CAR3| ile ilişki −0,02 (t = −0,40).</p>
       <p><strong>Güncel ölçüyle yeniden sınama (23.09.2026).</strong> Bu bulgunun ilk sürümü vekil ölçüyle kurulmuştu ve “spekülatif tahta çok daha fazla hareket ediyor ama rastgele yönde” diyordu. Gerçek devre kesici kayıtları ve güncel tepki ölçüsüyle ilk yarısı ayakta kaldı, <strong>ikinci yarısı kalmadı:</strong></p>
       <div class="tablo-sar" style="margin-bottom:16px;">
         <table>
@@ -682,7 +715,7 @@
         </div>
         <div>
           <h4 style="margin-top:0;">3 · Bildirim sıklığı görünür olmalı — ama skora girmemeli <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
-          <p><strong>Akış kartında “Şirket bunu sık yapıyor mu?” satırı olarak eklendi; skora girmedi.</strong> Bulgu 7 en sağlam ilişki, dolayısıyla onu yok saymak zor. Yine de skora katılmamalı, çünkü aynı gerekçe devre kesici için de geçerliydi: bu <strong>şirketin</strong> özelliği, bildirimin değil. Skora girerse “neden 2,1?” sorusunun cevabı “çünkü bu şirket çok konuşuyor” olur. Doğru yer Modül B'nin yanında <strong>üçüncü bir bağlam etiketi</strong>: “bu şirket son 12 ayda 30 bildirim yaptı”.</p>
+          <p><strong>Akış kartında “Şirket bunu sık yapıyor mu?” satırı olarak eklendi; skora girmedi.</strong> <em>24.09.2026: Bulgu 7 örneklem dışında tekrarlanmadı; satır kaldı ama artık yalnız olguyu söylüyor.</em> İlk gerekçe: Bulgu 7 en sağlam ilişki, dolayısıyla onu yok saymak zor. Yine de skora katılmamalı, çünkü aynı gerekçe devre kesici için de geçerliydi: bu <strong>şirketin</strong> özelliği, bildirimin değil. Skora girerse “neden 2,1?” sorusunun cevabı “çünkü bu şirket çok konuşuyor” olur. Doğru yer Modül B'nin yanında <strong>üçüncü bir bağlam etiketi</strong>: “bu şirket son 12 ayda 30 bildirim yaptı”.</p>
         </div>
         <div>
           <h4 style="margin-top:0;">4 · Modül C piyasa modeline geçmeli <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
@@ -691,6 +724,7 @@
         <div>
           <h4 style="margin-top:0;">5 · Tahta bayrağı süs değil, geçerlilik koşulu <span class="cip cip-y" style="margin-left:6px;">UYGULANDI</span></h4>
           <p>Bulgu 10–12 tasarımdaki en büyük değişikliği gerektirdi. Tahta kalitesi skorun <em>yanında</em> duran bir bilgi etiketi değil, <strong>skorun anlamlı olup olmadığını belirleyen koşul</strong>: tedbirli tahtalarda skorun piyasa ilgisiyle ilişkisi tersine dönüyor (Bulgu 10), mutlak hareket artıyor ve ortalama tepki eşit ağırlıklı piyasanın altına iniyor (Bulgu 12).</p>
+          <p><em>24.09.2026:</em> Bu üç gerekçeden yalnız sonuncusu örneklem dışında tekrarlandı. Tahta bayrağı ve akran grubundaki tahta ayrımı yerinde kaldı, çünkü dayandıkları bulgu (tedbirli tahtada aşağı yönlü tepki) iki yılda da var; “ilişki tersine dönüyor” ve “mutlak hareket artıyor” artık gerekçe değil.</p>
           <p style="margin-bottom:0;">Ürün karşılığı: akış kartında “Fiyata bakmak anlamlı mı?” satırı tedbirli tahtada “fiyat hareketi bu haberle ilgili olmayabilir” diyor; geçmiş tepki paneli karttan kaldırıldı ve detayda uyarıyla veriliyor. Büyüklük skoru gösterilmeye devam ediyor — o zaten piyasa tepkisi iddia etmiyor, şirketin kendi ölçeğini ölçüyor.</p>
         </div>
       </div>
@@ -708,7 +742,7 @@
         <li><strong>Örneklem küçük ve tek rejimli.</strong> 613 bildirim, 12 ay, tek bir piyasa rejimi, 70–111 küme. Bulgu 4'ün sonuçsuz kalmasının başlıca nedeni bu; daha uzun bir arşivle aynı analiz farklı sonuç verebilir.</li>
         <li><strong>Hacim ölçüsü tek bir tanıma dayanıyor.</strong> AV'nin taban penceresi, logaritmik dönüşümü ve olay penceresi makul ama seçilmiş kararlar. Alternatif tanımlar (turnover, ölçeklenmiş hacim, piyasa hacmiyle düzeltilmiş hacim) denenmedi.</li>
         <li><strong>Tahta ölçüsü vekilden gerçek kayda geçti ve bir sonuç değişti.</strong> Bulgu 10–12 ilk olarak “önceki 90 günde |getiri| ≥ %9 olan gün sayısı” vekiliyle kurulmuştu. Borsa İstanbul'un devre kesici ve VBTS kayıtlarıyla yeniden koşulduğunda Bulgu 10 güçlendi, Bulgu 11 değişmedi, Bulgu 12'nin “yön yok” yarısı çöktü. İlk sürümdeki “sonuçların yönü değil, eşikleri değişebilir” öngörüsü bu yüzden yanlış çıktı.</li>
-        <li><strong>Tahta eşikleri sonuç görüldükten sonra seçildi.</strong> 4/8 devre kesici günü eşikleri, 2/6 ile karşılaştırıldıktan sonra benimsendi (Bulgu 10). Bulgu 12'nin regresyonları eşik kullanmıyor (sürekli değişken), ama grup ortalamaları kullanıyor.</li>
+        <li><strong>Tahta eşikleri sonuç görüldükten sonra seçildi.</strong> 4/8 devre kesici günü eşikleri, 2/6 ile karşılaştırıldıktan sonra benimsendi (Bulgu 10). Bulgu 12'nin regresyonları eşik kullanmıyor (sürekli değişken), ama grup ortalamaları kullanıyor. Örneklem dışı sınama bu riskin gerçekleştiğini gösterdi: Bulgu 10 ikinci yılda tekrarlanmadı; eşiksiz regresyona dayanan Bulgu 12'nin yönü tekrarlandı.</li>
         <li><strong>Bulgu 12'nin mekanizması bilinmiyor.</strong> Tedbirli tahtadaki negatif ortalama tepki geri dönüş, alıcı azlığı ya da gözlenmeyen bir ortak özellik olabilir; veri bunları ayırt edemiyor.</li>
         <li><strong>Spekülatif alt grup küçük.</strong> Bulgu 10'un etkileşim terimi 108 gözlem ve 30 hisseye dayanıyor; p = 0,13 ile eşiği geçmiyor. Alt grup tablosuyla birlikte desen ikna edici, ama tek başına etkileşim katsayısı kanıt sayılmamalı.</li>
         <li><strong>Örneklem bir fon dönemini kapsıyor.</strong> 2026-09-16 Pusula/Tera krizi robustluk sınavıyla dışlandı ve sonuç değişmedi; ancak fon kaynaklı akımlar 12 ayın tamamına yayılmışsa dışlanacak bir “pencere” yoktur — bu, bu örneklemle ayrıştırılamaz.</li>
@@ -740,7 +774,7 @@
       <div class="et">KÜNYE</div>
       <p><strong>Hüseyin Dinçer</strong> — proje tasarımı, kapsam ve metodoloji kararları, veri hattı mimarisi, tüm karar onayları.<br>
       <strong>Claude (Opus 5)</strong> — uygulama, istatistiksel analiz, bu notun yazımı. Depoda ortak yazarlık <code>Co-Authored-By</code> ile işaretli.</p>
-      <p>Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır. Bu bir kişisel araştırma projesidir, <strong>yatırım tavsiyesi değildir</strong> ve hiçbir alım-satım önerisi içermez. Bulgu 1–10 21–22 Eylül, Bulgu 11–12 23 Eylül 2026 tarihli veri kesitine aittir.</p>
+      <p>Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır. Bu bir kişisel araştırma projesidir, <strong>yatırım tavsiyesi değildir</strong> ve hiçbir alım-satım önerisi içermez. Bulgu 1–10 21–22 Eylül, Bulgu 11–12 23 Eylül 2026 tarihli veri kesitine aittir; örneklem dışı sınama 24 Eylül 2026.</p>
     </section>
 
   </main>

@@ -166,6 +166,23 @@ left join tepki t on t.kap_id = b.kap_id
 """
 
 
+# Analiz örnekleminin ilk bildirimi. Arşiv 2026-09-24'te 2024-09'a
+# uzatıldı; o tarihten önceki bildirimler bulgular KURULURKEN hiç
+# görülmedi, yani onlar için gerçek bir örneklem dışı sınama.
+ANALIZ_BASI = pd.Timestamp("2025-09-22", tz="Europe/Istanbul")
+DONEMLER = ("analiz", "sinama", "tumu")
+
+
+def donem_suz(df: pd.DataFrame, donem: str, kolon: str = "yayin_zamani") -> pd.DataFrame:
+    """analiz: 2025-09-22 →  ·  sinama: öncesi (örneklem dışı)  ·  tumu."""
+    z = pd.to_datetime(df[kolon], utc=True)
+    if donem == "analiz":
+        return df[z >= ANALIZ_BASI].copy()
+    if donem == "sinama":
+        return df[z < ANALIZ_BASI].copy()
+    return df
+
+
 def yukle(baglanti):
     olay = pd.read_sql(SORGU, baglanti)
     fiyat = pd.read_sql(
@@ -301,6 +318,7 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="Skor geçerlilik sınaması")
     ap.add_argument("--kisa", action="store_true", help="yalnız ana tablolar")
+    ap.add_argument("--donem", choices=DONEMLER, default="analiz")
     secenek = ap.parse_args()
 
     dsn = dsn_bul()
@@ -309,6 +327,8 @@ def main() -> int:
         return 1
     with psycopg.connect(dsn, connect_timeout=30) as baglanti:
         olay, fiyat, endeks = yukle(baglanti)
+    olay = donem_suz(olay, secenek.donem)
+    print(f"dönem: {secenek.donem} · {len(olay)} bildirim")
 
     takvim = list(endeks["tarih"])
     hac = hacim_serileri(fiyat)

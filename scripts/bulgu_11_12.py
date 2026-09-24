@@ -1,6 +1,6 @@
 """Bulgu 11 ve 12'yi güncel ölçülerle yeniden sınar. Hiçbir şey yazmaz.
 
-Kullanım:  python scripts/bulgu_11_12.py
+Kullanım:  python scripts/bulgu_11_12.py [--donem analiz|sinama|tumu]
 
 İlk sürüm (`skor_gecerlilik.py` §10–11) iki şeyi eskimiş ölçüyle yapıyordu:
   - CAR, β = 1 ve XU100 farkıydı. Artık tepki tablosu eşit ağırlıklı
@@ -17,6 +17,7 @@ Sorular değişmedi:
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -29,12 +30,19 @@ sys.path.insert(0, str(KOK / "src"))
 sys.path.insert(0, str(KOK / "scripts"))
 
 from kap_radar.ayarlar import dsn_bul  # noqa: E402
-from skor_gecerlilik import bas, ols, tek_orneklem, yildiz  # noqa: E402
+from skor_gecerlilik import (  # noqa: E402
+    DONEMLER,
+    bas,
+    donem_suz,
+    ols,
+    tek_orneklem,
+    yildiz,
+)
 
 KRIZ_BASI = pd.Timestamp("2026-09-08")
 
 SORGU = """
-select a.kap_id, a.ticker, a.etki_skoru::float as s, a.car_3g::float as car3,
+select a.kap_id, a.ticker, a.yayin_zamani, a.etki_skoru::float as s, a.car_3g::float as car3,
        t.v90, (coalesce(t.vbts_kademe, 0) > 0) as vbts, tp.t0
 from akis a
 left join tahta_durumu t on t.kap_id = a.kap_id
@@ -59,8 +67,14 @@ def grup_satiri(ad: str, g: pd.DataFrame) -> None:
 
 
 def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--donem", choices=DONEMLER, default="analiz")
+    secenek = ap.parse_args()
     with psycopg.connect(dsn_bul(), connect_timeout=30) as b:
         df = pd.read_sql(SORGU, b)
+    df = donem_suz(df, secenek.donem)
+    print(f"dönem: {secenek.donem} · {len(df)} bildirim")
     df["abs_car3"] = df["car3"].abs()
 
     bas("11 · BÜYÜK HABER DAHA ÇOK FİYATLANIYOR MU?  (CAR3, EW piyasa modeli)")

@@ -14,8 +14,9 @@ export { oranRengi, tahtaRenk };
  *
  * Her satır bir bulguya dayanıyor (docs/arastirma, Adım 16 + 16b):
  * büyüklük ciroya oranla ölçülür; gizli karşı taraf ve güncelleme daha
- * az güvenilir; tedbirli tahtada fiyat habere değil oynaklığa bağlı;
- * sık bildirim yapan şirkette tepki sönük. Tepki paneli bilerek kartta
+ * az güvenilir; tedbirli tahtada ortalama tepki aşağı yönlü (iki yılda
+ * da). Sıklık satırı yalnız olgu: "sık bildirimcide tepki sönük" bulgusu
+ * örneklem dışında tekrarlanmadı. Tepki paneli bilerek kartta
  * YOK: tepki öngörülemiyor ve karttaki kırmızı/yeşil bir yüzde tahmin
  * gibi okunur. Sayılar, formül ve panel detayda (`BildirimDetayi`).
  *

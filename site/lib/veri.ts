@@ -31,6 +31,39 @@ export {
   tahtaRenk,
 } from "./skor";
 
+/**
+ * PostgREST sorgu başına en fazla 1.000 satır döndürüyor ve bunu hata
+ * olarak BİLDİRMİYOR. Arşiv 2026-09-24'te 1.000 yayına hazır bildirimi
+ * aşınca akış, özet sayılar, akran grupları ve `/kap` sayfaları en eski
+ * bildirimleri sessizce kaybetti. Tabloyu bütün okuyan her sorgu buradan
+ * geçer.
+ *
+ * Son sayfa "1.000'den az geldi" diye değil BOŞ sayfayla anlaşılıyor:
+ * sunucunun sınırı değişirse (ör. 500) ilk yarım sayfa sonun sanılırdı.
+ * Sorgunun sırası tekil olmalı (`kap_id` bağ bozucu), yoksa sayfa
+ * sınırında satır tekrarlanır ya da atlanır.
+ */
+type SayfaSonucu = {
+  data: unknown[] | null;
+  error: { message: string } | null;
+};
+
+async function hepsiniOku<T>(
+  ad: string,
+  sorgu: (bas: number, son: number) => PromiseLike<SayfaSonucu>,
+  sayfa = 1000,
+): Promise<T[]> {
+  const sonuc: T[] = [];
+  for (let bas = 0; ; ) {
+    const { data, error } = await sorgu(bas, bas + sayfa - 1);
+    if (error) throw new Error(`${ad} okunamadı: ${error.message}`);
+    const parca = (data ?? []) as T[];
+    if (parca.length === 0) return sonuc;
+    sonuc.push(...parca);
+    bas += parca.length;
+  }
+}
+
 /** Bir tutar kalemi. `alinti` denetlenebilirliğin taşıyıcısı. */
 export type Tutar = {
   tip: "ilave_siparis" | "fiyat_farki" | "toplam_sozlesme" | "tek_seferlik";
@@ -207,8 +240,9 @@ function panelKur(
  * Akran grubu: aynı skor kademesi VE aynı tahta kalitesi. Hücre 20'nin
  * altına düşerse yalnız kademeye geriliyor ve bu kullanıcıya söyleniyor.
  *
- * Tahtanın gruba girmesi Adım 16b'nin sonucu: limit günü sayısı mutlak
- * tepkiyi güçlü biçimde artırıyor (t=+4,80) ama yönle ilişkisi sıfır.
+ * Tahtanın gruba girmesi Bulgu 12'nin sonucu: devre kesici gören
+ * tahtada ortalama tepki aşağı yönlü — ilk yılda t=−2,62, örneklem dışı
+ * yılda t=−2,85. (İlk gerekçe "oynaklık var, yön yok" idi; o çöktü.)
  * Tahtaları karıştıran bir panel, spekülatif hareketi "benzer bildirimin
  * tepkisi" diye gösterirdi.
  */
@@ -261,15 +295,14 @@ function panelleriHesapla(satirlar: PanelGirdi[]): Map<string, TepkiPaneli> {
 
 /** Tüm yayına hazır bildirimleri getirir ve panelleri iliştirir. */
 export async function bildirimleriGetir(): Promise<Bildirim[]> {
-  const { data, error } = await supabase
-    .from("akis")
-    .select("*")
-    .order("yayin_zamani", { ascending: false });
-
-  if (error) {
-    throw new Error(`Akış okunamadı: ${error.message}`);
-  }
-  const satirlar = (data ?? []) as AkisSatiri[];
+  const satirlar = await hepsiniOku<AkisSatiri>("Akış", (bas, son) =>
+    supabase
+      .from("akis")
+      .select("*")
+      .order("yayin_zamani", { ascending: false })
+      .order("kap_id")
+      .range(bas, son),
+  );
   const paneller = panelleriHesapla(satirlar);
 
   return satirlar.map((s) => zenginlestir(s, paneller.get(s.kap_id) ?? null));
@@ -293,14 +326,13 @@ async function panelGirdileriGetir(): Promise<PanelGirdi[]> {
   if (panelBellek && Date.now() - panelBellek.zaman < PANEL_TTL_MS) {
     return panelBellek.veri;
   }
-  const { data, error } = await supabase
-    .from("akis")
-    .select("kap_id, etki_skoru, car_3g, tahta");
-
-  if (error) {
-    throw new Error(`Akran grubu okunamadı: ${error.message}`);
-  }
-  const veri = (data ?? []) as PanelGirdi[];
+  const veri = await hepsiniOku<PanelGirdi>("Akran grubu", (bas, son) =>
+    supabase
+      .from("akis")
+      .select("kap_id, etki_skoru, car_3g, tahta")
+      .order("kap_id")
+      .range(bas, son),
+  );
   panelBellek = { zaman: Date.now(), veri };
   return veri;
 }
@@ -362,23 +394,23 @@ export type HisseOzeti = {
 
 /**
  * Hisse listesi — hem `/hisse` dizini hem `generateStaticParams` için.
- * Tek sorguda okunuyor; 597 satır zaten bellekte toplanacak kadar küçük.
+ * Sayfalı okunuyor (bkz. `hepsiniOku`); birkaç bin satır bellekte
+ * toplanacak kadar küçük.
  */
 export async function hisseleriGetir(): Promise<HisseOzeti[]> {
-  const { data, error } = await supabase
-    .from("akis")
-    .select("ticker, sirket, etki_skoru, yayin_zamani, tahta")
-    .order("yayin_zamani", { ascending: false });
-
-  if (error) {
-    throw new Error(`Hisse listesi okunamadı: ${error.message}`);
-  }
+  const satirlar = await hepsiniOku<
+    Pick<AkisSatiri, "ticker" | "sirket" | "etki_skoru" | "yayin_zamani" | "tahta">
+  >("Hisse listesi", (bas, son) =>
+    supabase
+      .from("akis")
+      .select("ticker, sirket, etki_skoru, yayin_zamani, tahta")
+      .order("yayin_zamani", { ascending: false })
+      .order("kap_id")
+      .range(bas, son),
+  );
 
   const gruplar = new Map<string, HisseOzeti & { skorlar: number[] }>();
-  for (const s of (data ?? []) as Pick<
-    AkisSatiri,
-    "ticker" | "sirket" | "etki_skoru" | "yayin_zamani" | "tahta"
-  >[]) {
+  for (const s of satirlar) {
     const mevcut = gruplar.get(s.ticker);
     if (mevcut) {
       mevcut.adet += 1;
@@ -410,11 +442,10 @@ export async function hisseleriGetir(): Promise<HisseOzeti[]> {
 
 /** `/kap/[kap_id]` için statik parametreler. */
 export async function kapIdleriGetir(): Promise<string[]> {
-  const { data, error } = await supabase.from("akis").select("kap_id");
-  if (error) {
-    throw new Error(`kap_id listesi okunamadı: ${error.message}`);
-  }
-  return ((data ?? []) as { kap_id: string }[]).map((s) => s.kap_id);
+  const satirlar = await hepsiniOku<{ kap_id: string }>("kap_id listesi", (bas, son) =>
+    supabase.from("akis").select("kap_id").order("kap_id").range(bas, son),
+  );
+  return satirlar.map((s) => s.kap_id);
 }
 
 export type Ozet = {
