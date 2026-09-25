@@ -484,6 +484,11 @@ a:hover {
   border-radius: var(--r-kart);
   overflow: hidden;
   display: flex;
+  /* J/K ile gezerken kart yapışkan başlık (62 px) + filtre çubuğunun
+     altında kalıyordu: scrollIntoView kartı en üste hizalar. Mobilde
+     filtre çubuğu yapışkan değil, pay aşağıda küçülüyor. */
+  scroll-margin-top: 190px;
+  scroll-margin-bottom: 16px;
 }
 .kart:hover {
   border-color: var(--ken-4);
@@ -630,10 +635,65 @@ a:hover {
   color: var(--mut-2);
   font-weight: 400;
 }
-.tahta-cumle {
+/* Detay: önce düz cümle, teknik döküm katlanır kutuda. */
+.duz-cumle {
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+.acilir {
+  margin: 10px 0 4px;
+}
+.acilir > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+  color: var(--mut-2);
+  padding: 6px 0;
+}
+.acilir > summary::-webkit-details-marker {
+  display: none;
+}
+.acilir > summary::before {
+  content: "▸ ";
+}
+.acilir[open] > summary::before {
+  content: "▾ ";
+}
+.acilir > summary:hover {
+  color: var(--ink);
+}
+.kiminle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  min-width: 0;
+}
+.kiminle-ad {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kiminle-gizli {
+  color: var(--kehribar);
   font-weight: 600;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kiminle-tanim {
+  color: var(--mut-2);
+  font-weight: 400;
 }
 @media (max-width: 640px) {
+  .kart {
+    scroll-margin-top: 80px;
+  }
   .dort-soru > div {
     grid-template-columns: 1fr;
   }

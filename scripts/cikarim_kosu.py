@@ -34,6 +34,7 @@ sys.path.insert(0, str(KOK / "src"))
 
 import psycopg  # noqa: E402
 
+from kap_radar.karsi_taraf import karsi_taraf_acik  # noqa: E402
 from kap_radar.ayarlar import dsn_bul, env_oku  # noqa: E402
 from kap_radar.cikarim import katmanli_cikar, prompt_kur  # noqa: E402
 from kap_radar.degerlendirme import degerlendir_bildirim  # noqa: E402
@@ -211,7 +212,7 @@ def main() -> int:
                     an=an,
                     ham_metin_tr=metin,
                     guncelleme_mi=bool(guncelleme_mi),
-                    karsi_taraf_acik=bool(karsi_taraf),
+                    karsi_taraf_acik=karsi_taraf_acik(karsi_taraf),
                 )
 
                 kararlar[karar.karar.value] += 1

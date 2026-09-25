@@ -156,8 +156,7 @@ with son as (
   from cikarim order by kap_id, id desc
 )
 select b.kap_id, b.ticker, b.yayin_zamani, b.guncelleme_mi,
-       (b.kap_alanlari->>'karsi_taraf' is not null
-        and b.kap_alanlari->>'karsi_taraf' <> '') as kt_acik,
+       coalesce(b.karsi_taraf_acik, false) as kt_acik,
        s.etki_skoru, s.ciro_orani, s.net_tutar_tl, s.yayina_hazir,
        t.t0, t.car_1g, t.car_3g, t.car_5g
 from bildirim b

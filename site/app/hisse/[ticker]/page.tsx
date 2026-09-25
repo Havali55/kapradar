@@ -2,18 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { hisseFonGetir, hisseGetir, hisseleriGetir } from "@/lib/veri";
-import { oranRengi, siklikRenk, tahtaRenk, yuzdelik } from "@/lib/skor";
+import { oranRengi, siklikRenk, yuzdelik } from "@/lib/skor";
 import {
   KADEME_ADI,
   SIKLIK_ADI,
-  SIKLIK_NOTU,
-  TAHTA_ADI,
-  TAHTA_NOTU,
   VBTS_KADEME_ADI,
   buyukTl,
   gunEtiketi,
   isaretliYuzde,
   sayi,
+  tahtaGorunumu,
   yuzde,
 } from "@/lib/bicim";
 
@@ -64,6 +62,14 @@ export default async function HisseSayfasi({
   // Tahta ve hasılat hissenin özelliği, bildirimin değil: en yeni
   // bildirimden okunuyor. Liste yeniden eskiye sıralı geliyor.
   const sonTahta = bildirimler.find((b) => b.tahta !== null);
+  const tahta = sonTahta
+    ? tahtaGorunumu(
+        sonTahta.tahta,
+        sonTahta.tahta_v90,
+        sonTahta.tahta_v5,
+        sonTahta.tahta_vbts_kademe,
+      )
+    : null;
   const sonHasilat = bildirimler.find((b) => b.ttm_hasilat !== null);
 
   // Sıklık şirket başına sabit; view'dan geliyor ve 613'ün tamamını
@@ -128,7 +134,7 @@ export default async function HisseSayfasi({
             </div>
             <div className="olcu-alt">
               {siklik ? `${SIKLIK_ADI[siklik].toLocaleLowerCase("tr")} · ` : ""}
-              12 ayda, {oranlar.length} tanesi skorlanabildi
+              12 ayda; {oranlar.length} duyurunun büyüklüğü hesaplanabildi
             </div>
           </div>
           <div className="olcu">
@@ -146,16 +152,12 @@ export default async function HisseSayfasi({
             </div>
           </div>
           <div className="olcu">
-            <div className="olcu-et mono">TAHTA</div>
+            <div className="olcu-et mono">SON 3 AY</div>
             <div
               className="olcu-deger olcu-kisa"
-              style={{
-                color: sonTahta?.tahta
-                  ? `var(--${tahtaRenk(sonTahta.tahta)})`
-                  : undefined,
-              }}
+              style={{ color: tahta ? `var(--${tahta.renk})` : undefined }}
             >
-              {sonTahta?.tahta ? TAHTA_ADI[sonTahta.tahta] : "—"}
+              {tahta ? tahta.ad : "—"}
             </div>
             <div className="olcu-alt">
               {sonTahta?.tahta
@@ -166,30 +168,23 @@ export default async function HisseSayfasi({
             </div>
           </div>
           <div className="olcu">
-            <div className="olcu-et mono">SON GÖRÜLEN TTM HASILAT</div>
+            <div className="olcu-et mono">SON 12 AYLIK CİRO</div>
             <div className="olcu-deger olcu-kisa">
               {sonHasilat?.ttm_hasilat != null
                 ? buyukTl(sonHasilat.ttm_hasilat)
                 : "—"}
             </div>
-            <div className="olcu-alt">skorun paydası</div>
+            <div className="olcu-alt">büyüklük oranının paydası</div>
           </div>
         </div>
 
-        {sonTahta?.tahta && sonTahta.tahta !== "temiz" && (
-          <p className="panel-uyari" style={{ marginBottom: 10 }}>
-            {TAHTA_NOTU[sonTahta.tahta]}{" "}
-            {sonTahta.tahta === "tedbirli" &&
-              "Bu hissenin bildirimlerinde tepki paneli fiyat oluşumunu değil oynaklığı yansıtıyor olabilir."}
-          </p>
-        )}
-
-        {siklik === "sik" && (
+        {sonTahta?.tahta === "tedbirli" && tahta && (
           <p className="panel-uyari" style={{ marginBottom: 18 }}>
-            {SIKLIK_NOTU.sik}
+            {tahta.not} İki ayrı yılın verisinde de çok oynak ya da borsa
+            tedbiri altındaki hisselerde duyuru sonrası ortalama tepki, sakin
+            hisselerdekinden belirgin biçimde düşük çıktı; nedeni bilinmiyor.
           </p>
         )}
-
         {fon && (
           <section style={{ margin: "8px 0 22px" }}>
             <h3 className="bolum-bas mono">
@@ -250,7 +245,7 @@ export default async function HisseSayfasi({
             <p className="tutar-yok-not">
               Kaynak: fonların KAP&apos;taki Portföy Dağılım Raporları. Raporlar
               çoğunlukla aylık ve yaklaşık bir ay geriden gelir. Fon pozisyonu
-              skora girmez.
+              büyüklüğe girmez.
             </p>
           </section>
         )}
@@ -277,21 +272,19 @@ export default async function HisseSayfasi({
                       <strong style={{ color: oranRengi(b.ciro_orani) }}>
                         {yuzde(b.ciro_orani, 2)}
                       </strong>
-                      <span style={{ color: "var(--mut-3)" }}> hasılatın</span>
+                      <span style={{ color: "var(--mut-3)" }}> cirosunun</span>
                       {b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : ""}
                     </span>
                   ) : (
-                    <span className="cip cip-notr mono">SKOR ÜRETİLMEDİ</span>
+                    <span className="cip cip-notr mono">BÜYÜKLÜK BİLİNMİYOR</span>
                   )}
                 </span>
                 <span className="hisse-satir-is">{b.is_tanimi ?? "—"}</span>
                 <span className="hisse-satir-alt">
-                  Karşı taraf: {b.karsi_taraf ?? "açıklanmadı"}
-                  {b.etki_skoru !== null && (
-                    <> · S {sayi(b.etki_skoru)}/5</>
-                  )}
+                  Karşı taraf:{" "}
+                  {b.karsiTarafAcik && b.karsi_taraf ? b.karsi_taraf : "adı verilmemiş"}
                   {b.car_3g !== null && (
-                    <> · 3 günlük anormal getiri {isaretliYuzde(b.car_3g)}</>
+                    <> · 3 günde piyasaya göre {isaretliYuzde(b.car_3g)}</>
                   )}
                 </span>
               </span>

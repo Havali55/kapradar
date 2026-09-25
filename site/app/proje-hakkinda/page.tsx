@@ -211,7 +211,8 @@ export default async function ProjeHakkinda() {
               ikisi çöktü.</strong> Arşiv 2024-09&apos;a uzatılınca önceki 12
               ay (690 bildirim) gerçek bir örneklem dışı sınama oldu. Hacim
               artışı, bildirim öncesi sızıntı, skorun getiri tahmini olmadığı
-              ve tedbirli tahtada tepkinin aşağı yönlü olduğu tekrarlandı.
+              ve çok oynak ya da borsa tedbiri altındaki hisselerde tepkinin aşağı
+              yönlü olduğu tekrarlandı.
               &ldquo;Sık bildirimcide tepki sönük&rdquo; ve &ldquo;skor
               spekülatif tahtada kırılıyor&rdquo; tekrarlanmadı; ikisi de
               artık iddia edilmiyor.

@@ -125,6 +125,7 @@ def main() -> int:
     adim("KAP liste + detay", ["scripts/backfill_calistir.py", "--baslangic", bas,
                                "--bitis", bugun.isoformat(), "--pencere", "3"], hatalar)
     adim("bildirimler -> DB", ["scripts/yukle.py"], hatalar)
+    adim("karşı taraf sınıflaması", ["scripts/karsi_taraf_isaretle.py", "--yaz"], hatalar)
     adim("TCMB kuru", ["scripts/kur_cek.py"], hatalar)
     adim("finansal raporlar", ["scripts/finansal_cek.py", "--baslangic", bas], hatalar)
     adim("finansal -> DB", ["scripts/finansal_yukle.py"], hatalar)

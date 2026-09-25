@@ -28,6 +28,7 @@ sys.path.insert(0, str(KOK / "src"))
 
 import psycopg  # noqa: E402
 
+from kap_radar.karsi_taraf import karsi_taraf_acik  # noqa: E402
 from kap_radar.ayarlar import dsn_bul  # noqa: E402
 from kap_radar.cikarim import Karar, Tutar, tutarlilik_kapisi  # noqa: E402
 from kap_radar.depo import Depo  # noqa: E402
@@ -109,7 +110,7 @@ def main() -> int:
             skor = buyukluk_skoru(
                 net_tutar_tl=net,
                 ttm_hasilat=ttm.hasilat if ttm else None,
-                karsi_taraf_acik=bool(karsi_taraf),
+                karsi_taraf_acik=karsi_taraf_acik(karsi_taraf),
                 guncelleme_mi=bool(guncelleme_mi),
             )
 

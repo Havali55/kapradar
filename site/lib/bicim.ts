@@ -57,7 +57,8 @@ export function kalemTutari(deger: string, paraBirimi: string): string {
   if (!Number.isFinite(v)) return `${deger} ${PARA_ADI[paraBirimi] ?? paraBirimi}`;
   const birim = PARA_ADI[paraBirimi] ?? paraBirimi;
   if (v >= 1e9) return `${sayi(v / 1e9, 2)} Milyar ${birim}`;
-  if (v >= 1e6) return `${sayi(v / 1e6, 0)} Milyon ${birim}`;
+  // 10 milyonun altında tam sayı fazla kaba: 1.882.423 USD "2 Milyon" olurdu.
+  if (v >= 1e6) return `${sayi(v / 1e6, v < 1e7 ? 1 : 0)} Milyon ${birim}`;
   return `${sayi(v, 0)} ${birim}`;
 }
 
@@ -120,32 +121,79 @@ export function tamTarih(isoTarih: string): string {
   });
 }
 
-export const TAHTA_ADI: Record<string, string> = {
-  temiz: "Temiz",
-  hareketli: "Hareketli",
-  tedbirli: "Tedbirli",
+/**
+ * Tahtanın kullanıcıya görünen adı ve açıklaması — tek kaynak; kart,
+ * detay ve hisse sayfası buradan okur.
+ *
+ * Veritabanındaki bayrak üç değerli (`skor.py::tahta_bayragi`):
+ * tedbirli = yürürlükte VBTS YA DA 90 seansta >8 devre kesici günü YA DA
+ * son 5 seansta ≥2; temiz = 90 seansta ≤4 ve son 5 seansta 0; arası
+ * hareketli. Görünen ad dört değerli, çünkü "tedbirli" borsada resmî
+ * tedbir demek: 2026-09-24'te "tedbirli" etiketli son 2,5 ayın 81
+ * bildiriminin 73'ünde resmî tedbir YOKTU, yalnız devre kesici sayımı
+ * vardı. Resmî tedbir olmadan "tedbirli" demek yanlış bir olgu
+ * bildirmekti; o durum artık "Çok oynak".
+ *
+ * Eski açıklama "fiyat hareketi habere değil oynaklığa bağlı olabilir"
+ * diyordu; dayandığı bulgu (Bulgu 10) örneklem dışında tekrarlanmadı.
+ * Açıklamalar artık yalnız sayılan olguyu söylüyor.
+ */
+export type TahtaGorunumu = {
+  ad: string;
+  not: string;
+  /** globals.css renk değişkeni: yes · kehribar · kir */
+  renk: string;
 };
 
-/**
- * Kaynak Borsa İstanbul'un KAP kayıtları (devre kesici + VBTS). Eşikler
- * `skor.py::tahta_bayragi`: 90 seansta ≤4 devre kesici günü temiz, >8
- * ya da yürürlükte VBTS tedbirli.
- */
-export const TAHTA_NOTU: Record<string, string> = {
-  temiz:
-    "Son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, son 5 seansta hiç; yürürlükte volatilite tedbiri yok.",
-  hareketli: "Tahtada devre kesici zaman zaman tetikleniyor.",
-  tedbirli:
-    "Tahta ya Borsa İstanbul'un volatilite tedbiri (VBTS) altında ya da devre kesiciyi sık tetikliyor. Bu hisselerde fiyat hareketi habere değil oynaklığa bağlı olabilir.",
-};
+export function tahtaGorunumu(
+  tahta: string | null,
+  v90: number | null,
+  v5: number | null,
+  vbtsKademe: number | null,
+): TahtaGorunumu | null {
+  if (!tahta) return null;
+  const gun90 = v90 === null ? "" : `Son 90 seansta devre kesici ${v90} gün tetiklenmiş`;
+  if (vbtsKademe && vbtsKademe > 0) {
+    return {
+      ad: "Borsa tedbiri altında",
+      not: `Bildirim anında Borsa İstanbul'un volatilite tedbiri yürürlükteydi (${
+        VBTS_KADEME_ADI[vbtsKademe] ?? `kademe ${vbtsKademe}`
+      }).${gun90 ? ` ${gun90}.` : ""}`,
+      renk: "kir",
+    };
+  }
+  if (tahta === "tedbirli") {
+    const neden =
+      v5 !== null && v5 >= 2
+        ? `Son 5 seansta devre kesici ${v5} gün tetiklenmiş`
+        : gun90;
+    return {
+      ad: "Çok oynak",
+      not: `${neden}. Resmî bir tedbir yok.`,
+      renk: "kir",
+    };
+  }
+  if (tahta === "hareketli") {
+    return {
+      ad: "Oynak",
+      not: gun90 ? `${gun90}.` : "Devre kesici zaman zaman tetikleniyor.",
+      renk: "kehribar",
+    };
+  }
+  return {
+    ad: "Sakin",
+    not: "Son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, son 5 seansta hiç; volatilite tedbiri yok.",
+    renk: "yes",
+  };
+}
 
 /**
  * Bayrağın sınırı: oynaklık ölçüyor. 2026-09 soruşturmasında adı geçen
  * dönemlerde devre kesici AZALMIŞTI — kontrollü bir
- * yükseliş sakin görünür. "Temiz" bu yüzden "sağlıklı" demek değil.
+ * yükseliş sakin görünür. "Sakin" bu yüzden "sağlıklı" demek değil.
  */
 export const TAHTA_SINIR_NOTU =
-  "“Temiz” yalnızca oynaklığın düşük olduğunu söyler. Kontrollü, sakin bir fiyat yükselişi devre kesiciyi tetiklemez; bu bayrak onu ayırt edemez.";
+  "“Sakin” yalnızca oynaklığın düşük olduğunu söyler. Kontrollü, yavaş bir fiyat yükselişi devre kesiciyi tetiklemez; bu bilgi onu ayırt edemez.";
 
 /** Borsa İstanbul Volatilite Bazlı Tedbir Sistemi kademeleri. */
 export const VBTS_KADEME_ADI: Record<number, string> = {
