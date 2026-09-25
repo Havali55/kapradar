@@ -58,6 +58,10 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           KAP_USER_AGENT: ${{ secrets.KAP_USER_AGENT }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
         run: |
           umask 077
           {
@@ -68,6 +72,10 @@ jobs:
             echo "KAP_USER_AGENT=$KAP_USER_AGENT"
             echo "KAP_ISTEK_ARALIGI_MS=1200"
             echo "KAP_MAKS_YENIDEN_DENEME=5"
+            echo "X_API_KEY=$X_API_KEY"
+            echo "X_API_SECRET=$X_API_SECRET"
+            echo "X_ACCESS_TOKEN=$X_ACCESS_TOKEN"
+            echo "X_ACCESS_TOKEN_SECRET=$X_ACCESS_TOKEN_SECRET"
           } > .env
 
       - name: koşu
