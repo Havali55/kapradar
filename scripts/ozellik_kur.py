@@ -29,6 +29,7 @@ sys.path.insert(0, str(KOK / "src"))
 
 import psycopg  # noqa: E402
 
+from kap_radar.karsi_taraf import karsi_taraf_acik  # noqa: E402
 from kap_radar.depo import Depo  # noqa: E402
 from kap_radar.tepki import car_hesapla  # noqa: E402
 
@@ -210,7 +211,7 @@ def main() -> int:
                     "gunluk_ciro": round(cirolar.get(ticker, 0)),
                     "guncelleme": int(bool(guncelleme)),
                     "duzeltme": int(bool(duzeltme)),
-                    "karsi_taraf_acik": int(karsi_taraf is not None),
+                    "karsi_taraf_acik": int(karsi_taraf_acik(karsi_taraf)),
                     "nitelik": (nitelik or "").split("(")[0].strip(),
                     "kosul_acik": int(bool(kosullar)),
                     "ek_sayisi": ek_sayisi or 0,
