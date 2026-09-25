@@ -2,23 +2,27 @@
 
 import { useEffect, useRef } from "react";
 import type { Bildirim } from "@/lib/veri";
-import { fOran, oranRengi, tahtaRenk } from "@/lib/skor";
+import { fOran, oranRengi } from "@/lib/skor";
 import { KADEME_ADI, gecenSure, yuzdeIyelik } from "@/lib/bicim";
 
-// oranRengi / tahtaRenk lib/skor.ts'te — hem istemci bileşenleri
-// hem sunucuda render edilen /kap sayfası kullanıyor.
-export { oranRengi, tahtaRenk };
-
 /**
- * Akış kartı — yatırımcının dört sorusu, jargon yok.
+ * Akış kartı — üç soru, jargon yok: iş şirket için ne kadar büyük,
+ * kiminle yapıldı, şirket bunu sık yapıyor mu.
  *
- * Her satır bir bulguya dayanıyor (docs/arastirma, Adım 16 + 16b):
- * büyüklük ciroya oranla ölçülür; gizli karşı taraf ve güncelleme daha
- * az güvenilir; tedbirli tahtada ortalama tepki aşağı yönlü (iki yılda
- * da). Sıklık satırı yalnız olgu: "sık bildirimcide tepki sönük" bulgusu
- * örneklem dışında tekrarlanmadı. Tepki paneli bilerek kartta
- * YOK: tepki öngörülemiyor ve karttaki kırmızı/yeşil bir yüzde tahmin
- * gibi okunur. Sayılar, formül ve panel detayda (`BildirimDetayi`).
+ * Kartta yalnız her iki yılın verisinde de ayakta kalan ve herkesin
+ * okuyabileceği olgular var (2026-09-24 sadeleştirmesi):
+ *   - Büyüklük: ciroya oran. Ürünün asıl ölçüsü.
+ *   - Kiminle: karşı tarafın ADI ya da "adı verilmemiş". Eskiden üç çip
+ *     vardı (karşı taraf açık/gizli, tutar açık, ilk/güncelleme); "tutar
+ *     açık" skorlu kartta hep doğru olduğu için bilgi taşımıyordu,
+ *     "karşı taraf açık" ise 254 bildirimde yanlıştı ("Uluslararası
+ *     Müşteri" gibi tanımlar isim sayılıyordu).
+ *   - Sıklık: sayılan olgu, tepki iddiası yok.
+ * "Fiyata bakmak anlamlı mı?" satırı kaldırıldı: kart fiyat göstermiyor,
+ * dayandığı bulgu (Bulgu 10) örneklem dışında tekrarlanmadı ve son
+ * aylarda kartların üçte ikisinde ⚠ çıkıyordu. Tahta bilgisi detayda.
+ * Tepki paneli de bilerek kartta yok: karttaki kırmızı/yeşil bir yüzde
+ * tahmin gibi okunur.
  *
  * Kart bir `article`; tıklanabilir alan içindeki tek butonun ::after
  * katmanı. Böylece hem tüm yüzey tıklanabiliyor hem de klavyeyle tek
@@ -38,6 +42,8 @@ export default function Kart({
   const renk = oranRengi(b.ciro_orani);
 
   useEffect(() => {
+    // Yapışkan başlık ve filtre çubuğunun altında kalmaması için kartın
+    // scroll-margin-top'u var (globals.css .kart).
     if (imlec) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [imlec]);
 
@@ -70,31 +76,16 @@ export default function Kart({
             </dd>
           </div>
           <div>
-            <dt>Bilgi ne kadar net?</dt>
-            <dd className="netlik">
-              <span className="etiket">
-                Karşı taraf {b.karsi_taraf ? "açık" : "gizli"}
-              </span>
-              <span className="etiket">
-                Tutar{" "}
-                {b.tutar_gizli ? "gizli" : b.net_tutar_tl === null ? "belirsiz" : "açık"}
-              </span>
-              <span className="etiket">
-                {b.guncelleme_mi ? "Güncelleme bildirimi" : "İlk bildirim"}
-              </span>
-            </dd>
-          </div>
-          <div>
-            <dt>Fiyata bakmak anlamlı mı?</dt>
+            <dt>Kiminle?</dt>
             <dd>
-              <Tahta tahta={b.tahta} />
+              <Kiminle b={b} />
             </dd>
           </div>
           <div>
             <dt>Şirket bunu sık yapıyor mu?</dt>
             <dd>
               {b.bildirim_sikligi !== null
-                ? `Son 12 ayda ${b.bildirim_sikligi}. iş bildirimi`
+                ? `Son 12 ayda ${b.bildirim_sikligi}. iş duyurusu`
                 : "—"}
             </dd>
           </div>
@@ -120,26 +111,46 @@ function Buyukluk({ b, renk }: { b: Bildirim; renk: string }) {
       </span>
     );
   }
-  // Skor yoksa sebebi tek cümle: uydurma bir büyüklük göstermiyoruz.
+  // Büyüklük yoksa sebebi tek cümle: uydurma bir büyüklük göstermiyoruz.
   const neden = b.tutar_gizli
     ? "Şirket tutarı açıklamadı"
     : b.net_tutar_tl === null
       ? "Tutar metinden okunamadı"
       : "Şirketin cirosu henüz bilinmiyor";
-  return <span className="skorsuz">{neden} · skor yok</span>;
+  return <span className="skorsuz">{neden}</span>;
 }
 
-const TAHTA_CUMLESI: Record<string, string> = {
-  tedbirli: "⚠ Tedbirli tahta: fiyat hareketi bu haberle ilgili olmayabilir",
-  hareketli: "Hareketli tahta: fiyat zaman zaman sert oynuyor",
-  temiz: "Temiz tahta: son dönemde olağandışı oynaklık yok",
-};
-
-function Tahta({ tahta }: { tahta: string | null }) {
-  if (!tahta) return <span className="skorsuz">Tahta durumu hesaplanamadı</span>;
+/**
+ * Karşı taraf. Adı açıksa adın kendisi; değilse "adı verilmemiş" ve —
+ * şirket bir tanım yazdıysa — o tanım, çünkü "Yurt dışı yerleşik"
+ * gibi bir ifade de bilgi. Tek noktalık ya da harfsiz değerler
+ * gösterilmiyor.
+ */
+function Kiminle({ b }: { b: Bildirim }) {
+  const tanim =
+    b.karsi_taraf && /[A-Za-zÇĞİÖŞÜçğıöşü]{3}/.test(b.karsi_taraf)
+      ? b.karsi_taraf
+      : null;
   return (
-    <span className="tahta-cumle" style={{ color: `var(--${tahtaRenk(tahta)})` }}>
-      {TAHTA_CUMLESI[tahta]}
+    <span className="kiminle">
+      {b.karsiTarafAcik && tanim ? (
+        <span className="kiminle-ad" title={tanim}>
+          {tanim}
+        </span>
+      ) : (
+        <span
+          className="kiminle-gizli"
+          title="Şirket karşı tarafın adını vermemiş; iş bağımsız olarak doğrulanamıyor."
+        >
+          Adı verilmemiş
+          {tanim && <span className="kiminle-tanim"> · {tanim}</span>}
+        </span>
+      )}
+      {b.guncelleme_mi && (
+        <span className="etiket" title="Bu duyuru daha önce açıklanmış bir işin güncellemesi.">
+          Önceki duyurunun güncellemesi
+        </span>
+      )}
     </span>
   );
 }

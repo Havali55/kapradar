@@ -6,15 +6,12 @@ import {
   fOran,
   siklikRenk,
   oranRengi,
-  tahtaRenk,
 } from "@/lib/skor";
 import {
   KADEME_ADI,
   SIKLIK_ADI,
   SIKLIK_NOTU,
   SKORA_GIREN,
-  TAHTA_ADI,
-  TAHTA_NOTU,
   TAHTA_SINIR_NOTU,
   TIP_ADI,
   VBTS_KADEME_ADI,
@@ -24,8 +21,10 @@ import {
   kisaTarih,
   sayi,
   tamTarih,
+  tahtaGorunumu,
   tamTl,
   yuzde,
+  yuzdeIyelik,
 } from "@/lib/bicim";
 
 /**
@@ -50,6 +49,18 @@ export default function BildirimDetayi({
   const skoraGirenler = (b.tutarlar ?? []).filter((t) => SKORA_GIREN.has(t.tip));
   const disaridakiler = (b.tutarlar ?? []).filter((t) => !SKORA_GIREN.has(t.tip));
   const Baslik = baslikEtiketi;
+  const tahta = tahtaGorunumu(
+    b.tahta,
+    b.tahta_v90,
+    b.tahta_v5,
+    b.tahta_vbts_kademe,
+  );
+  // Şirketin yazdığı tanım isim değilse bile bilgi taşıyabilir
+  // ("Yurt dışı yerleşik"); tek nokta gibi harfsiz değerler gösterilmez.
+  const tanim =
+    b.karsi_taraf && /[A-Za-zÇĞİÖŞÜçğıöşü]{3}/.test(b.karsi_taraf)
+      ? b.karsi_taraf
+      : null;
 
   return (
     <>
@@ -59,7 +70,12 @@ export default function BildirimDetayi({
       </p>
       <Baslik>{b.is_tanimi ?? "—"}</Baslik>
       <p style={{ fontSize: 13, color: "var(--mut-2)", margin: "0 0 4px" }}>
-        Karşı taraf: {b.karsi_taraf ?? "Açıklanmadı"}
+        Karşı taraf:{" "}
+        {b.karsiTarafAcik && tanim
+          ? tanim
+          : tanim
+            ? `adı verilmemiş (şirketin yazdığı: “${tanim}”)`
+            : "adı verilmemiş"}
         {b.karsi_taraf_niteligi ? ` · ${b.karsi_taraf_niteligi}` : ""}
       </p>
       {b.baslangic && (
@@ -81,60 +97,91 @@ export default function BildirimDetayi({
         </>
       )}
 
-      {/* --------------------------------------------- hesap */}
-      <h3 className="bolum-bas mono">A · BÜYÜKLÜK HESABI</h3>
-      {b.etki_skoru !== null && b.ciro_orani !== null ? (
+      {/* --------------------------------------------- büyüklük */}
+      <h3 className="bolum-bas mono">A · BU İŞ ŞİRKET İÇİN NE KADAR BÜYÜK</h3>
+      {b.ciro_orani !== null ? (
         <>
+          <p className="duz-cumle">
+            Bu iş, şirketin son 12 aylık cirosunun{" "}
+            <strong style={{ color: renk }}>{yuzdeIyelik(b.ciro_orani)}</strong>{" "}
+            kadar
+            {b.kademe && (
+              <>
+                {" "}
+                · <strong>{b.kademe === "rutin" ? "Rutin iş" : KADEME_ADI[b.kademe]}</strong>
+              </>
+            )}
+            .
+          </p>
           <dl className="kutu">
             <div className="kutu-satir">
-              <dt>Net tutar (skora giren kalemler)</dt>
+              <dt>İşin tutarı (TL karşılığı)</dt>
               <dd className="mono">
                 {b.net_tutar_tl !== null ? tamTl(b.net_tutar_tl) : "—"}
               </dd>
             </div>
             <div className="kutu-satir">
-              <dt>TTM hasılat (bildirim anında kamuya açık)</dt>
+              <dt>Şirketin son 12 aylık cirosu</dt>
               <dd className="mono">
                 {b.ttm_hasilat !== null ? tamTl(b.ttm_hasilat) : "—"}
               </dd>
             </div>
             <div className="kutu-satir">
-              <dt>Hasılat oranı r</dt>
+              <dt>Oran</dt>
               <dd className="mono" style={{ color: renk, fontWeight: 700 }}>
                 {yuzde(b.ciro_orani, 2)}
-                {b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : ""}
-              </dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>{F_ORAN_METNI}</dt>
-              <dd className="mono">{sayi(fOran(b.ciro_orani), 4)}</dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>
-                K ({b.karsi_taraf ? "açık" : "gizli"} +{" "}
-                {b.guncelleme_mi ? "güncelleme" : "ilk"})
-              </dt>
-              <dd className="mono">{sayi(b.k)}</dd>
-            </div>
-            <div className="kutu-satir">
-              <dt style={{ color: "var(--ink)", fontWeight: 600 }}>
-                Büyüklük skoru S
-              </dt>
-              <dd className="mono" style={{ fontWeight: 700, fontSize: 15 }}>
-                {sayi(b.etki_skoru)} / 5,00
               </dd>
             </div>
           </dl>
-          <p className="formul-kutu mono" style={{ marginTop: 10 }}>
-            S = 5 × {sayi(fOran(b.ciro_orani), 4)} × {sayi(b.k)} ={" "}
-            {sayi(b.etki_skoru)}
+          <p className="tutar-yok-not">
+            %5 ve üstü önemli iş, %15 ve üstü mega iş sayılır. Ciro, bildirim
+            anında KAP&apos;ta yayınlanmış son finansal raporlardan hesaplanır
+            (sonradan açıklanan rapor kullanılmaz); enflasyon muhasebesi
+            nedeniyle farklı dönemlerin rakamları aynı TL birimine getirilir.
           </p>
+          {b.etki_skoru !== null && (
+            <details className="acilir">
+              <summary>Büyüklük skoru nasıl hesaplandı?</summary>
+              <dl className="kutu">
+                <div className="kutu-satir">
+                  <dt>{F_ORAN_METNI}</dt>
+                  <dd className="mono">{sayi(fOran(b.ciro_orani), 4)}</dd>
+                </div>
+                <div className="kutu-satir">
+                  <dt>
+                    Bilginin netliği K (müşteri adı{" "}
+                    {b.karsiTarafAcik ? "açık" : "verilmemiş"} ·{" "}
+                    {b.guncelleme_mi ? "güncelleme duyurusu" : "ilk duyuru"})
+                  </dt>
+                  <dd className="mono">{sayi(b.k)}</dd>
+                </div>
+                <div className="kutu-satir">
+                  <dt>Büyüklük skoru S</dt>
+                  <dd className="mono" style={{ fontWeight: 700 }}>
+                    {sayi(b.etki_skoru)} / 5,00
+                  </dd>
+                </div>
+              </dl>
+              <p className="formul-kutu mono" style={{ marginTop: 10 }}>
+                S = 5 × {sayi(fOran(b.ciro_orani), 4)} × {sayi(b.k)} ={" "}
+                {sayi(b.etki_skoru)}
+              </p>
+              <p className="tutar-yok-not">
+                S, oranı logaritmik bir ölçeğe taşır (%0,25 → 0, %100 → 5) ve
+                bilginin netliğine göre ayarlar: müşterinin adı verilmemişse ya
+                da duyuru önceki bir işin güncellemesiyse K 1&apos;in altına
+                iner. Kartta görünen kademe S&apos;den değil doğrudan orandan
+                gelir; S aşağıdaki &ldquo;benzer duyurular&rdquo;ı gruplamak
+                için kullanılır.
+              </p>
+            </details>
+          )}
         </>
       ) : (
         <p className="tutar-yok-not" style={{ marginTop: 0 }}>
-          Skor üretilmedi. Tutar ya da bildirim anındaki TTM hasılat
-          çözülemediğinde skor gösterilmiyor — uydurma bir paydayla üretilen
-          skor, skorsuzluktan kötüdür.
+          Büyüklük hesaplanamadı: işin tutarı ya da bildirim anındaki şirket
+          cirosu bilinmiyor. Uydurma bir paydayla hesaplanan oran, hiç oran
+          olmamasından kötüdür.
         </p>
       )}
 
@@ -159,7 +206,7 @@ export default function BildirimDetayi({
                       {TIP_ADI[t.tip] ?? t.tip}
                     </span>
                     <span style={{ fontSize: 11, color: "var(--mut-2)" }}>
-                      {girer ? "skora giriyor" : "skora girmiyor"}
+                      {girer ? "hesaba giriyor" : "hesaba girmiyor"}
                     </span>
                   </div>
                   <p className="kalem-alinti">“{t.alinti}”</p>
@@ -170,60 +217,65 @@ export default function BildirimDetayi({
           {disaridakiler.length > 0 && (
             <p className="tutar-yok-not">
               Toplam sözleşme bedeli projenin kümülatif tutarıdır, yeni iş
-              değildir; skora katılsaydı hasılat oranı gerçekte olduğundan kat
-              kat büyük çıkardı.
+              değildir; hesaba katılsaydı oran gerçekte olduğundan kat kat
+              büyük çıkardı.
             </p>
           )}
         </>
       )}
 
       {/* --------------------------------------------- tahta */}
-      {b.tahta && (
+      {tahta && (
         <>
-          <h3 className="bolum-bas mono">B · ŞİRKET BAĞLAMI · TAHTA</h3>
+          <h3 className="bolum-bas mono">B · HİSSENİN SON 3 AYI</h3>
           <div className="tahta-satiri">
             <span
               className="tahta-nokta"
-              style={{ background: `var(--${tahtaRenk(b.tahta)})` }}
+              style={{ background: `var(--${tahta.renk})` }}
               aria-hidden="true"
             />
-            <span className="tahta-ad">{TAHTA_ADI[b.tahta]}</span>
+            <span className="tahta-ad">{tahta.ad}</span>
           </div>
-          <p className="tahta-not">{TAHTA_NOTU[b.tahta]}</p>
-          <dl className="kutu">
-            <div className="kutu-satir">
-              <dt>Bildirim anında VBTS tedbiri</dt>
-              <dd>
-                {b.tahta_vbts_kademe
-                  ? `${VBTS_KADEME_ADI[b.tahta_vbts_kademe]}${
-                      b.tahta_vbts_bitis ? ` · bitiş ${kisaTarih(b.tahta_vbts_bitis)}` : ""
-                    }`
-                  : "yok"}
-              </dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>Devre kesici günü · son 90 seans</dt>
-              <dd className="mono">{b.tahta_v90 ?? "—"}</dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>Son 5 seansta</dt>
-              <dd className="mono">{b.tahta_v5 ?? "—"}</dd>
-            </div>
-          </dl>
-          <p className="tutar-yok-not">
-            Tahta kalitesi skora girmez — bu bildirimin değil hissenin
-            özelliğidir. Kaynak Borsa İstanbul&apos;un KAP&apos;taki kendi
-            kayıtları: pay bazında devre kesici bildirimleri ve Volatilite
-            Bazlı Tedbir Sistemi duyuruları. Yalnız bildirimden önce
-            yayınlanmış olanlar sayılır. {TAHTA_SINIR_NOTU}
-          </p>
+          <p className="tahta-not">{tahta.not}</p>
+          <details className="acilir">
+            <summary>Ayrıntı ve kaynak</summary>
+            <dl className="kutu">
+              <div className="kutu-satir">
+                <dt>Bildirim anında borsa tedbiri (VBTS)</dt>
+                <dd>
+                  {b.tahta_vbts_kademe
+                    ? `${VBTS_KADEME_ADI[b.tahta_vbts_kademe]}${
+                        b.tahta_vbts_bitis ? ` · bitiş ${kisaTarih(b.tahta_vbts_bitis)}` : ""
+                      }`
+                    : "yok"}
+                </dd>
+              </div>
+              <div className="kutu-satir">
+                <dt>Devre kesicinin tetiklendiği gün · son 90 seans</dt>
+                <dd className="mono">{b.tahta_v90 ?? "—"}</dd>
+              </div>
+              <div className="kutu-satir">
+                <dt>Son 5 seansta</dt>
+                <dd className="mono">{b.tahta_v5 ?? "—"}</dd>
+              </div>
+            </dl>
+            <p className="tutar-yok-not">
+              Sakin: 90 seansta en fazla 4 gün ve son 5 seansta hiç. Çok oynak:
+              90 seansta 8 günden fazla ya da son 5 seansta en az 2 gün. Borsa
+              tedbiri altında: bildirim anında Borsa İstanbul&apos;un volatilite
+              tedbiri yürürlükte. Arası oynak. Bu bilgi büyüklüğe girmez;
+              bildirimin değil hissenin özelliğidir. Kaynak Borsa
+              İstanbul&apos;un KAP&apos;taki kendi kayıtları; yalnız
+              bildirimden önce yayınlanmış olanlar sayılır. {TAHTA_SINIR_NOTU}
+            </p>
+          </details>
         </>
       )}
 
       {/* ------------------------------------- bildirim yorgunluğu */}
       {b.siklik && (
         <>
-          <h3 className="bolum-bas mono">B · ŞİRKET BAĞLAMI · BİLDİRİM SIKLIĞI</h3>
+          <h3 className="bolum-bas mono">B · ŞİRKET BU TÜR DUYURUYU NE SIKLIKTA YAPIYOR</h3>
           <div className="tahta-satiri">
             <span
               className="tahta-nokta"
@@ -235,11 +287,11 @@ export default function BildirimDetayi({
           <p className="tahta-not">{SIKLIK_NOTU[b.siklik]}</p>
           <dl className="kutu">
             <div className="kutu-satir">
-              <dt>Yeni İş İlişkisi bildirimi · önceki 12 ay (bu dahil)</dt>
+              <dt>Yeni iş ilişkisi duyurusu · önceki 12 ay (bu dahil)</dt>
               <dd className="mono">{b.bildirim_sikligi ?? "—"}</dd>
             </div>
             <div className="kutu-satir">
-              <dt>Tüm KAP özel durum açıklaması · önceki 12 ay</dt>
+              <dt>KAP&apos;taki bütün özel durum açıklamaları · önceki 12 ay</dt>
               <dd className="mono">{b.kap_aciklama_12a ?? "—"}</dd>
             </div>
             {b.siklik_arsiv_gun !== null && b.siklik_arsiv_gun < 365 && (
@@ -248,21 +300,19 @@ export default function BildirimDetayi({
                 <dd>yalnız {b.siklik_arsiv_gun} gün — 12 ay dolmadı</dd>
               </div>
             )}
-            <div className="kutu-satir">
-              <dt>Kademe eşikleri</dt>
-              <dd className="mono">
-                seyrek ≤ {SIKLIK_ORTA_ESIGI - 1} · sık ≥ {SIKLIK_SIK_ESIGI}
-              </dd>
-            </div>
           </dl>
-          <p className="tutar-yok-not">
-            Bildirim sıklığı skora girmez — tahta kalitesi gibi bu da
-            şirketin özelliği, bildirimin değil. İlk ölçümde (2025-09 →
-            2026-09, 613 bildirim) sık bildirim yapan şirketlerde bildirim
-            başına ilgi belirgin biçimde daha sönüktü (t = −2,48). Önceki 12
-            ayda (690 bildirim) aynı ilişki tekrarlanmadı (t = −0,74). Etiket
-            bilgi için duruyor; tepki hakkında bir şey söylemiyor.
-          </p>
+          <details className="acilir">
+            <summary>Bu bilgi ne söylüyor, ne söylemiyor?</summary>
+            <p className="tutar-yok-not">
+              Seyrek: 12 ayda en fazla {SIKLIK_ORTA_ESIGI - 1} duyuru; sık: en az{" "}
+              {SIKLIK_SIK_ESIGI}. Sıklık büyüklüğe girmez; şirketin
+              özelliğidir, bildirimin değil. İlk ölçümde (2025-09 → 2026-09,
+              613 bildirim) sık duyuru yapan şirketlerde duyuru başına ilgi
+              belirgin biçimde daha sönüktü (t = −2,48). Önceki 12 ayda (690
+              bildirim) aynı ilişki tekrarlanmadı (t = −0,74). Bu yüzden
+              etiket yalnız olguyu söyler; tepki hakkında bir şey söylemez.
+            </p>
+          </details>
         </>
       )}
 
@@ -302,66 +352,84 @@ export default function BildirimDetayi({
       {/* --------------------------------------------- tepki */}
       {b.panel && (
         <>
-          <h3 className="bolum-bas mono">C · BENZER BİLDİRİMLERİN TEPKİSİ</h3>
-          <dl className="kutu">
-            <div className="kutu-satir">
-              <dt>Medyan (3 günlük anormal getiri)</dt>
-              <dd className="mono">{isaretliYuzde(b.panel.medyan)}</dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>Alt çeyrek – üst çeyrek</dt>
-              <dd className="mono">
-                {isaretliYuzde(b.panel.altCeyrek)} …{" "}
-                {isaretliYuzde(b.panel.ustCeyrek)}
-              </dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>Pozitif sonuçlananlar</dt>
-              <dd className="mono">{yuzde(b.panel.pozitifOrani, 0)}</dd>
-            </div>
-            <div className="kutu-satir">
-              <dt>Akran grubu</dt>
-              <dd>
-                {b.panel.esas === "skor+tahta"
-                  ? "aynı skor kademesi + aynı tahta"
-                  : "aynı skor kademesi"}{" "}
-                <span className="mono">(n = {b.panel.n})</span>
-              </dd>
-            </div>
-          </dl>
-          {!b.panel.guvenilir && (
+          <h3 className="bolum-bas mono">C · BENZER DUYURULARDAN SONRA HİSSELER NE YAPTI</h3>
+          <p className="duz-cumle">
+            Benzer {b.panel.n} duyurudan sonraki 3 günde hisseler piyasaya göre
+            tipik olarak <strong className="mono">{isaretliYuzde(b.panel.medyan)}</strong>{" "}
+            hareket etti; ortadaki yarısı{" "}
+            <span className="mono">{isaretliYuzde(b.panel.altCeyrek)}</span> ile{" "}
+            <span className="mono">{isaretliYuzde(b.panel.ustCeyrek)}</span>{" "}
+            arasında kaldı, <span className="mono">{yuzde(b.panel.pozitifOrani, 0)}</span>&apos;i
+            piyasayı geçti.
+          </p>
+          <p className="tutar-yok-not">
+            Karşılaştırılan duyurular:{" "}
+            {b.panel.esas === "skor+tahta"
+              ? "büyüklük skoru aynı kademede ve hissenin son 3 ayı aynı durumda olanlar."
+              : "büyüklük skoru aynı kademede olanlar (hissenin son 3 ayı aynı olan 20 duyuru bulunamadı)."}{" "}
+            Geçmişin özetidir, bu hisse için tahmin değildir.
+          </p>
+          {!b.panel.guvenilir && tahta && (
             <p className="panel-uyari">
-              Bu hisse tedbirli tahtada. İki ayrı yılın ölçümünde de devre
-              kesici ve VBTS gören tahtalarda bildirim sonrası ortalama tepki
-              temiz tahtalardan belirgin biçimde düşük çıktı; mekanizması
-              bilinmiyor. Buradaki dağılım yalnız tedbirli tahtaların
-              geçmişini anlatıyor.
+              Bu hisse son 3 ayda {tahta.ad.toLocaleLowerCase("tr")}. İki ayrı
+              yılın verisinde de çok oynak ya da borsa tedbiri altındaki
+              hisselerde duyuru sonrası ortalama tepki, sakin hisselerdekinden
+              belirgin biçimde düşük çıktı; nedeni bilinmiyor.
             </p>
           )}
           {b.car_3g !== null && (
             <p className="tutar-yok-not">
-              Bu bildirimin kendi 3 günlük anormal getirisi:{" "}
-              <strong className="mono">{isaretliYuzde(b.car_3g)}</strong>.
-              Geçmiş veridir, tahmin değildir.
+              Bu duyurudan sonraki 3 günde hisse piyasaya göre{" "}
+              <strong className="mono">{isaretliYuzde(b.car_3g)}</strong> hareket
+              etti. Geçmiş veridir, tahmin değildir.
             </p>
           )}
-          {(b.tepki_modeli === "ew" || b.tepki_modeli === "piyasa") &&
-            b.beta !== null && (
-              <p className="tutar-yok-not">
-                Anormal getiri, hissenin{" "}
-                {b.tepki_modeli === "ew"
-                  ? "eşit ağırlıklı BIST'e (≈630 hissenin ortalaması)"
-                  : "XU100'e"}{" "}
-                göre beklenen getirisinden sapmasıdır. Beklenen getiri hissenin
-                bu kıyasa duyarlılığıyla (β) hesaplanır. Bu hissede{" "}
-                <strong className="mono">β = {sayi(b.beta, 2)}</strong>
-                {b.beta_kaynak === "evren_ort"
-                  ? " — hisse yeni halka açıldığı için kendi betası tahmin edilemedi; evrenin ortalama betası kullanıldı."
-                  : " (bildirimden önceki 120 işlem gününden, evren ortalamasına küçültülmüş)."}
-                {b.tepki_modeli === "ew" &&
-                  " Kıyas XU100 değil, çünkü bu evrenin hisseleri büyük endeksi değil küçük hisselerin ortak hareketini izliyor."}
-              </p>
-            )}
+          <details className="acilir">
+            <summary>Bu rakamlar nasıl hesaplandı?</summary>
+            <dl className="kutu">
+              <div className="kutu-satir">
+                <dt>Medyan (3 günlük anormal getiri)</dt>
+                <dd className="mono">{isaretliYuzde(b.panel.medyan)}</dd>
+              </div>
+              <div className="kutu-satir">
+                <dt>Alt çeyrek – üst çeyrek</dt>
+                <dd className="mono">
+                  {isaretliYuzde(b.panel.altCeyrek)} …{" "}
+                  {isaretliYuzde(b.panel.ustCeyrek)}
+                </dd>
+              </div>
+              <div className="kutu-satir">
+                <dt>Pozitif anormal getiri</dt>
+                <dd className="mono">{yuzde(b.panel.pozitifOrani, 0)}</dd>
+              </div>
+              <div className="kutu-satir">
+                <dt>Akran grubu</dt>
+                <dd>
+                  {b.panel.esas === "skor+tahta"
+                    ? "aynı skor kademesi + aynı tahta"
+                    : "aynı skor kademesi"}{" "}
+                  <span className="mono">(n = {b.panel.n})</span>
+                </dd>
+              </div>
+            </dl>
+            {(b.tepki_modeli === "ew" || b.tepki_modeli === "piyasa") &&
+              b.beta !== null && (
+                <p className="tutar-yok-not">
+                  &ldquo;Piyasaya göre&rdquo; anormal getiri demek: hissenin{" "}
+                  {b.tepki_modeli === "ew"
+                    ? "eşit ağırlıklı BIST'e (≈630 hissenin ortalaması)"
+                    : "XU100'e"}{" "}
+                  göre beklenen getirisinden sapması. Beklenen getiri hissenin
+                  bu kıyasa duyarlılığıyla (β) hesaplanır. Bu hissede{" "}
+                  <strong className="mono">β = {sayi(b.beta, 2)}</strong>
+                  {b.beta_kaynak === "evren_ort"
+                    ? " — hisse yeni halka açıldığı için kendi betası tahmin edilemedi; evrenin ortalama betası kullanıldı."
+                    : " (bildirimden önceki 120 işlem gününden, evren ortalamasına küçültülmüş)."}
+                  {b.tepki_modeli === "ew" &&
+                    " Kıyas XU100 değil, çünkü bu evrenin hisseleri büyük endeksi değil küçük hisselerin ortak hareketini izliyor."}
+                </p>
+              )}
+          </details>
         </>
       )}
     </>

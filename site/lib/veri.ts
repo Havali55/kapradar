@@ -83,6 +83,13 @@ export type AkisSatiri = {
   guncelleme_mi: boolean;
   karsi_taraf: string | null;
   karsi_taraf_niteligi: string | null;
+  /**
+   * Karşı taraf gerçekten isimle açıklanmış mı (`kap_radar.karsi_taraf`).
+   * Alan dolu olabilir ama isim olmayabilir: "Uluslararası Müşteri", ".".
+   * İsteğe bağlı: view'a 2026-09-24'te eklendi; eski önbellekten gelen
+   * satırda hiç olmayabilir (bkz. `zenginlestir`).
+   */
+  karsi_taraf_acik?: boolean | null;
   baslangic: string | null;
   etki_skoru: number | null;
   ciro_orani: number | null;
@@ -193,6 +200,8 @@ export type TepkiPaneli = {
 };
 
 export type Bildirim = AkisSatiri & {
+  /** Sınıflandırılmışsa `karsi_taraf_acik`, değilse eski kural (alan dolu mu). */
+  karsiTarafAcik: boolean;
   /**
    * Görünen büyüklük kademesi — ciro oranından, S'den değil. Akran
    * grubu bunu KULLANMIYOR; o `panelleriHesapla` içinde S kademesiyle
@@ -338,10 +347,16 @@ async function panelGirdileriGetir(): Promise<PanelGirdi[]> {
 }
 
 function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
+  // `!= null`: sütun yoksa undefined, sınıflandırılmamışsa null gelir.
+  const acik =
+    satir.karsi_taraf_acik != null
+      ? satir.karsi_taraf_acik
+      : satir.karsi_taraf !== null;
   return {
     ...satir,
     kademe: buyuklukBul(satir.ciro_orani),
-    k: guvenilirlik(satir.karsi_taraf !== null, satir.guncelleme_mi),
+    karsiTarafAcik: acik,
+    k: guvenilirlik(acik, satir.guncelleme_mi),
     siklik: siklikBayragi(satir.bildirim_sikligi),
     panel,
   };

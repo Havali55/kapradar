@@ -86,7 +86,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
         if (!durum.skorsuzlar || durum.buyukluk !== "tum") return false;
       } else if (b.ciro_orani < BUYUKLUK_ESIGI[durum.buyukluk]) return false;
       if (durum.yalnizTemiz && b.tahta !== "temiz") return false;
-      if (durum.yalnizAcik && b.karsi_taraf === null) return false;
+      if (durum.yalnizAcik && !b.karsiTarafAcik) return false;
       return true;
     });
 
@@ -181,7 +181,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     });
   if (durum.skorsuzlar)
     cipler.push({
-      ad: "Skoru olmayanlar görünür",
+      ad: "Büyüklüğü bilinmeyenler görünür",
       temizle: () => guncelle({ skorsuzlar: false }),
     });
   if (durum.aralik !== "tum")
@@ -191,12 +191,12 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     });
   if (durum.yalnizTemiz)
     cipler.push({
-      ad: "Sadece temiz tahta",
+      ad: "Sadece sakin tahta",
       temizle: () => guncelle({ yalnizTemiz: false }),
     });
   if (durum.yalnizAcik)
     cipler.push({
-      ad: "Karşı taraf açık",
+      ad: "Müşteri adı açık",
       temizle: () => guncelle({ yalnizAcik: false }),
     });
 
@@ -281,8 +281,9 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
           className="anahtar"
           aria-pressed={durum.yalnizTemiz}
           onClick={() => guncelle({ yalnizTemiz: !durum.yalnizTemiz })}
+          title="Son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, volatilite tedbiri olmayan hisseler"
         >
-          Sadece temiz tahta
+          Sadece sakin tahta
         </button>
         <button
           type="button"
@@ -291,15 +292,16 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
           onClick={() => guncelle({ skorsuzlar: !durum.skorsuzlar })}
           title="Tutarı açıklanmamış ya da cirosu bilinmeyen bildirimler"
         >
-          Skoru olmayanlar ({skorsuzSayisi})
+          Büyüklüğü bilinmeyenler ({skorsuzSayisi})
         </button>
         <button
           type="button"
           className="anahtar"
           aria-pressed={durum.yalnizAcik}
           onClick={() => guncelle({ yalnizAcik: !durum.yalnizAcik })}
+          title="Şirketin iş yaptığı tarafın adını açıkladığı bildirimler"
         >
-          Karşı taraf açık
+          Müşteri adı açık
         </button>
 
         <div className="filtre-bos" />

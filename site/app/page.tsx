@@ -47,10 +47,10 @@ export default async function AnaSayfa() {
           <p className="baslik-ust mono">BİLDİRİM AKIŞI</p>
           <h1>Yeni iş ilişkisi bildirimleri</h1>
           <p>
-            Her haberde dört soru: iş şirket için ne kadar büyük, bilgi ne
-            kadar net, fiyata bakmak anlamlı mı, şirket bunu sık yapıyor mu.
-            Ayrıntı ve hesabın tamamı karta tıklayınca açılır. Fiyat tahmini
-            üretilmez.
+            Her haberde üç soru: iş şirket için ne kadar büyük, kiminle
+            yapıldı, şirket bunu sık yapıyor mu. Büyüklük, işin tutarının
+            şirketin son 12 aylık cirosuna oranıdır. Ayrıntı ve hesabın
+            tamamı karta tıklayınca açılır. Fiyat tahmini üretilmez.
           </p>
         </div>
 
@@ -73,17 +73,17 @@ export default async function AnaSayfa() {
             </div>
           </div>
           <div className="olcu">
-            <div className="olcu-et mono">TEMİZ TAHTA</div>
+            <div className="olcu-et mono">SAKİN TAHTA</div>
             <div className="olcu-deger mono" style={{ color: "var(--yes)" }}>
               {ozet.temizOran === null ? "—" : yuzde(ozet.temizOran, 0)}
             </div>
-            <div className="olcu-alt">devre kesici seyrek, tedbir yok</div>
+            <div className="olcu-alt">devre kesici seyrek, borsa tedbiri yok</div>
           </div>
           {/* "Son 24 saat" yerine bu: arşiv toplu yüklendiği için o sayaç
               çoğu zaman 0 gösterirdi. Skorsuz oranı ise ürünün duruşunu
               anlatan kalıcı bir ölçü. */}
           <div className="olcu">
-            <div className="olcu-et mono">SKOR ÜRETİLMEDİ</div>
+            <div className="olcu-et mono">BÜYÜKLÜK BİLİNMİYOR</div>
             <div className="olcu-deger mono">
               {yuzde((ozet.toplam - ozet.skorlu) / Math.max(1, ozet.toplam), 0)}
             </div>
@@ -97,8 +97,9 @@ export default async function AnaSayfa() {
 
         <p className="dipnot">
           KAP·RADAR yatırım tavsiyesi vermez; tekil getiri tahmini üretmez,
-          yalnızca geçmiş bildirimlerin gözlenmiş dağılımını raporlar. Skorlar
-          kamuya açık KAP metinleri ve finansal tablolar üzerinden hesaplanır.{" "}
+          yalnızca geçmiş bildirimlerin gözlenmiş dağılımını raporlar. Büyüklük
+          oranları kamuya açık KAP metinleri ve finansal tablolar üzerinden
+          hesaplanır.{" "}
           <Link href="/metodoloji">Yöntemin tamamı ve sınırları</Link>.
         </p>
       </main>
