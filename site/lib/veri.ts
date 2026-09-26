@@ -144,6 +144,23 @@ export type AkisSatiri = {
   fon_tl: number | null;
   fon_tasfiye_tl: number | null;
   gunluk_hacim_tl: number | null;
+  /**
+   * Elle karar (`data/elle_duzeltmeler.json`, 2026-09-26). Anlam kapısı
+   * şüpheli bulduğunda insan karar verdi; gerekçe kullanıcıya gösterilir.
+   * Aşağıdaki alanların hepsi 2026-09-26'da eklendi, eski önbellekte yok.
+   */
+  elle_karar?: "onayla" | "skorsuz" | "duzelt" | null;
+  elle_not?: string | null;
+  /**
+   * Önceki bildirime bağ (`kap_radar.bag`): duzeltme (öncekinin yerini
+   * aldı, önceki yayından kalktı) · ayni_is (tutar önceki bildirimde
+   * zaten sayıldı) · guncelleme (bağlı, tutar yeni).
+   */
+  onceki_kap_id?: string | null;
+  onceki_tur?: "duzeltme" | "ayni_is" | "guncelleme" | null;
+  onceki_yayin?: string | null;
+  /** Bildirim günü piyasadaki hisselerin "çok oynak" kuralını sağlayan payı. */
+  tahta_piyasa_orani?: number | null;
 };
 
 /** Hisse sayfasındaki BUGÜNKÜ fon durumu (`hisse_fon_guncel`). */
@@ -213,6 +230,12 @@ export type Bildirim = AkisSatiri & {
   /** Bildirim yorgunluğu kademesi — skora girmez, bağlam etiketi. */
   siklik: SiklikBayragi | null;
   panel: TepkiPaneli | null;
+  /**
+   * İş daha önce aynı tutarla duyurulmuştu (ihale → sözleşme). Kart
+   * gösterilir ama yeni iş sayılmaz: büyüklük filtresine, "en büyük iş"
+   * sıralamasına ve özet medyanlarına girmez.
+   */
+  oncedenDuyuruldu: boolean;
 };
 
 /**
@@ -359,6 +382,7 @@ function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
     k: guvenilirlik(acik, satir.guncelleme_mi),
     siklik: siklikBayragi(satir.bildirim_sikligi),
     panel,
+    oncedenDuyuruldu: satir.onceki_tur === "ayni_is",
   };
 }
 
@@ -482,7 +506,9 @@ export function ozetCikar(bildirimler: Bildirim[]): Ozet {
     .sort((a, b) => a - b);
 
   const oranlar = bildirimler
-    .filter((b) => b.etki_skoru !== null && b.ciro_orani !== null)
+    .filter(
+      (b) => b.etki_skoru !== null && b.ciro_orani !== null && !b.oncedenDuyuruldu,
+    )
     .map((b) => b.ciro_orani as number)
     .sort((a, b) => a - b);
 

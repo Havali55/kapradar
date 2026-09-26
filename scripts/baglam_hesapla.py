@@ -21,7 +21,7 @@ import csv
 import html
 import re
 import sys
-from bisect import insort
+from bisect import bisect_right, insort
 from collections import Counter, defaultdict
 from datetime import datetime, time, timedelta
 from pathlib import Path
@@ -43,6 +43,7 @@ from kap_radar.baglam import (  # noqa: E402
     aktif_vbts_kademesi,
     ayri_gun_sayisi,
     pencere_sayisi,
+    piyasa_oynak_orani,
     seans_baslangici,
     vbts_ayristir,
 )
@@ -50,6 +51,8 @@ from kap_radar.skor import siklik_bayragi, tahta_bayragi  # noqa: E402
 
 ISTANBUL = ZoneInfo("Europe/Istanbul")
 HAM_KOKU = KOK / "data" / "ham"
+# Evren: o gün fiyatı olan hisseler (scripts/faktor_kur.py yazar).
+EVREN_CSV = HAM_KOKU / "evren" / "kapanis.csv"
 VBTS_KOKU = KOK / "data" / "ham" / "vbts"
 YONTEM = "kap_v1"
 CSV_CIKTI = KOK / "data" / "baglam_kap_v1.csv"
@@ -69,6 +72,23 @@ def govde_metni(detay: dict) -> str:
     metin = " ".join(govde) if isinstance(govde, list) else str(govde)
     metin = html.unescape(re.sub(r"<[^>]+>", " ", metin))
     return re.sub(r"\s+", " ", metin)
+
+
+def evreni_oku() -> tuple[list, list[frozenset[str]]]:
+    """İşlem günleri ve her gün fiyatı olan hisseler. Dosya yoksa boş:
+    taban oranı yazılmaz (uydurma oran yerine boşluk)."""
+    if not EVREN_CSV.exists():
+        return [], []
+    gunler, hisseler = [], []
+    with open(EVREN_CSV, encoding="utf-8") as f:
+        okuyucu = csv.reader(f)
+        baslik = next(okuyucu)[1:]
+        for satir in okuyucu:
+            gunler.append(datetime.fromisoformat(satir[0][:10]).date())
+            hisseler.append(frozenset(
+                h for h, v in zip(baslik, satir[1:]) if v not in ("", "nan")
+            ))
+    return gunler, hisseler
 
 
 def arsivi_oku():
@@ -165,6 +185,12 @@ def main() -> int:
             )
             bildirimler = imlec.fetchall()
 
+        evren_gunleri, evren_hisseleri = evreni_oku()
+        piyasa_bellek: dict = {}
+        print(f"evren        : {len(evren_gunleri)} gün"
+              + (f", son gün {len(evren_hisseleri[-1])} hisse" if evren_hisseleri else
+                 " — dosya yok, taban oranı yazılmayacak"))
+
         tahta_satir, siklik_satir = [], []
         gecis = Counter()
         kademe_say = Counter()
@@ -185,7 +211,19 @@ def main() -> int:
                 default=None,
             )
             bayrak = tahta_bayragi(v90=v90, v5=v5, vbts_kademe=kademe).value
-            tahta_satir.append((kap_id, v90, v5, bayrak, YONTEM, kademe, bitis))
+            # Taban oranı gün başına: bildirim günü açılışında piyasa.
+            if gun not in piyasa_bellek:
+                i = bisect_right(evren_gunleri, gun) - 1
+                piyasa_bellek[gun] = piyasa_oynak_orani(
+                    devre,
+                    evren=evren_hisseleri[i] if i >= 0 else (),
+                    an=datetime.combine(gun, time()),
+                    bas90=bas90,
+                    bas5=bas5,
+                )
+            tahta_satir.append(
+                (kap_id, v90, v5, bayrak, YONTEM, kademe, bitis, piyasa_bellek[gun])
+            )
             gecis[(eski_bayrak, bayrak)] += 1
             kademe_say[kademe] += 1
 
@@ -202,6 +240,14 @@ def main() -> int:
         for ad in ("temiz", "hareketli", "tedbirli"):
             print(f"  {ad:<10}: {dagilim[ad]:>4}  (%{dagilim[ad]/len(tahta_satir)*100:.1f})")
         print(f"  yürürlükte VBTS kademesi: {dict(sorted(kademe_say.items()))}")
+        oranlar = {g: o for g, o in piyasa_bellek.items() if o is not None}
+        if oranlar:
+            aylik: dict = {}
+            for g, o in oranlar.items():
+                aylik.setdefault(g.strftime("%Y-%m"), []).append(o)
+            print("  piyasa taban oranı (çok oynak hisse payı, ay ortalaması):")
+            print("    " + "  ".join(f"{a}:%{sum(v) / len(v) * 100:.0f}"
+                                      for a, v in sorted(aylik.items())))
         print("\n  vekil → gerçek geçişleri:")
         for (a, b), n in sorted(gecis.items(), key=lambda x: (str(x[0][0]), x[0][1])):
             print(f"    {str(a):<10} → {b:<10} {n:>4}")
@@ -237,12 +283,14 @@ def main() -> int:
                 tahta_satir = []
             imlec.executemany(
                 "insert into public.tahta_durumu "
-                "(kap_id, v90, v5, bayrak, yontem, vbts_kademe, vbts_bitis) "
-                "values (%s, %s, %s, %s, %s, %s, %s) "
+                "(kap_id, v90, v5, bayrak, yontem, vbts_kademe, vbts_bitis, "
+                "piyasa_oynak_orani) "
+                "values (%s, %s, %s, %s, %s, %s, %s, %s) "
                 "on conflict (kap_id) do update set v90 = excluded.v90, "
                 "v5 = excluded.v5, bayrak = excluded.bayrak, "
                 "yontem = excluded.yontem, vbts_kademe = excluded.vbts_kademe, "
-                "vbts_bitis = excluded.vbts_bitis, hesaplandi_at = now()",
+                "vbts_bitis = excluded.vbts_bitis, "
+                "piyasa_oynak_orani = excluded.piyasa_oynak_orani, hesaplandi_at = now()",
                 tahta_satir,
             )
             imlec.executemany(

@@ -10,6 +10,7 @@ from datetime import date, datetime
 import pytest
 
 from kap_radar.baglam import (
+    piyasa_oynak_orani,
     VbtsAyristirmaHatasi,
     VbtsKademesi,
     VbtsTedbiri,
@@ -118,3 +119,33 @@ def test_seans_baslangici_islem_gunu_sayar():
     assert seans_baslangici(takvim, date(2026, 9, 21), 3) == date(2026, 9, 17)
     # Tatil günü: 16 Eylül takvimde yok, 15 dahil geriye sayılır.
     assert seans_baslangici(takvim, date(2026, 9, 16), 2) == date(2026, 9, 14)
+
+
+# ------------------------------------------------ piyasa taban oranı
+# 2026-09-26: "Çok oynak" etiketi Eylül 2026 bildirimlerinin %66'sında
+# çıkıyordu; sayım doğruydu ama piyasa da ısınmıştı (bütün hisselerde
+# %44). Etiketin yanında taban oranı yoksa okuyucu şirkete özgü sanıyor.
+
+
+def test_piyasa_orani_evrendeki_cok_oynak_hisse_payidir():
+    gunler = lambda *g: [datetime(2026, 9, x, 11) for x in g]  # noqa: E731
+    devre = {
+        "AAA": gunler(1, 2, 3, 4, 5, 8, 9, 10, 11),  # 9 gün > 8
+        "BBB": gunler(22, 23),                        # son 5 seansta 2
+        "CCC": gunler(10),                            # sakin
+    }
+    oran = piyasa_oynak_orani(
+        devre,
+        evren=["AAA", "BBB", "CCC", "DDD"],
+        an=datetime(2026, 9, 24),
+        bas90=datetime(2026, 6, 1),
+        bas5=datetime(2026, 9, 18),
+    )
+
+    assert oran == pytest.approx(0.5)
+
+
+def test_piyasa_orani_bos_evrende_yok():
+    assert piyasa_oynak_orani({}, evren=[], an=datetime(2026, 9, 24),
+                              bas90=datetime(2026, 6, 1),
+                              bas5=datetime(2026, 9, 18)) is None

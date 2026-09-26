@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Bildirim } from "@/lib/veri";
 import { fOran, oranRengi } from "@/lib/skor";
-import { KADEME_ADI, gecenSure, yuzdeIyelik } from "@/lib/bicim";
+import { KADEME_ADI, gecenSure, istanbulGunu, yuzdeIyelik } from "@/lib/bicim";
 
 /**
  * Akış kartı — üç soru, jargon yok: iş şirket için ne kadar büyük,
@@ -96,6 +96,15 @@ export default function Kart({
 }
 
 function Buyukluk({ b, renk }: { b: Bildirim; renk: string }) {
+  if (b.ciro_orani !== null && b.oncedenDuyuruldu) {
+    // Aynı iş daha önce aynı tutarla duyuruldu: oran bilgi olarak kalır,
+    // kademe ve renk ikinci kez verilmez.
+    return (
+      <span className="skorsuz">
+        Cirosunun {yuzdeIyelik(b.ciro_orani)} · önceden duyurulan iş
+      </span>
+    );
+  }
   if (b.ciro_orani !== null && b.kademe) {
     const ad = b.kademe === "rutin" ? "Rutin iş" : KADEME_ADI[b.kademe];
     return (
@@ -112,7 +121,9 @@ function Buyukluk({ b, renk }: { b: Bildirim; renk: string }) {
     );
   }
   // Büyüklük yoksa sebebi tek cümle: uydurma bir büyüklük göstermiyoruz.
-  const neden = b.tutar_gizli
+  const neden = b.elle_karar === "skorsuz"
+    ? "Tutar şirketin geliri olarak okunamadı; ayrıntıda"
+    : b.tutar_gizli
     ? "Şirket tutarı açıklamadı"
     : b.net_tutar_tl === null
       ? "Tutar metinden okunamadı"
@@ -146,10 +157,16 @@ function Kiminle({ b }: { b: Bildirim }) {
           {tanim && <span className="kiminle-tanim"> · {tanim}</span>}
         </span>
       )}
-      {b.guncelleme_mi && (
-        <span className="etiket" title="Bu duyuru daha önce açıklanmış bir işin güncellemesi.">
-          Önceki duyurunun güncellemesi
+      {b.oncedenDuyuruldu && b.onceki_yayin ? (
+        <span className="etiket" title="Aynı iş aynı tutarla daha önce duyuruldu; yeni iş sayılmıyor.">
+          İlk duyuru {istanbulGunu(b.onceki_yayin)}
         </span>
+      ) : (
+        b.guncelleme_mi && (
+          <span className="etiket" title="Bu duyuru daha önce açıklanmış bir işin güncellemesi.">
+            Önceki duyurunun güncellemesi
+          </span>
+        )
       )}
     </span>
   );

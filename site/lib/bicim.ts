@@ -133,6 +133,17 @@ export function kisaTarih(isoGun: string): string {
   return `${g}.${a}.${y}`;
 }
 
+/** İstanbul takvimiyle gün: "08.12.2025". Zaman damgasının UTC gününü
+ * kesmek akşam 21:00'den sonraki bildirimi bir gün önceye yazardı. */
+export function istanbulGunu(isoTarih: string): string {
+  return new Date(isoTarih).toLocaleDateString(TR, {
+    timeZone: "Europe/Istanbul",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function tamTarih(isoTarih: string): string {
   return new Date(isoTarih).toLocaleString(TR, {
     day: "2-digit",
@@ -172,8 +183,27 @@ export function tahtaGorunumu(
   v90: number | null,
   v5: number | null,
   vbtsKademe: number | null,
+  piyasaOrani: number | null = null,
 ): TahtaGorunumu | null {
   if (!tahta) return null;
+  const sonuc = tahtaAdi(tahta, v90, v5, vbtsKademe);
+  if (piyasaOrani === null || piyasaOrani === undefined) return sonuc;
+  // Taban oranı (2026-09-26): Eylül 2026'da bildirimlerin %66'sı "çok
+  // oynak"tı ama piyasanın da %44'ü öyleydi. Olmadan etiket şirkete özgü
+  // okunuyor.
+  const taban =
+    sonuc.ad === "Sakin" || sonuc.ad === "Oynak"
+      ? `Aynı gün piyasadaki hisselerin ${yuzdeIyelik(piyasaOrani, 0)} çok oynaktı.`
+      : `Aynı gün piyasadaki hisselerin ${yuzdeIyelik(piyasaOrani, 0)} de bu durumdaydı.`;
+  return { ...sonuc, not: `${sonuc.not} ${taban}` };
+}
+
+function tahtaAdi(
+  tahta: string,
+  v90: number | null,
+  v5: number | null,
+  vbtsKademe: number | null,
+): TahtaGorunumu {
   const gun90 = v90 === null ? "" : `Son 90 seansta devre kesici ${v90} gün tetiklenmiş`;
   if (vbtsKademe && vbtsKademe > 0) {
     return {
