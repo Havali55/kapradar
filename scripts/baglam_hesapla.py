@@ -6,6 +6,7 @@ Kullanım:
 
 Girdi (ağa çıkmaz):
   - data/ham/liste/     KAP liste arşivi, 2024-09'dan beri tüm türler
+  - data/ham/liste_acik/ bugünü/dünü içeren yarım pencere (kapanınca silinir)
   - data/ham/vbts/      VBTS duyurularının detayı (scripts/vbts_cek.py)
   - endeks_gunluk       işlem takvimi
 
@@ -18,7 +19,6 @@ from __future__ import annotations
 import argparse
 import csv
 import html
-import json
 import re
 import sys
 from bisect import insort
@@ -49,7 +49,7 @@ from kap_radar.baglam import (  # noqa: E402
 from kap_radar.skor import siklik_bayragi, tahta_bayragi  # noqa: E402
 
 ISTANBUL = ZoneInfo("Europe/Istanbul")
-LISTE_KLASORU = KOK / "data" / "ham" / "liste"
+HAM_KOKU = KOK / "data" / "ham"
 VBTS_KOKU = KOK / "data" / "ham" / "vbts"
 YONTEM = "kap_v1"
 CSV_CIKTI = KOK / "data" / "baglam_kap_v1.csv"
@@ -72,10 +72,9 @@ def govde_metni(detay: dict) -> str:
 
 
 def arsivi_oku():
-    kayitlar: dict[int, dict] = {}
-    for dosya in sorted(LISTE_KLASORU.glob("*.json")):
-        for k in json.loads(dosya.read_text(encoding="utf-8")):
-            kayitlar[k["disclosureIndex"]] = k
+    # Açık pencere (bugün/dün) dahil: yoksa en taze bildirim kendi
+    # sıklığına girmiyor, dünkü devre kesici V5'e girmiyordu.
+    kayitlar = HamArsiv(HAM_KOKU).liste_kayitlari()
 
     devre = defaultdict(list)
     yeni_is = defaultdict(list)

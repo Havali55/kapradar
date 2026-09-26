@@ -130,3 +130,40 @@ def test_finansal_indeksler_arsivdekileri_sirayla_verir(tmp_path):
         arsiv.finansal_yaz(indeks, {"disclosure": {}, "gelirTablosu": ""})
 
     assert arsiv.finansal_indeksler() == [1557898, 1649471]
+
+
+# ------------------------------------------------------- açık pencere listesi
+# Açık pencere (bugün/dün) kalıcı arşive yazılmıyor, çünkü yarım. Ama
+# yazılmadığı için bağlam hesabı en taze bildirimin kendisini ve dünkü
+# devre kesicileri göremiyordu (2026-09-26: ARDYZ sıklığı 44 yerine 43).
+# Açık pencere ayrı bir klasöre yazılır ve okuyucular ikisini birleştirir.
+
+
+def test_acik_liste_kalici_arsive_sayilmaz(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    arsiv.acik_liste_yaz(date(2026, 9, 24), date(2026, 9, 25), [{"disclosureIndex": 1}])
+
+    assert not arsiv.liste_var_mi(date(2026, 9, 24), date(2026, 9, 25))
+    assert arsiv.acik_listeler() == [(date(2026, 9, 24), date(2026, 9, 25))]
+
+
+def test_liste_kayitlari_kalici_ve_acigi_birlestirir(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    arsiv.liste_yaz(date(2026, 9, 21), date(2026, 9, 23),
+                    [{"disclosureIndex": 1, "v": "kalici"}])
+    arsiv.acik_liste_yaz(date(2026, 9, 24), date(2026, 9, 25),
+                         [{"disclosureIndex": 2}, {"disclosureIndex": 1, "v": "acik"}])
+
+    kayitlar = arsiv.liste_kayitlari()
+
+    assert sorted(kayitlar) == [1, 2]
+    assert kayitlar[1]["v"] == "kalici"  # kalıcı arşiv tam, o kazanır
+
+
+def test_acik_liste_silinir(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    arsiv.acik_liste_yaz(date(2026, 9, 24), date(2026, 9, 25), [])
+
+    arsiv.acik_liste_sil(date(2026, 9, 24), date(2026, 9, 25))
+
+    assert arsiv.acik_listeler() == []

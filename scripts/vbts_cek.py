@@ -17,7 +17,6 @@ devam eder. Ağ erişimi bedava (KAP kimliksiz API).
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -27,18 +26,19 @@ sys.path.insert(0, str(KOK / "src"))
 from kap_radar.arsiv import HamArsiv  # noqa: E402
 from kap_radar.istemci import KapIstemcisi  # noqa: E402
 
-LISTE_KLASORU = KOK / "data" / "ham" / "liste"
+HAM_KOKU = KOK / "data" / "ham"
 VBTS_KOKU = KOK / "data" / "ham" / "vbts"
 VBTS_OZETI = "Volatilite Bazlı Tedbir"
 
 
 def vbts_indeksleri() -> list[int]:
-    indeksler: set[int] = set()
-    for dosya in sorted(LISTE_KLASORU.glob("*.json")):
-        for kayit in json.loads(dosya.read_text(encoding="utf-8")):
-            if VBTS_OZETI in (kayit.get("summary") or ""):
-                indeksler.add(kayit["disclosureIndex"])
-    return sorted(indeksler)
+    # Açık pencere dahil: dün akşam ilan edilen tedbir bugünkü bildirimin
+    # tahtasına girmeli.
+    return sorted(
+        i
+        for i, kayit in HamArsiv(HAM_KOKU).liste_kayitlari().items()
+        if VBTS_OZETI in (kayit.get("summary") or "")
+    )
 
 
 def main() -> int:

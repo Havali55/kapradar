@@ -20,6 +20,10 @@ from pathlib import Path
 
 DETAY_KLASORU = "detay"
 LISTE_KLASORU = "liste"
+# Bugünü/dünü içeren pencere: yarım, kalıcı arşive girmez; ama bağlam
+# hesabı en taze bildirimi görebilsin diye burada durur ve pencere
+# kapanınca silinir (`backfill.acik_mi`).
+ACIK_LISTE_KLASORU = "liste_acik"
 
 
 class HamArsiv:
@@ -64,6 +68,40 @@ class HamArsiv:
         return json.loads(
             self.liste_yolu(baslangic, bitis).read_text(encoding="utf-8")
         )
+
+    def _acik_yolu(self, baslangic: date, bitis: date) -> Path:
+        ad = f"{baslangic.isoformat()}_{bitis.isoformat()}.json"
+        return self._kok / ACIK_LISTE_KLASORU / ad
+
+    def acik_liste_yaz(
+        self, baslangic: date, bitis: date, kayitlar: list[dict]
+    ) -> Path:
+        return self._kaydet(self._acik_yolu(baslangic, bitis), kayitlar)
+
+    def acik_liste_sil(self, baslangic: date, bitis: date) -> None:
+        self._acik_yolu(baslangic, bitis).unlink(missing_ok=True)
+
+    def acik_listeler(self) -> list[tuple[date, date]]:
+        klasor = self._kok / ACIK_LISTE_KLASORU
+        if not klasor.exists():
+            return []
+        return sorted(
+            tuple(date.fromisoformat(p) for p in yol.stem.split("_"))
+            for yol in klasor.glob("*.json")
+        )
+
+    def liste_kayitlari(self) -> dict[int, dict]:
+        """Kalıcı ve açık listelerin tamamı, `disclosureIndex` başına bir kayıt.
+
+        Aynı bildirim iki yerde de olabilir (pencere kapandı, geçici dosya
+        henüz silinmedi): kalıcı arşiv tam olduğu için o kazanır.
+        """
+        kayitlar: dict[int, dict] = {}
+        for klasor in (ACIK_LISTE_KLASORU, LISTE_KLASORU):
+            for yol in sorted((self._kok / klasor).glob("*.json")):
+                for k in json.loads(yol.read_text(encoding="utf-8")):
+                    kayitlar[k["disclosureIndex"]] = k
+        return kayitlar
 
     # --------------------------------------------------------------- kur
 
