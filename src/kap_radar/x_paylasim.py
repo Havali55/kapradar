@@ -160,6 +160,9 @@ select a.kap_id, a.ticker, a.ciro_orani, a.karsi_taraf, a.karsi_taraf_acik,
 from public.akis a
 where a.yayin_zamani >= %(en_eski)s
   and a.ciro_orani > 0
+  -- Aynı tutar önceki bildirimde duyuruldu (ihale → sözleşme): yeni iş
+  -- değil, ikinci kez paylaşılmaz (kap_radar.bag, 2026-09-26).
+  and coalesce(a.onceki_tur, '') <> 'ayni_is'
   and not exists (select 1 from public.x_paylasim x where x.kap_id = a.kap_id)
 order by a.yayin_zamani, a.kap_id
 limit %(adet)s
