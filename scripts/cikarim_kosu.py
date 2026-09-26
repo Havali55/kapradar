@@ -61,7 +61,8 @@ ORTALAMA_CIKTI_TOKEN = 184
 
 ALANLAR = (
     "kap_id, ticker, ham_metin_tr, yayin_zamani, guncelleme_mi, "
-    "kap_alanlari->>'karsi_taraf' as karsi_taraf"
+    "kap_alanlari->>'karsi_taraf' as karsi_taraf, "
+    "kap_alanlari->>'karsi_taraf_niteligi' as karsi_taraf_niteligi"
 )
 
 
@@ -186,7 +187,7 @@ def main() -> int:
 
         try:
             for sira, satir in enumerate(bildirimler, start=1):
-                kap_id, ticker, metin, an, guncelleme_mi, karsi_taraf = satir
+                kap_id, ticker, metin, an, guncelleme_mi, karsi_taraf, nitelik = satir
                 try:
                     sonuc = katmanli_cikar(metin, cikaricilar)
                 except GeminiHatasi as hata:
@@ -213,6 +214,7 @@ def main() -> int:
                     ham_metin_tr=metin,
                     guncelleme_mi=bool(guncelleme_mi),
                     karsi_taraf_acik=karsi_taraf_acik(karsi_taraf),
+                    karsi_taraf_niteligi=nitelik,
                 )
 
                 kararlar[karar.karar.value] += 1

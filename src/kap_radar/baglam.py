@@ -26,9 +26,11 @@ from __future__ import annotations
 
 import re
 from bisect import bisect_left, bisect_right
-from collections.abc import Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+
+from kap_radar.skor import TAHTA_TEDBIRLI_V90
 
 DEVRE_KESICI_KONUSU = "Pay Bazında Devre Kesici Bildirimi"
 # İki ifade dönemi var: 2024–25 "Başlamıştır", sonrası "devreye girmiştir".
@@ -151,3 +153,31 @@ def seans_baslangici(takvim: Sequence[date], gun: date, seans: int) -> date:
 
 def on_iki_ay_once(an: datetime) -> datetime:
     return an - timedelta(days=365)
+
+
+def piyasa_oynak_orani(
+    devre: Mapping[str, Sequence[datetime]],
+    *,
+    evren: Iterable[str],
+    an: datetime,
+    bas90: datetime,
+    bas5: datetime,
+) -> float | None:
+    """Evrendeki hisselerin kaçı `an` itibarıyla "çok oynak" sayılırdı?
+
+    Tahta bayrağıyla aynı sayım kuralı (V90 > eşik ya da V5 ≥ 2); VBTS
+    hariç, çünkü soru devre kesici sayımının piyasa geneline göre ne
+    kadar sıra dışı olduğu. 2026-09 bildirimlerinin %66'sı "çok
+    oynak"tı ama piyasanın da %44'ü öyleydi: taban oranı olmadan etiket
+    şirkete özgü okunuyor.
+    """
+    hisseler = list(evren)
+    if not hisseler:
+        return None
+    oynak = sum(
+        1
+        for h in hisseler
+        if ayri_gun_sayisi(devre.get(h, ()), an, bas90) > TAHTA_TEDBIRLI_V90
+        or ayri_gun_sayisi(devre.get(h, ()), an, bas5) >= 2
+    )
+    return oynak / len(hisseler)

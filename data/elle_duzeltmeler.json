@@ -1,0 +1,156 @@
+{
+  "aciklama": "Kapının anlam kontrollerinin (B4–B6, A7) elle kuyruğa attığı bildirimler için insan kararı. scripts/elle_duzelt.py uygular. 'neden' sitede kullanıcıya gösterilir. Ayrıntı: docs/arastirma/2026-09-26-veri-denetimi.md",
+  "kararlar": [
+    {
+      "kap_id": "4028328c919f164a0192440834905c88",
+      "ticker": "GEREL",
+      "karar": "skorsuz",
+      "neden": "Şirket, şarj istasyonu yazılımlarının geliştirilip kaynak koduyla birlikte kendisine teslimi için bir teknoloji firmasıyla 700 mn TL'lik anlaşma yapıyor. Tutar şirketin ödeyeceği bedel, geliri değil."
+    },
+    {
+      "kap_id": "4028328c930ce8de01933f693964124d",
+      "ticker": "FORTE",
+      "karar": "duzelt",
+      "yeni_tipler": {"7112290": "toplam_sozlesme"},
+      "neden": "7.112.290 USD, 927.690 USD'lik artıştan sonra sözleşmenin ulaştığı yeni toplam (6.184.600 + 927.690). Yeni iş yalnız artış; büyüklük ona göre hesaplandı."
+    },
+    {
+      "kap_id": "4028328d949955a90194d6ddf67377a1",
+      "ticker": "ORGE",
+      "karar": "skorsuz",
+      "neden": "Bu bildirimde yalnız ek protokol görüşmeleri başladı, imzalanmış bir iş yok. Metindeki 3.750.500 EUR ve 127.500.000 TL görüşülen revize toplamlar."
+    },
+    {
+      "kap_id": "4028328d949955a90194dbd9c9b41f8c",
+      "ticker": "ORGE",
+      "karar": "duzelt",
+      "yeni_tipler": {"9475337": "toplam_sozlesme", "249907101": "toplam_sozlesme"},
+      "neden": "249.907.101 TL, eski 209.772.135 TL'ye 40.134.966 TL'lik artışın eklenmiş hâli; 9.475.337 USD sözleşmenin değişmeyen döviz kısmı. Yeni olan yalnız 40,1 mn TL; büyüklük ona göre hesaplandı."
+    },
+    {
+      "kap_id": "4028328c95959ac20195a9cd01904f80",
+      "ticker": "ORGE",
+      "karar": "duzelt",
+      "yeni_tipler": {"360000000": "toplam_sozlesme"},
+      "neden": "360 mn TL, eski 213,2 mn TL'ye 146,8 mn TL'lik artışın eklenmiş hâli. Yeni olan yalnız artış; büyüklük ona göre hesaplandı."
+    },
+    {
+      "kap_id": "4028328d95959cc60195b3f75e3e46b6",
+      "ticker": "KONTR",
+      "karar": "onayla",
+      "hap_ozet": [
+        "Pomega Enerji Depolama Teknolojileri A.Ş. ile müşteri arasında satış sözleşmesi imzalandı.",
+        "Sözleşme bedeli vergiler hariç 1.400.000 USD olarak belirlendi.",
+        "Projenin 2. çeyrek itibarıyla tamamlanması planlanıyor."
+      ],
+      "neden": "Otomatik özet, metinde olmayan bir yılı (2024) eklemişti; metin yalnız '2. Çeyrek' diyor. Özet düzeltildi, tutar değişmedi."
+    },
+    {
+      "kap_id": "4028328d95959cc60195f711dc2357ca",
+      "ticker": "EFOR",
+      "karar": "skorsuz",
+      "neden": "KAP'ta karşı taraf 'tedarikçi' olarak işaretli ve metin metalurjik kokun kimden kime satıldığını söylemiyor. Tutarın şirketin geliri mi gideri mi olduğu belirsiz; büyüklük verilmedi."
+    },
+    {
+      "kap_id": "4028328c95959ac201961a26562b3648",
+      "ticker": "CVKMD",
+      "karar": "onayla",
+      "neden": "Tutar, Trafigura'nın krom cevheri teslimatları karşılığında yaptığı ön ödeme; nihai satış fiyatı uluslararası endekse bağlı ve açıklanmadı. Ön ödeme teslimatların karşılığı olduğu için büyüklük, satış bedelinin alt sınırı olarak okunmalı."
+    },
+    {
+      "kap_id": "4028328c969f295501973a1e1de36b16",
+      "ticker": "CVKMD",
+      "karar": "onayla",
+      "neden": "Tutar, Trafigura'nın krom cevheri teslimatları karşılığında yaptığı ön ödeme; nihai satış fiyatı uluslararası endekse bağlı ve açıklanmadı. Ön ödeme teslimatların karşılığı olduğu için büyüklük, satış bedelinin alt sınırı olarak okunmalı."
+    },
+    {
+      "kap_id": "4028328c9af2405e019b07dde1fe6ad3",
+      "ticker": "CVKMD",
+      "karar": "onayla",
+      "neden": "Tutar, Trafigura'nın 2026 boyunca yapılacak krom cevheri teslimatları karşılığında yapacağı ön ödeme; nihai satış fiyatı uluslararası endekse bağlı ve açıklanmadı. Ön ödeme teslimatların karşılığı olduğu için büyüklük, satış bedelinin alt sınırı olarak okunmalı."
+    },
+    {
+      "kap_id": "4028328c96289c76019666ecbe4e5568",
+      "ticker": "ALVES",
+      "karar": "onayla",
+      "neden": "Metin 'bayileri ile satış sözleşmeleri' diyor: şirket satıcı taraf. KAP'taki 'tedarikçi' niteliği şirketin kendi rolünü tarif ediyor."
+    },
+    {
+      "kap_id": "4028328c991da584019929f4de043141",
+      "ticker": "TOASO",
+      "karar": "skorsuz",
+      "neden": "256 mn EUR, Tofaş'ın Stellantis için yapacağı üretimin yatırım tutarı. Üretim sözleşmesinin satış bedeli açıklanmadı; büyüklük verilmedi."
+    },
+    {
+      "kap_id": "4028328c998ee9d7019a97b40d4e64d7",
+      "ticker": "ORGE",
+      "karar": "skorsuz",
+      "neden": "Bu bildirimde yalnız ek protokol görüşmeleri başladı. İmza 05.12.2025 bildiriminde duyuruldu ve büyüklük orada sayılıyor."
+    },
+    {
+      "kap_id": "4028328c9aaa2bfa019acb10de0f3201",
+      "ticker": "ARDYZ",
+      "karar": "skorsuz",
+      "neden": "KAP'ta karşı taraf 'tedarikçi' olarak işaretli ve metin donanımın kimden kime temin edildiğini açıkça söylemiyor. Tutarın şirketin geliri mi gideri mi olduğu belirsiz; büyüklük verilmedi."
+    },
+    {
+      "kap_id": "4028328c9aaa2bfa019adf6411e469a2",
+      "ticker": "ARDYZ",
+      "karar": "skorsuz",
+      "neden": "KAP'ta karşı taraf 'tedarikçi' olarak işaretli ve metin donanımın kimden kime temin edildiğini açıkça söylemiyor. Tutarın şirketin geliri mi gideri mi olduğu belirsiz; büyüklük verilmedi."
+    },
+    {
+      "kap_id": "4028328d9aaa2dfa019aef324c1105c4",
+      "ticker": "ORGE",
+      "karar": "onayla",
+      "neden": "Metindeki 'görüşmelere başlandığı' ifadesi 18.11.2025 açıklamasına atıf; bu bildirimde ek protokol imzalandı."
+    },
+    {
+      "kap_id": "4028328d9b5e6824019b68b638c4098c",
+      "ticker": "YEOTK",
+      "karar": "skorsuz",
+      "neden": "Yap-işlet-devret (ESCO) modelinde yatırım ve finansman şirkete ait: 28 mn USD şirketin yapacağı yatırım. Müşteriden 10 yıl boyunca alınacak bedel açıklanmadı; büyüklük verilmedi."
+    },
+    {
+      "kap_id": "4028328d9b827483019c0f6651b626f6",
+      "ticker": "ASTOR",
+      "karar": "skorsuz",
+      "neden": "ASTOR, transformatör üretiminde kullanacağı bushing ürünlerini Trench Group'tan satın alıyor: 53,25 mn EUR bir gider, gelir değil."
+    },
+    {
+      "kap_id": "4028328c9d4a029c019d6bbad8333004",
+      "ticker": "GESAN",
+      "karar": "skorsuz",
+      "neden": "205 mn USD projelerin toplam yatırım bedeli. Şirketin geliri yalnız öngörü olarak veriliyor (yıllık yaklaşık 55 mn USD), kesin bir sözleşme bedeli yok; büyüklük verilmedi."
+    },
+    {
+      "kap_id": "4028328d9e2771a0019e8259087d5abd",
+      "ticker": "FORTE",
+      "karar": "onayla",
+      "neden": "FORTE, MEB ihalesini kazanıp sözleşme imzalayan satıcı taraf. KAP'taki 'tedarikçi' niteliği şirketin kendi rolünü tarif ediyor."
+    },
+    {
+      "kap_id": "4028328d9f52dddd019fb32ca95b2b9e",
+      "ticker": "EUREN",
+      "karar": "onayla",
+      "hap_ozet": [
+        "Alfa Solar Sanayi ve Ticaret A.Ş. ile solar camı satış anlaşması imzalandı.",
+        "Anlaşma bedeli KDV hariç 21.309.590 USD olarak belirlendi.",
+        "Sevkiyatlar ağustos ayında başlayıp Nisan 2027'de tamamlanacak."
+      ],
+      "neden": "Otomatik özet, metinde olmayan bir yılı (2024) eklemişti; metin yalnız 'Ağustos ayı itibarıyla' diyor. Özet düzeltildi, tutar değişmedi."
+    },
+    {
+      "kap_id": "4028328d9f52dddd01a057b4b7252e30",
+      "ticker": "OFSYM",
+      "karar": "skorsuz",
+      "neden": "OFSYM, ABD'den DDGS (yem hammaddesi) satın alıyor: 27 mn USD bir gider, gelir değil."
+    },
+    {
+      "kap_id": "4028328ca0b8418501a0d52749372991",
+      "ticker": "ARDYZ",
+      "karar": "skorsuz",
+      "neden": "430,32 mn TL, belediyenin ihale için belirlediği tahmini bedel (muhammen bedel). İş gelir paylaşımlı 10 yıllık bir kiralama ve şirketin payı açıklanmadı; büyüklük verilmedi."
+    }
+  ]
+}

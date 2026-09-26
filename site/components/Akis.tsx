@@ -85,6 +85,8 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
       if (b.ciro_orani === null) {
         if (!durum.skorsuzlar || durum.buyukluk !== "tum") return false;
       } else if (b.ciro_orani < BUYUKLUK_ESIGI[durum.buyukluk]) return false;
+      // Aynı iş daha önce duyuruldu: büyüklük filtresinde ikinci kez çıkmasın.
+      if (b.oncedenDuyuruldu && durum.buyukluk !== "tum") return false;
       if (durum.yalnizTemiz && b.tahta !== "temiz") return false;
       if (durum.yalnizAcik && !b.karsiTarafAcik) return false;
       return true;
@@ -92,11 +94,10 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
 
     if (durum.sirala === "buyuk") {
       // Skorsuzlar sona: "—" bir değer değil, eksiklik.
-      return [...liste].sort((a, b) => {
-        const x = a.ciro_orani ?? -1;
-        const y = b.ciro_orani ?? -1;
-        return y - x;
-      });
+      // Önceden duyurulan iş skorluların arkasına: sıralamada iki kez yer almasın.
+      const anahtar = (b: Bildirim) =>
+        b.oncedenDuyuruldu ? -0.5 : (b.ciro_orani ?? -1);
+      return [...liste].sort((a, b) => anahtar(b) - anahtar(a));
     }
     return liste;
   }, [bildirimler, durum]);

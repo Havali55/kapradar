@@ -38,7 +38,7 @@ import psycopg  # noqa: E402
 
 from kap_radar.karsi_taraf import karsi_taraf_acik  # noqa: E402
 from kap_radar.ayarlar import dsn_bul  # noqa: E402
-from kap_radar.degerlendirme import degerlendir_bildirim  # noqa: E402
+from kap_radar.degerlendirme import ELLE_MODELI, degerlendir_bildirim  # noqa: E402
 from kap_radar.depo import Depo  # noqa: E402
 from kap_radar.skor import (  # noqa: E402
     MEGA_ESIGI,
@@ -51,7 +51,8 @@ ALANLAR = """
        c.id, c.kap_id, b.ticker, b.ham_metin_tr, b.yayin_zamani,
        b.guncelleme_mi, b.kap_alanlari->>'karsi_taraf' as karsi_taraf,
        c.veri, c.net_tutar_tl, c.ciro_orani, c.etki_skoru,
-       c.yayina_hazir, c.red_nedeni
+       c.yayina_hazir, c.red_nedeni,
+       b.kap_alanlari->>'karsi_taraf_niteligi' as karsi_taraf_niteligi, c.model
 """
 
 # Varsayılan: yalnız her bildirimin EN SON çıkarımı. `public.akis`
@@ -200,6 +201,8 @@ def main(argv: list[str] | None = None) -> int:
                 eski_skor,
                 eski_hazir,
                 eski_red,
+                nitelik,
+                model,
             ) = satir
 
             karar = degerlendir_bildirim(
@@ -210,6 +213,8 @@ def main(argv: list[str] | None = None) -> int:
                 ham_metin_tr=metin or "",
                 guncelleme_mi=bool(guncelleme_mi),
                 karsi_taraf_acik=karsi_taraf_acik(karsi_taraf),
+                karsi_taraf_niteligi=nitelik,
+                insan_denetimli=model == ELLE_MODELI,
             )
 
             eski_skorlar.append(eski_skor)

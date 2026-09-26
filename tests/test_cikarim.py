@@ -538,3 +538,38 @@ def test_prompt_cevrimin_parantez_disinda_da_olabilecegini_soyluyor():
     metin = prompt_kur("x")
 
     assert "parantez içinde olmasa" in metin
+
+
+# ------------------------------------------------------------ A7: özet yılı
+
+def test_ozette_metinde_olmayan_yil_yukseltilir():
+    """EUREN 2026-07-30: metin 'Ağustos ayı itibarıyla' diyor, özet
+    'Ağustos 2024'te' — model yılı kendisi ekledi ve yanlış ekledi."""
+    sonuc = metin_kapisi(
+        cikarim(hap_ozet=["İlave sipariş", "Metro projesi", "Ağustos 2024'te başlar"]),
+        ORGE_METNI,
+    )
+
+    assert sonuc.karar is Karar.YUKSELT
+    assert sonuc.red_nedeni.startswith("A7")
+
+
+def test_ozetteki_yil_metinde_geciyorsa_gecer():
+    metin = ORGE_METNI + "\nİşin 29.11.2025 tarihine kadar tamamlanması planlanmaktadır."
+    sonuc = metin_kapisi(
+        cikarim(hap_ozet=["İlave sipariş", "Metro projesi", "2025 sonunda biter"]),
+        metin,
+    )
+
+    assert sonuc.karar is Karar.YAYINLA
+
+
+def test_metinde_bosluklu_yazilmis_yil_de_eslesir():
+    """EFOR 2024-12-19: şirket '2 024 mali yılı' yazmış; özet '2024'."""
+    metin = ORGE_METNI + "\nSatışların 2 024 mali yılı içerisinde tamamlanması planlanmaktadır."
+    sonuc = metin_kapisi(
+        cikarim(hap_ozet=["İlave sipariş", "Metro projesi", "2024 içinde biter"]),
+        metin,
+    )
+
+    assert sonuc.karar is Karar.YAYINLA

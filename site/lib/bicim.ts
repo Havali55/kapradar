@@ -27,18 +27,40 @@ export function yuzde(oran: number, ondalik = 1): string {
 }
 
 /**
- * İyelik ekli yüzde: "%2,3'ü", "%37,6'sı". Tek ondalık basıldığı için
- * ek her zaman son rakamın okunuşuna uyar (üç → 'ü, altı → 'sı).
+ * İyelik ekli yüzde: "%2,3'ü", "%46'sı", "%5,46'sı". Ek sayının sesli
+ * okunuşundaki SON sözcüğe uyar. Ondalık varsa virgülden sonrası ayrı bir
+ * sayı gibi okunur ("beş virgül kırk altı" → 'sı), yoksa tam kısım.
+ * Birler sıfırsa onlar sözcüğü belirler (kırk → 'ı), o da sıfırsa
+ * yüz/bin. Eski sürüm yalnız tek ondalığı biliyordu; tam sayı ve iki
+ * ondalık basan yerler eki elle "'i" yazıyordu ("%46'i", "%5,46'i").
  */
-const SON_RAKAM_EKI = ["'ı", "'i", "'si", "'ü", "'ü", "'i", "'sı", "'si", "'i", "'u"];
-export function yuzdeIyelik(oran: number): string {
-  const metin = yuzde(oran, 1);
-  return metin + SON_RAKAM_EKI[Number(metin.slice(-1))];
+const BIRLER_EKI = ["", "'i", "'si", "'ü", "'ü", "'i", "'sı", "'si", "'i", "'u"];
+const ONLAR_EKI = ["", "'u", "'si", "'u", "'ı", "'si", "'ı", "'i", "'i", "'ı"];
+
+function okunusEki(rakamlar: string): string {
+  const n = rakamlar.replace(/^0+/, "");
+  if (n === "") return "'ı"; // sıfır
+  const birler = Number(n[n.length - 1]);
+  if (birler) return BIRLER_EKI[birler];
+  const onlar = n.length > 1 ? Number(n[n.length - 2]) : 0;
+  if (onlar) return ONLAR_EKI[onlar];
+  const sondakiSifir = n.length - n.replace(/0+$/, "").length;
+  if (sondakiSifir === 2) return "'ü"; // yüz
+  return sondakiSifir < 6 ? "'i" : "'u"; // bin … milyon
 }
 
+export function yuzdeIyelik(oran: number, ondalik = 1): string {
+  const metin = yuzde(oran, ondalik);
+  const [tam, kesir] = metin.slice(1).replace(/\./g, "").split(",");
+  return metin + okunusEki(kesir ?? tam);
+}
+
+/** "+%3,00" · "−%4,48" · sıfıra yuvarlanan değer işaretsiz. */
 export function isaretliYuzde(oran: number, ondalik = 2): string {
-  const s = oran > 0 ? "+" : "";
-  return `${s}%${sayi(oran * 100, ondalik)}`;
+  const metin = sayi(Math.abs(oran) * 100, ondalik);
+  const sifir = /^[0.,]+$/.test(metin);
+  const isaret = sifir ? "" : oran > 0 ? "+" : "−";
+  return `${isaret}%${metin}`;
 }
 
 const PARA_ADI: Record<string, string> = {
@@ -111,6 +133,17 @@ export function kisaTarih(isoGun: string): string {
   return `${g}.${a}.${y}`;
 }
 
+/** İstanbul takvimiyle gün: "08.12.2025". Zaman damgasının UTC gününü
+ * kesmek akşam 21:00'den sonraki bildirimi bir gün önceye yazardı. */
+export function istanbulGunu(isoTarih: string): string {
+  return new Date(isoTarih).toLocaleDateString(TR, {
+    timeZone: "Europe/Istanbul",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function tamTarih(isoTarih: string): string {
   return new Date(isoTarih).toLocaleString(TR, {
     day: "2-digit",
@@ -150,8 +183,27 @@ export function tahtaGorunumu(
   v90: number | null,
   v5: number | null,
   vbtsKademe: number | null,
+  piyasaOrani: number | null = null,
 ): TahtaGorunumu | null {
   if (!tahta) return null;
+  const sonuc = tahtaAdi(tahta, v90, v5, vbtsKademe);
+  if (piyasaOrani === null || piyasaOrani === undefined) return sonuc;
+  // Taban oranı (2026-09-26): Eylül 2026'da bildirimlerin %66'sı "çok
+  // oynak"tı ama piyasanın da %44'ü öyleydi. Olmadan etiket şirkete özgü
+  // okunuyor.
+  const taban =
+    sonuc.ad === "Sakin" || sonuc.ad === "Oynak"
+      ? `Aynı gün piyasadaki hisselerin ${yuzdeIyelik(piyasaOrani, 0)} çok oynaktı.`
+      : `Aynı gün piyasadaki hisselerin ${yuzdeIyelik(piyasaOrani, 0)} de bu durumdaydı.`;
+  return { ...sonuc, not: `${sonuc.not} ${taban}` };
+}
+
+function tahtaAdi(
+  tahta: string,
+  v90: number | null,
+  v5: number | null,
+  vbtsKademe: number | null,
+): TahtaGorunumu {
   const gun90 = v90 === null ? "" : `Son 90 seansta devre kesici ${v90} gün tetiklenmiş`;
   if (vbtsKademe && vbtsKademe > 0) {
     return {

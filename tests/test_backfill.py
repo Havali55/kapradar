@@ -498,3 +498,37 @@ def test_finansal_backfill_acik_pencereyi_arsivlemez(tmp_path):
     )
 
     assert not arsiv.liste_var_mi(date(2026, 9, 17), date(2026, 9, 18))
+
+
+def test_acik_pencere_gecici_klasore_yazilir(tmp_path):
+    """Bağlam hesabı en taze bildirimi görebilsin diye (ARDYZ 43/44)."""
+    arsiv = HamArsiv(tmp_path)
+    islevci, _ = sahte_kap(liste_fixture())
+
+    backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 9, 17),
+        bitis=date(2026, 9, 18),
+        bugun=date(2026, 9, 18),
+    )
+
+    assert arsiv.acik_listeler() == [(date(2026, 9, 17), date(2026, 9, 18))]
+    assert arsiv.liste_kayitlari() != {}
+
+
+def test_kapanan_pencerenin_gecici_dosyasi_silinir(tmp_path):
+    arsiv = HamArsiv(tmp_path)
+    arsiv.acik_liste_yaz(date(2026, 9, 17), date(2026, 9, 18), [])
+    islevci, _ = sahte_kap(liste_fixture())
+
+    backfill(
+        istemci=istemci_kur(islevci),
+        arsiv=arsiv,
+        baslangic=date(2026, 9, 17),
+        bitis=date(2026, 9, 18),
+        bugun=date(2026, 9, 20),
+    )
+
+    assert arsiv.acik_listeler() == []
+    assert arsiv.liste_var_mi(date(2026, 9, 17), date(2026, 9, 18))

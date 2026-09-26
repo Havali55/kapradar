@@ -113,9 +113,19 @@ def pencere_kayitlari(
                 istemci, arsiv, orta + timedelta(days=1), bitis, ozet, bugun
             )
 
-    if not acik:
+    if acik:
+        arsiv.acik_liste_yaz(baslangic, bitis, kayitlar)
+    else:
         arsiv.liste_yaz(baslangic, bitis, kayitlar)
     return kayitlar
+
+
+def kapanan_acik_listeleri_sil(arsiv: HamArsiv, bugun: date) -> int:
+    """Pencere kapandıysa geçici listesi artık eski: kalıcı arşivde tamı var."""
+    kapanan = [(b, s) for b, s in arsiv.acik_listeler() if not acik_mi(s, bugun)]
+    for baslangic, bitis in kapanan:
+        arsiv.acik_liste_sil(baslangic, bitis)
+    return len(kapanan)
 
 
 def _guvenli_pencere(
@@ -192,6 +202,7 @@ def backfill(
                 continue
             ozet.cekildi += 1
 
+    kapanan_acik_listeleri_sil(arsiv, bugun or date.today())
     return ozet
 
 
@@ -282,4 +293,5 @@ def finansal_backfill(
             )
             ozet.cekildi += 1
 
+    kapanan_acik_listeleri_sil(arsiv, bugun or date.today())
     return ozet

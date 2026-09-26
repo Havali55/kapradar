@@ -10,7 +10,7 @@ sırayla çağırıyor. Her biri idempotent ve kaldığı yerden devam ediyor,
 bu yüzden aynı günü iki kez koşmak zararsız. Sıra bağımlılıklardan:
 
     liste+detay → DB → kur → finansal → fiyat → faktör → VBTS
-    → çıkarım (LLM) → tepki → bağlam
+    → çıkarım (LLM) → bağlar → tepki → bağlam → veri denetimi
 
 Bir adım düşerse sonrakiler yine denenir (fiyat düşmesi çıkarımı
 engellememeli) ama koşu sıfırdan farklı kodla biter; CI kırmızı görünür.
@@ -148,8 +148,13 @@ def main() -> int:
     else:
         print("\n=== çıkarım atlandı (--llm verilmedi) ===")
 
+    # Çıkarımdan sonra: "aynı iş" türü yayındaki skorlu kalemlere bakıyor.
+    adim("güncelleme bağları", ["scripts/bag_kur.py"], hatalar)
     adim("tepki (CAR)", ["scripts/tepki_hesapla.py"], hatalar)
     adim("tahta + sıklık", ["scripts/baglam_hesapla.py"], hatalar)
+    # Rapor; yayında kapıya takılan satır ya da karar bekleyen bildirim
+    # varsa adım hata sayılır ve özette görünür.
+    adim("veri denetimi", ["scripts/veri_denetimi.py", "--kati"], hatalar)
 
     print("\n=== özet ===")
     if hatalar:

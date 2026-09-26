@@ -759,6 +759,25 @@ a:hover {
   text-wrap: pretty;
 }
 
+/* Elle inceleme notu: büyüklüğün neden değiştiği görünür olmalı. */
+.elle-not {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--kehribar);
+  background: var(--kehribar-z);
+  text-wrap: pretty;
+}
+
+/* Önceki bildirime bağ: düzeltme, aynı iş, güncelleme. */
+.bag-not {
+  font-size: 13px;
+  color: var(--mut-2);
+  margin: 6px 0 0;
+  text-wrap: pretty;
+}
+
 .tahta-satiri {
   display: flex;
   align-items: center;

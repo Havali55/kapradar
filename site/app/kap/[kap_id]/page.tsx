@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import BildirimDetayi from "@/components/BildirimDetayi";
 import { bildirimGetir, kapIdleriGetir } from "@/lib/veri";
-import { KADEME_ADI, sayi, tamTarih, yuzde } from "@/lib/bicim";
+import { KADEME_ADI, sayi, tamTarih, yuzdeIyelik } from "@/lib/bicim";
 
 export const revalidate = 3600;
 
@@ -29,7 +29,7 @@ export async function generateMetadata({
   // Kademe ciro oranından (kart ve filtreyle aynı kaynak); S yalnız ek bilgi.
   const buyukluk =
     b.ciro_orani !== null && b.kademe
-      ? `Hasılatın ${yuzde(b.ciro_orani, 2)}'i · ${KADEME_ADI[b.kademe]}` +
+      ? `Hasılatın ${yuzdeIyelik(b.ciro_orani, 2)} · ${KADEME_ADI[b.kademe]}` +
         (b.etki_skoru !== null ? ` (S ${sayi(b.etki_skoru)}/5)` : "")
       : "Büyüklük hesaplanamadı (tutar ya da hasılat çözülemedi)";
 

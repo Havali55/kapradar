@@ -17,6 +17,7 @@ import {
   VBTS_KADEME_ADI,
   buyukTl,
   isaretliYuzde,
+  istanbulGunu,
   kalemTutari,
   kisaTarih,
   sayi,
@@ -54,6 +55,7 @@ export default function BildirimDetayi({
     b.tahta_v90,
     b.tahta_v5,
     b.tahta_vbts_kademe,
+    b.tahta_piyasa_orani ?? null,
   );
   // Şirketin yazdığı tanım isim değilse bile bilgi taşıyabilir
   // ("Yurt dışı yerleşik"); tek nokta gibi harfsiz değerler gösterilmez.
@@ -83,6 +85,7 @@ export default function BildirimDetayi({
           Başlangıç: {b.baslangic}
         </p>
       )}
+      <OncekiBag b={b} />
 
       {b.hap_ozet && b.hap_ozet.length > 0 && (
         <>
@@ -99,6 +102,11 @@ export default function BildirimDetayi({
 
       {/* --------------------------------------------- büyüklük */}
       <h3 className="bolum-bas mono">A · BU İŞ ŞİRKET İÇİN NE KADAR BÜYÜK</h3>
+      {b.elle_not && (
+        <p className="elle-not">
+          <strong>Elle incelendi.</strong> {b.elle_not}
+        </p>
+      )}
       {b.ciro_orani !== null ? (
         <>
           <p className="duz-cumle">
@@ -177,7 +185,7 @@ export default function BildirimDetayi({
             </details>
           )}
         </>
-      ) : (
+      ) : b.elle_karar === "skorsuz" ? null : (
         <p className="tutar-yok-not" style={{ marginTop: 0 }}>
           Büyüklük hesaplanamadı: işin tutarı ya da bildirim anındaki şirket
           cirosu bilinmiyor. Uydurma bir paydayla hesaplanan oran, hiç oran
@@ -359,7 +367,7 @@ export default function BildirimDetayi({
             hareket etti; ortadaki yarısı{" "}
             <span className="mono">{isaretliYuzde(b.panel.altCeyrek)}</span> ile{" "}
             <span className="mono">{isaretliYuzde(b.panel.ustCeyrek)}</span>{" "}
-            arasında kaldı, <span className="mono">{yuzde(b.panel.pozitifOrani, 0)}</span>&apos;i
+            arasında kaldı, <span className="mono">{yuzdeIyelik(b.panel.pozitifOrani, 0)}</span>
             piyasayı geçti.
           </p>
           <p className="tutar-yok-not">
@@ -433,5 +441,26 @@ export default function BildirimDetayi({
         </>
       )}
     </>
+  );
+}
+
+/**
+ * Önceki bildirime bağ (`kap_radar.bag`). Düzeltilen bildirim yayından
+ * kalktığı için ona bağlantı verilmez; diğerlerinde verilir.
+ */
+function OncekiBag({ b }: { b: Bildirim }) {
+  if (!b.onceki_tur || !b.onceki_yayin || !b.onceki_kap_id) return null;
+  const gun = istanbulGunu(b.onceki_yayin);
+  const bag = <a href={`/kap/${b.onceki_kap_id}`}>{gun} tarihli bildirim</a>;
+  return (
+    <p className="bag-not">
+      {b.onceki_tur === "duzeltme" ? (
+        <>Bu bildirim {gun} tarihli bildirimi düzeltiyor; düzeltilen bildirim yayından kaldırıldı.</>
+      ) : b.onceki_tur === "ayni_is" ? (
+        <>Bu iş aynı tutarla {bag} ile duyurulmuştu; burada yeni iş olarak sayılmıyor.</>
+      ) : (
+        <>Bu bildirim, {bag} ile duyurulan işin güncellemesi.</>
+      )}
+    </p>
   );
 }

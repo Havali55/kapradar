@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { bildirimleriGetir, ozetCikar } from "@/lib/veri";
-import { sayi, yuzde } from "@/lib/bicim";
+import { sayi, yuzdeIyelik } from "@/lib/bicim";
 
 export const revalidate = 3600;
 
@@ -162,7 +162,7 @@ export default async function ProjeHakkinda() {
               demekti. Tutar ya da payda yoksa skor da yok — kart bunun yerine
               net bir rozet gösteriyor. Şu an arşivin{" "}
               <strong>
-                {yuzde(skorsuz / Math.max(1, ozet.toplam), 1)}&apos;i
+                {yuzdeIyelik(skorsuz / Math.max(1, ozet.toplam), 1)}
               </strong>{" "}
               ({skorsuz} bildirim) bu durumda ve bu bir eksiklik değil, ürünün
               duruşu.
