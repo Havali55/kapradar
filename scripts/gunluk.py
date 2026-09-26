@@ -10,7 +10,7 @@ sırayla çağırıyor. Her biri idempotent ve kaldığı yerden devam ediyor,
 bu yüzden aynı günü iki kez koşmak zararsız. Sıra bağımlılıklardan:
 
     liste+detay → DB → kur → finansal → fiyat → faktör → VBTS
-    → çıkarım (LLM) → tepki → bağlam
+    → çıkarım (LLM) → bağlar → tepki → bağlam → veri denetimi
 
 Bir adım düşerse sonrakiler yine denenir (fiyat düşmesi çıkarımı
 engellememeli) ama koşu sıfırdan farklı kodla biter; CI kırmızı görünür.
