@@ -25,6 +25,7 @@ from kap_radar.cikarim import (
     Karar,
     KapiSonucu,
     TutarCikarimi,
+    anlam_kapisi,
     metin_kapisi,
     tutarlilik_kapisi,
 )
@@ -73,9 +74,16 @@ def degerlendir(
     kur_coz: Callable[[str], Decimal | None],
     karsi_taraf_acik: bool,
     guncelleme_mi: bool,
+    karsi_taraf_niteligi: str | None = None,
+    insan_denetimli: bool = False,
     agirliklar: Agirliklar = VARSAYILAN_AGIRLIKLAR,
 ) -> Degerlendirme:
-    """Çıkarımı iki aşamalı kapıdan geçirip skorunu hesaplar."""
+    """Çıkarımı iki aşamalı kapıdan geçirip skorunu hesaplar.
+
+    `insan_denetimli`: çıkarım elle yazıldı ya da elle onaylandı
+    (`data/elle_duzeltmeler.json`). Anlam kapısı (B4–B6) atlanır — o
+    soruyu insan zaten cevapladı; aritmetik kapıları yine koşar.
+    """
     metin = metin_kapisi(cikarim, ham_metin_tr)
     if not metin.gecti:
         # Aşama A reddi bir üst katman modele gider; hesap koşturmanın
@@ -101,6 +109,10 @@ def degerlendir(
             if kur_coz(t.para_birimi) is not None
         ],
     )
+    if tutarlilik.gecti and not insan_denetimli:
+        tutarlilik = anlam_kapisi(
+            skora_giren, ham_metin_tr, karsi_taraf_niteligi=karsi_taraf_niteligi
+        )
     if not tutarlilik.gecti:
         # Hesaplar özete giriyor: elle inceleyen kişi neyin şüpheli
         # göründüğünü rakamla görmeli.

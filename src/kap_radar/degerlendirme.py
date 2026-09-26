@@ -22,7 +22,11 @@ from kap_radar.cikarim import TutarCikarimi
 from kap_radar.finansal import DonemHasilat, ttm_coz
 from kap_radar.yayin import Degerlendirme, degerlendir
 
-__all__ = ["cikarimi_kur", "degerlendir_bildirim", "kur_cozucu"]
+__all__ = ["ELLE_MODELI", "cikarimi_kur", "degerlendir_bildirim", "kur_cozucu"]
+
+# `cikarim.model` bu değeri taşıyorsa satırı insan yazdı ya da onayladı
+# (`scripts/elle_duzelt.py`); anlam kapısı (B4–B6) ona yeniden sorulmaz.
+ELLE_MODELI = "elle"
 
 
 class DepoGibi(Protocol):
@@ -87,6 +91,8 @@ def degerlendir_bildirim(
     ham_metin_tr: str,
     guncelleme_mi: bool,
     karsi_taraf_acik: bool,
+    karsi_taraf_niteligi: str | None = None,
+    insan_denetimli: bool = False,
 ) -> Degerlendirme:
     """Bir bildirimin çıkarımını bugünkü kurallarla değerlendirir.
 
@@ -101,4 +107,6 @@ def degerlendir_bildirim(
         kur_coz=kur_cozucu(depo, an.date()),
         karsi_taraf_acik=karsi_taraf_acik,
         guncelleme_mi=guncelleme_mi,
+        karsi_taraf_niteligi=karsi_taraf_niteligi,
+        insan_denetimli=insan_denetimli,
     )

@@ -32,6 +32,7 @@ __all__ = [
     "Karar",
     "Tutar",
     "TutarCikarimi",
+    "anlam_kapisi",
     "katmanli_cikar",
     "metin_kapisi",
     "PROMPT_VERSIYON",
@@ -365,6 +366,123 @@ def metin_kapisi(cikarim: TutarCikarimi, ham_metin_tr: str) -> KapiSonucu:
         if anahtar in gorulen:
             return KapiSonucu(Karar.YUKSELT, f"A5: mukerrer kalem {anahtar}")
         gorulen.add(anahtar)
+
+    # A7 (2026-09-26): özet sitede "ÖZET" başlığıyla gösteriliyor ama
+    # hiç denetlenmiyordu. İki bildirimde model metinde olmayan bir yılı
+    # kendisi ekledi, ikisinde de yanlış ("Ağustos ayı" → "Ağustos 2024",
+    # 2026 bildiriminde). Yıl, tarih içinde de olsa metinde geçmeli.
+    # Normalize metinle karşılaştırılıyor: şirketler "2 024" de yazıyor
+    # (EFOR 2024-12-19) ve rakam arası boşluk orada siliniyor.
+    for madde in cikarim.hap_ozet:
+        for yil in _YIL.findall(madde):
+            if yil not in metin:
+                return KapiSonucu(
+                    Karar.YUKSELT, f"A7: ozette metinde olmayan yil {yil}"
+                )
+
+    return KapiSonucu(Karar.YAYINLA)
+
+
+_YIL = re.compile(r"(?<!\d)(?:19|20)\d{2}(?!\d)")
+
+
+# ------------------------------------------------ Aşama B: sayının anlamı
+#
+# 2026-09-26 veri denetimi: 962 skorlu bildirimin 10'unda tutar metinde
+# birebir geçiyordu (A1–A3 doğru geçti) ama şirketin geliri değildi —
+# şirketin kendi alımı, kendi yatırımı, idarenin tahmini bedeli ya da
+# artışla birlikte ikinci kez sayılan yeni toplam. Onunun onu da "önemli"
+# ya da "mega" kademesindeydi: bu hata tutarı hep büyütüyor. Prompt'un 4.
+# ve 5. kuralı bunları zaten yasaklıyor; model aynı şirketin aynı tip
+# metninde bir kez uyup bir kez uymadı (TOASO 2024-11 / 2025-09).
+#
+# Buradaki red model hatası sayılmaz, veri şüphesidir: bildirim elle
+# kuyruğa düşer. Elle karar `data/elle_duzeltmeler.json`'a yazılır.
+
+# Tutarın geçtiği cümlede aranır (normalize edilmiş metin: ı → i).
+# Kalıplar denetimde gerçek bildirimlerle ayarlandı; "imzalamak için
+# davet" bilerek YOK — kamu ihalesinde işi kazandın demek (ALVES).
+_ANLAM_KALIPLARI: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("tahmini ihale bedeli", re.compile(r"muhammen|yaklaşik maliyet")),
+    (
+        "yatirim tutari",
+        re.compile(
+            r"yatirim (bütçe|tutar|bedel|maliyet)\w*|tutara kadar yatirim"
+            r"|toplam yatirim\b"
+        ),
+    ),
+    (
+        "gorusme asamasi",
+        re.compile(r"görüşmelere başlan|görüşmelerine davet|müzakerelere başlan"),
+    ),
+    ("on odeme", re.compile(r"ön ödeme")),
+)
+
+# Artış + yeni toplam eşleşmesinde fark bu kadardan küçükse tesadüf
+# sayılır (yıllar, adetler metinde her yerde).
+_ASGARI_FARK = Decimal("1000")
+
+
+def _tutar_cumlesi(metin: str, alinti: str) -> str:
+    """Normalize metinde alıntıyı içeren cümle."""
+    i = metin.find(alinti)
+    if i < 0:
+        return alinti
+    bas = max(metin.rfind(". ", 0, i), metin.rfind("\n", 0, i)) + 1
+    sonlar = [
+        j
+        for j in (metin.find(". ", i + len(alinti)), metin.find("\n", i + len(alinti)))
+        if j >= 0
+    ]
+    return metin[bas : min(sonlar) if sonlar else len(metin)]
+
+
+def anlam_kapisi(
+    skorlu: Sequence[Tutar],
+    ham_metin_tr: str,
+    *,
+    karsi_taraf_niteligi: str | None,
+) -> KapiSonucu:
+    """Aşama B, anlam kontrolleri (B4–B6): sayı şirketin geliri mi?
+
+    Yalnız skora giren kalemlere bakılır; tutar yoksa büyüklük iddiası da
+    yoktur ve bildirim bu kapıdan geçer.
+    """
+    if not skorlu:
+        return KapiSonucu(Karar.YAYINLA)
+
+    # B4: KAP'ın yapılandırılmış alanı karşı tarafı tedarikçi diyor —
+    # şirket alıcı olabilir. Alan tek başına güvenilir değil (FORTE,
+    # ALVES kendilerini yazmış) ama denetimde 8 işaretin 4'ü gerçek
+    # alımdı: elle bakmaya değer.
+    nitelik = (karsi_taraf_niteligi or "").casefold()
+    if "tedarik" in nitelik or "supplier" in nitelik:
+        return KapiSonucu(
+            Karar.ELLE, "B4: karsi taraf niteligi tedarikci, sirket alici olabilir"
+        )
+
+    metin = normalize(ham_metin_tr)
+    for kalem in skorlu:
+        cumle = _tutar_cumlesi(metin, normalize(kalem.alinti))
+        for ad, kalip in _ANLAM_KALIPLARI:
+            if kalip.search(cumle):
+                return KapiSonucu(Karar.ELLE, f"B5: tutar cumlesinde {ad}")
+
+    # B6: bir kalem = aynı para birimindeki başka kalem + metindeki bir
+    # sayı → büyüğü "yeni toplam", küçüğü artış; ikisi birden sayılmış.
+    # ORGE 2025-03-18: 360 mn = 213,2 mn (eski) + 146,8 mn (artış).
+    metin_sayilari = set(sayilari_bul(ham_metin_tr))
+    for buyuk in skorlu:
+        for kucuk in skorlu:
+            if buyuk is kucuk or buyuk.para_birimi != kucuk.para_birimi:
+                continue
+            fark = buyuk.deger - kucuk.deger
+            if fark >= _ASGARI_FARK and fark in metin_sayilari:
+                return KapiSonucu(
+                    Karar.ELLE,
+                    f"B6: {buyuk.deger} = {kucuk.deger} + {fark}, "
+                    "yeni toplam artisla birlikte sayilmis",
+                )
 
     return KapiSonucu(Karar.YAYINLA)
 

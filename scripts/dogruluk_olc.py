@@ -68,7 +68,8 @@ def main() -> int:
                 "select distinct on (c.kap_id) c.kap_id, b.ticker, c.veri, "
                 "       c.prompt_versiyon, c.model, b.ham_metin_tr, "
                 "       b.yayin_zamani, b.guncelleme_mi, "
-                "       b.kap_alanlari->>'karsi_taraf' "
+                "       b.kap_alanlari->>'karsi_taraf', "
+                "       b.kap_alanlari->>'karsi_taraf_niteligi' "
                 "from public.cikarim c join public.bildirim b using (kap_id) "
                 # `%s::text` şart: Postgres tip çıkarımı NULL parametrede
                 # başarısız oluyor (IndeterminateDatatype).
@@ -95,6 +96,7 @@ def main() -> int:
                 an,
                 guncelleme_mi,
                 karsi_taraf,
+                nitelik,
             ) = satir
             etiket = etiketler[kap_id]
             beklenen = etiket["tutarlar"]
@@ -115,6 +117,7 @@ def main() -> int:
                     ham_metin_tr=ham_metin or "",
                     guncelleme_mi=bool(guncelleme_mi),
                     karsi_taraf_acik=karsi_taraf_acik(karsi_taraf),
+                    karsi_taraf_niteligi=nitelik,
                 )
 
             karar = olc(veri)
