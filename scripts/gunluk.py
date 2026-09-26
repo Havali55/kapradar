@@ -152,6 +152,9 @@ def main() -> int:
     adim("güncelleme bağları", ["scripts/bag_kur.py"], hatalar)
     adim("tepki (CAR)", ["scripts/tepki_hesapla.py"], hatalar)
     adim("tahta + sıklık", ["scripts/baglam_hesapla.py"], hatalar)
+    # Rapor; yayında kapıya takılan satır ya da karar bekleyen bildirim
+    # varsa adım hata sayılır ve özette görünür.
+    adim("veri denetimi", ["scripts/veri_denetimi.py", "--kati"], hatalar)
 
     print("\n=== özet ===")
     if hatalar:
