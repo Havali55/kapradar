@@ -27,18 +27,40 @@ export function yuzde(oran: number, ondalik = 1): string {
 }
 
 /**
- * İyelik ekli yüzde: "%2,3'ü", "%37,6'sı". Tek ondalık basıldığı için
- * ek her zaman son rakamın okunuşuna uyar (üç → 'ü, altı → 'sı).
+ * İyelik ekli yüzde: "%2,3'ü", "%46'sı", "%5,46'sı". Ek sayının sesli
+ * okunuşundaki SON sözcüğe uyar. Ondalık varsa virgülden sonrası ayrı bir
+ * sayı gibi okunur ("beş virgül kırk altı" → 'sı), yoksa tam kısım.
+ * Birler sıfırsa onlar sözcüğü belirler (kırk → 'ı), o da sıfırsa
+ * yüz/bin. Eski sürüm yalnız tek ondalığı biliyordu; tam sayı ve iki
+ * ondalık basan yerler eki elle "'i" yazıyordu ("%46'i", "%5,46'i").
  */
-const SON_RAKAM_EKI = ["'ı", "'i", "'si", "'ü", "'ü", "'i", "'sı", "'si", "'i", "'u"];
-export function yuzdeIyelik(oran: number): string {
-  const metin = yuzde(oran, 1);
-  return metin + SON_RAKAM_EKI[Number(metin.slice(-1))];
+const BIRLER_EKI = ["", "'i", "'si", "'ü", "'ü", "'i", "'sı", "'si", "'i", "'u"];
+const ONLAR_EKI = ["", "'u", "'si", "'u", "'ı", "'si", "'ı", "'i", "'i", "'ı"];
+
+function okunusEki(rakamlar: string): string {
+  const n = rakamlar.replace(/^0+/, "");
+  if (n === "") return "'ı"; // sıfır
+  const birler = Number(n[n.length - 1]);
+  if (birler) return BIRLER_EKI[birler];
+  const onlar = n.length > 1 ? Number(n[n.length - 2]) : 0;
+  if (onlar) return ONLAR_EKI[onlar];
+  const sondakiSifir = n.length - n.replace(/0+$/, "").length;
+  if (sondakiSifir === 2) return "'ü"; // yüz
+  return sondakiSifir < 6 ? "'i" : "'u"; // bin … milyon
 }
 
+export function yuzdeIyelik(oran: number, ondalik = 1): string {
+  const metin = yuzde(oran, ondalik);
+  const [tam, kesir] = metin.slice(1).replace(/\./g, "").split(",");
+  return metin + okunusEki(kesir ?? tam);
+}
+
+/** "+%3,00" · "−%4,48" · sıfıra yuvarlanan değer işaretsiz. */
 export function isaretliYuzde(oran: number, ondalik = 2): string {
-  const s = oran > 0 ? "+" : "";
-  return `${s}%${sayi(oran * 100, ondalik)}`;
+  const metin = sayi(Math.abs(oran) * 100, ondalik);
+  const sifir = /^[0.,]+$/.test(metin);
+  const isaret = sifir ? "" : oran > 0 ? "+" : "−";
+  return `${isaret}%${metin}`;
 }
 
 const PARA_ADI: Record<string, string> = {

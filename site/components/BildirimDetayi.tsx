@@ -359,7 +359,7 @@ export default function BildirimDetayi({
             hareket etti; ortadaki yarısı{" "}
             <span className="mono">{isaretliYuzde(b.panel.altCeyrek)}</span> ile{" "}
             <span className="mono">{isaretliYuzde(b.panel.ustCeyrek)}</span>{" "}
-            arasında kaldı, <span className="mono">{yuzde(b.panel.pozitifOrani, 0)}</span>&apos;i
+            arasında kaldı, <span className="mono">{yuzdeIyelik(b.panel.pozitifOrani, 0)}</span>
             piyasayı geçti.
           </p>
           <p className="tutar-yok-not">
