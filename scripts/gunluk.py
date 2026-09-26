@@ -148,6 +148,8 @@ def main() -> int:
     else:
         print("\n=== çıkarım atlandı (--llm verilmedi) ===")
 
+    # Çıkarımdan sonra: "aynı iş" türü yayındaki skorlu kalemlere bakıyor.
+    adim("güncelleme bağları", ["scripts/bag_kur.py"], hatalar)
     adim("tepki (CAR)", ["scripts/tepki_hesapla.py"], hatalar)
     adim("tahta + sıklık", ["scripts/baglam_hesapla.py"], hatalar)
 
