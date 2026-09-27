@@ -2244,6 +2244,48 @@ a:hover {
 .grafik a:focus-visible .cikis {
   stroke-width: 3.5px;
 }
+/* Dikey ölçek seçimi: ciro işleri ezdiğinde. Koyu plakanın üstünde. */
+.olcek-sec {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 12px;
+}
+.olcek-sec button {
+  font: 12px var(--yazi-sans), system-ui, sans-serif;
+  color: var(--plaka-mut);
+  background: transparent;
+  border: 1px solid var(--plaka-ken);
+  border-radius: 999px;
+  padding: 4px 11px;
+  cursor: pointer;
+}
+.olcek-sec button[aria-pressed="true"] {
+  background: var(--plaka-yazi);
+  border-color: var(--plaka-yazi);
+  color: var(--plaka);
+}
+.olcek-sec button:focus-visible {
+  outline: 2px solid var(--p-duyuru);
+  outline-offset: 2px;
+}
+.grafik .rapor-etiket {
+  font-size: 10px;
+  fill: var(--p-ciro);
+}
+.grafik .sag-ust {
+  fill: var(--plaka-yazi);
+}
+.grafik .uc-oran {
+  fill: var(--plaka-yazi);
+  font-weight: 600;
+  font-size: 12px;
+}
+.grafik .oran-ayrac {
+  fill: none;
+  stroke: var(--plaka-mut);
+  stroke-width: 1;
+}
 .grafik .uc-etiket {
   font-weight: 600;
   font-size: 11.5px;
