@@ -500,6 +500,73 @@ export async function hisseSecenekleriGetir(): Promise<HisseSecenek[]> {
   return veri;
 }
 
+/**
+ * Ana sayfanın okuduğu sütunlar. `bildirimleriGetir` 60 sütun çekip her
+ * satıra akran paneli kuruyor; ana sayfaya bunların hiçbiri gerekmiyor.
+ */
+const ANA_SUTUNLAR =
+  "kap_id, ticker, sirket, yayin_zamani, hap_ozet, is_tanimi, ciro_orani, " +
+  "net_tutar_tl, karsi_taraf, karsi_taraf_acik, onceki_tur, ttm_hasilat, elle_karar";
+
+export type AnaSatir = Pick<
+  AkisSatiri,
+  | "kap_id"
+  | "ticker"
+  | "sirket"
+  | "yayin_zamani"
+  | "hap_ozet"
+  | "is_tanimi"
+  | "ciro_orani"
+  | "net_tutar_tl"
+  | "karsi_taraf"
+  | "karsi_taraf_acik"
+  | "onceki_tur"
+  | "ttm_hasilat"
+  | "elle_karar"
+>;
+
+/** Yayındaki bütün bildirimler, yeniden eskiye, ana sayfanın sütunlarıyla. */
+export async function anaSatirlariGetir(): Promise<AnaSatir[]> {
+  return hepsiniOku<AnaSatir>("Ana sayfa", (bas, son) =>
+    supabase
+      .from("akis")
+      .select(ANA_SUTUNLAR)
+      .order("yayin_zamani", { ascending: false })
+      .order("kap_id")
+      .range(bas, son),
+  );
+}
+
+/** `reel_buyume` görünümü: rapor başına büyüme (`donem_buyume`, Faz 1). */
+export type ReelBuyumeSatiri = {
+  ticker: string;
+  donem_sonu: string;
+  ay_sayisi: number;
+  hasilat: number;
+  para_birimi: string | null;
+  buyume: number | null;
+  reel: boolean;
+};
+
+export async function reelBuyumeGetir(): Promise<ReelBuyumeSatiri[]> {
+  const satirlar = await hepsiniOku<ReelBuyumeSatiri>("Reel büyüme", (bas, son) =>
+    supabase
+      .from("reel_buyume")
+      .select("ticker, donem_sonu, ay_sayisi, hasilat, para_birimi, buyume, reel")
+      .order("ticker")
+      .order("donem_sonu")
+      .order("ay_sayisi")
+      .range(bas, son),
+  );
+  // numeric sütunlar JSON'da sayı gelir; metin gelirse karşılaştırma
+  // ve bölme sessizce bozulmasın.
+  return satirlar.map((s) => ({
+    ...s,
+    hasilat: Number(s.hasilat),
+    buyume: s.buyume === null ? null : Number(s.buyume),
+  }));
+}
+
 /** `/kap/[kap_id]` için statik parametreler. */
 export async function kapIdleriGetir(): Promise<string[]> {
   const satirlar = await hepsiniOku<{ kap_id: string }>("kap_id listesi", (bas, son) =>
