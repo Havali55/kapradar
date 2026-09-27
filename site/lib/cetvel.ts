@@ -42,14 +42,42 @@ export function kovanYerlesimi(
   return kayma;
 }
 
+/**
+ * Eksen etiketlerinden birbirine binmeyenleri seçer. İki uç her zaman
+ * kalır (ölçeğin tabanı ve tavanı); aradakiler soldan sağa, yerleşmiş
+ * hiçbir etikete `bosluk`tan yakın değilse. Telefonda %50 ile %100
+ * üst üste biniyordu. Dönen: kalan indeksler, sıralı.
+ */
+export function seyrekEtiketler(
+  kutular: readonly { x1: number; x2: number }[],
+  bosluk = 4,
+): number[] {
+  const n = kutular.length;
+  if (n <= 2) return kutular.map((_, i) => i);
+  const kalan = [0, n - 1];
+  for (let i = 1; i < n - 1; i++) {
+    const k = kutular[i];
+    const bos = kalan.every(
+      (j) => k.x2 + bosluk <= kutular[j].x1 || kutular[j].x2 + bosluk <= k.x1,
+    );
+    if (bos) kalan.push(i);
+  }
+  return kalan.sort((a, b) => a - b);
+}
+
 export type Nokta = { x: number; y: number; r: number };
 type Kutu = { x1: number; x2: number; y1: number; y2: number };
 
 const cakisir = (a: Kutu, b: Kutu) =>
   a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
 
-/** Etiket kutusunun yüksekliği: 11 px yazı + pay. */
-const ETIKET_YUK = 12;
+// 11 px JetBrains Mono'nun taban çizgisine göre gerçek sınırları (tarayıcıda
+// ölçüldü): 11 px yukarı, 3 px aşağı. İlk sürüm kutuyu −10/+2 sanıyordu,
+// alta konan etiket kendi noktasına 2 px biniyordu.
+const YAZI_UST = 11;
+const YAZI_ALT = 3;
+/** Etiketle nokta arasındaki boşluk. */
+const ARALIK = 2;
 
 /**
  * Etiketleri istek sırasıyla (önemliden önemsize) noktanın üstüne ya da
@@ -57,6 +85,8 @@ const ETIKET_YUK = 12;
  * noktaya, yerleşmiş etikete ya da alanın dışına taşan aday atlanır.
  * Dört aday da düşerse etiket konmaz (ipucu hâlâ var). Yatayda etiket
  * alanın içine kaydırılır.
+ *
+ * Noktanın `r`'si çizilen kenarı da içermeli (kenar kalınlığının yarısı).
  *
  * Dönen: nokta indeksi → etiketin taban çizgisi (ortası x, taban y).
  */
@@ -71,10 +101,12 @@ export function etiketYerlestir(
     const p = noktalar[i];
     const x = Math.min(Math.max(p.x, w / 2), alan.w - w / 2);
     for (const kat of [-1, 1, -2, 2]) {
-      const uzak = (Math.abs(kat) - 1) * (ETIKET_YUK + 2);
+      const uzak = (Math.abs(kat) - 1) * (YAZI_UST + YAZI_ALT + ARALIK);
       const taban =
-        kat < 0 ? p.y - p.r - 4 - uzak : p.y + p.r + ETIKET_YUK - 2 + uzak;
-      const kt = { x1: x - w / 2, x2: x + w / 2, y1: taban - ETIKET_YUK + 2, y2: taban + 2 };
+        kat < 0
+          ? p.y - p.r - ARALIK - YAZI_ALT - uzak
+          : p.y + p.r + ARALIK + YAZI_UST + uzak;
+      const kt = { x1: x - w / 2, x2: x + w / 2, y1: taban - YAZI_UST, y2: taban + YAZI_ALT };
       if (kt.y1 < 0 || kt.y2 > alan.h) continue;
       const noktaya = noktalar.some(
         (q, j) =>

@@ -279,6 +279,14 @@ export const KADEME_ADI: Record<string, string> = {
   mega: "Mega iş",
 };
 
+/**
+ * Kat biçimi: "1,38×". İki ondalıkta sıfıra yuvarlanan oran "<0,01×":
+ * "0,00×" duyurulmuş bir işi hiç yokmuş gibi gösterirdi.
+ */
+export function kat(oran: number): string {
+  return oran > 0 && oran < 0.005 ? "<0,01×" : `${sayi(oran, 2)}×`;
+}
+
 /** İstanbul takvimiyle "26 Eyl" ya da uzun hâli "26 Eylül". */
 export function gunAy(isoTarih: string, uzun = false): string {
   return new Date(isoTarih).toLocaleDateString(TR, {

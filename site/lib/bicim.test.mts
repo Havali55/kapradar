@@ -9,6 +9,7 @@ import { test } from "node:test";
 
 import {
   gunAy,
+  kat,
   isaretliYuzde,
   istanbulGunu,
   tahtaGorunumu,
@@ -65,6 +66,12 @@ test("gunAy İstanbul takvimiyle: 21:00 UTC'den sonrası ertesi gün", () => {
   assert.equal(gunAy("2026-09-25T22:30:00Z"), "26 Eyl");
   assert.equal(gunAy("2026-09-25T20:30:00Z"), "25 Eyl");
   assert.equal(gunAy("2026-09-25T22:30:00Z", true), "26 Eylül");
+});
+
+test("kat: iki ondalıkta sıfıra yuvarlanan oran 0,00× diye yazılmaz", () => {
+  assert.equal(kat(1.3812), "1,38×");
+  assert.equal(kat(0.0071), "0,01×");
+  assert.equal(kat(0.0032), "<0,01×");
 });
 
 test("yilda: bulunma eki yılın okunuşundaki son sözcüğe uyar", () => {
