@@ -61,6 +61,17 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     [],
   );
 
+  // Gün başlığındaki "Bugün" / "Dün" saate bağlı; sayfa sunucuda önceden
+  // üretiliyor, tarayıcı başka bir anda çalışıyor. İlk çizim mutlak
+  // tarihle, göreli ad yalnız tarayıcıda, açıldıktan sonra.
+  const [simdi, setSimdi] = useState<Date | null>(null);
+  useEffect(() => setSimdi(new Date()), []);
+  const enYeni = useMemo(
+    () => bildirimler.reduce((m, b) => (b.yayin_zamani > m ? b.yayin_zamani : m), ""),
+    [bildirimler],
+  );
+  const gunAdi = (iso: string) => gunEtiketi(iso, simdi, enYeni || undefined);
+
   // Derin bağlantı: ?b=<kap_id> ile paylaşılan bildirim açılır.
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("b");
@@ -213,7 +224,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
   const gunSayisi = new Map<string, number>();
   if (gunlu) {
     for (const b of suzulmus) {
-      const g = gunEtiketi(b.yayin_zamani);
+      const g = gunAdi(b.yayin_zamani);
       gunSayisi.set(g, (gunSayisi.get(g) ?? 0) + 1);
     }
   }
@@ -351,7 +362,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
 
       <div className="akis-liste">
         {suzulmus.map((b, i) => {
-          const gun = gunEtiketi(b.yayin_zamani);
+          const gun = gunAdi(b.yayin_zamani);
           const ayracGoster = gunlu && gun !== oncekiGun;
           if (ayracGoster) oncekiGun = gun;
           return (

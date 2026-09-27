@@ -111,20 +111,43 @@ export function gecenSure(isoTarih: string, simdi = Date.now()): string {
   return ay < 12 ? `${ay} ay önce` : `${Math.round(ay / 12)} yıl önce`;
 }
 
-export function gunEtiketi(isoTarih: string, simdi = new Date()): string {
-  const d = new Date(isoTarih);
-  const gunFarki = Math.floor(
-    (new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate()).getTime() -
-      new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) /
-      86400000,
-  );
-  if (gunFarki === 0) return "Bugün";
-  if (gunFarki === 1) return "Dün";
-  return d.toLocaleDateString(TR, {
-    day: "numeric",
-    month: "long",
-    year: d.getFullYear() === simdi.getFullYear() ? undefined : "numeric",
-  });
+const IST_GUN = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Istanbul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** İstanbul takvimiyle gün, "2026-09-24"; karşılaştırma anahtarı. */
+function istanbulGunAnahtari(t: string | Date): string {
+  return IST_GUN.format(typeof t === "string" ? new Date(t) : t);
+}
+
+/**
+ * Gün başlığı, İstanbul takvimiyle: "Bugün", "Dün", "24 Eylül", başka
+ * yılsa "24 Eylül 2025". Sunucu (Vercel, UTC) ile tarayıcı aynı günü
+ * bulsun diye yerel saat dilimi kullanılmıyor. `simdi` null ise (akışın
+ * sunucudaki ön üretimi) göreli ad verilmez: ön üretimle tarayıcı farklı
+ * anlarda çalışıyor, "Bugün" hidrasyonu bozardı. Yılın yazılıp
+ * yazılmayacağına o zaman `yilReferansi` karar verir.
+ */
+export function gunEtiketi(
+  isoTarih: string,
+  simdi: Date | null = new Date(),
+  yilReferansi?: string,
+): string {
+  const gun = istanbulGunAnahtari(isoTarih);
+  if (simdi) {
+    if (gun === istanbulGunAnahtari(simdi)) return "Bugün";
+    if (gun === istanbulGunAnahtari(new Date(simdi.getTime() - 86_400_000))) return "Dün";
+  }
+  const buYil = simdi
+    ? istanbulGunAnahtari(simdi).slice(0, 4)
+    : yilReferansi
+      ? istanbulGunAnahtari(yilReferansi).slice(0, 4)
+      : null;
+  const etiket = gunAy(isoTarih, true);
+  return buYil && gun.slice(0, 4) !== buYil ? `${etiket} ${gun.slice(0, 4)}` : etiket;
 }
 
 /** "2026-10-15" → "15.10.2026". Saat dilimi dönüşümü yok: gün olduğu gibi. */

@@ -10,6 +10,7 @@ import { test } from "node:test";
 import {
   cirosununKati,
   gunAy,
+  gunEtiketi,
   kat,
   isaretliYuzde,
   istanbulGunu,
@@ -68,6 +69,22 @@ test("gunAy İstanbul takvimiyle: 21:00 UTC'den sonrası ertesi gün", () => {
   assert.equal(gunAy("2026-09-25T22:30:00Z"), "26 Eyl");
   assert.equal(gunAy("2026-09-25T20:30:00Z"), "25 Eyl");
   assert.equal(gunAy("2026-09-25T22:30:00Z", true), "26 Eylül");
+});
+
+test("gunEtiketi İstanbul takvimiyle; saatsiz çağrı göreli ad vermez", () => {
+  // 22:17 UTC = ertesi gün 01:17 İstanbul (BETAE, 10.09.2026). Sunucu UTC'de
+  // "10 Eylül" deyip tarayıcı "11 Eylül" deyince akış hidrasyonu bozuluyordu.
+  const simdi = new Date("2026-09-27T09:00:00Z");
+  assert.equal(gunEtiketi("2026-09-10T22:17:18Z", simdi), "11 Eylül");
+  assert.equal(gunEtiketi("2026-09-26T21:30:00Z", simdi), "Bugün");
+  assert.equal(gunEtiketi("2026-09-26T20:30:00Z", simdi), "Dün");
+  assert.equal(gunEtiketi("2025-12-31T22:30:00Z", simdi), "1 Ocak");
+  assert.equal(gunEtiketi("2025-12-31T20:30:00Z", simdi), "31 Aralık 2025");
+  // "Şimdi" verilmezse (sunucudaki ön üretim) mutlak tarih; yıl, verilen
+  // referansın yılından farklıysa yazılır.
+  assert.equal(gunEtiketi("2026-09-26T21:30:00Z", null, "2026-09-25T10:00:00Z"), "27 Eylül");
+  assert.equal(gunEtiketi("2025-03-01T10:00:00Z", null, "2026-09-25T10:00:00Z"), "1 Mart 2025");
+  assert.equal(gunEtiketi("2025-03-01T10:00:00Z", null), "1 Mart");
 });
 
 test("kat: iki ondalıkta sıfıra yuvarlanan oran 0,00× diye yazılmaz", () => {
