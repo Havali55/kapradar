@@ -26,6 +26,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# Resmî TÜFE tablosu (kap_radar.tufe) paketle birlikte gider.
+[tool.setuptools.package-data]
+kap_radar = ["*.csv"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]

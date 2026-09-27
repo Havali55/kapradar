@@ -24,6 +24,7 @@ from typing import Sequence
 
 from selectolax.parser import HTMLParser
 
+from kap_radar import tufe
 from kap_radar.ayristirici import tarih_listesi_coz, yayin_zamani_coz
 
 # Gelir tablosu parçası `3100xx` rol ailesiyle işaretli. Parça sırası
@@ -300,9 +301,12 @@ class Ttm:
     yontem: str  # "yillik" | "ytd_koprusu"
     kaynak_indeksler: tuple[int, ...]
     # Köprüde yıllık terime uygulanan TMS 29 çarpanı. None: uygulanmadı
-    # (yıllık yöntem ya da katsayı çözülemedi); 1: şirket yeniden ifade
-    # etmiyor. Bkz. `yeniden_ifade_katsayisi`.
+    # (yıllık yöntem, TMS 29 uygulamayan ya da politikası bilinmeyen
+    # şirket); 1: şirket yeniden ifade etmiyor. Bkz. `yeniden_ifade_katsayisi`.
     enflasyon_carpani: Decimal | None = None
+    # Çarpan nereden: "sirket" (kendi yeniden ifade katsayısı) ya da
+    # "tufe" (resmî TÜFE oranı; katsayı yok ya da TMS 29 geçişiyle kirli).
+    carpan_kaynagi: str | None = None
 
 
 def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
@@ -339,19 +343,36 @@ def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
 
     # TMS 29: iki YTD terimi cari dönem sonunun TL'sinde, yıllık terim bir
     # önceki Aralık'ın TL'sinde. Yıllık terim `ay_sayisi` ay ileri taşınır.
-    # Katsayı çözülemezse düzeltmesiz köprü kullanılıyor ve bu işaretleniyor
-    # (enflasyon_carpani=None) — payda yine de eskisi kadar doğru.
     katsayi = yeniden_ifade_katsayisi(acik, son)
+    if (
+        katsayi is not None
+        and son.onceki_donem_sonu is not None
+        and son.onceki_donem_sonu < TMS29_ILK_DONEM
+    ):
+        # Karşılaştırılan dönem TMS 29'dan önce bitti: ilk yayını tarihî
+        # maliyetle yapılmıştı, oran enflasyonu değil muhasebe geçişini
+        # ölçüyor (9A2024 medyanı 1,79; aynı şirketlerin 12 aylık katsayısı
+        # 1,44 — dokuz aylık düzeltme on iki aylıktan büyük olamaz).
+        katsayi = None
     yillik_terim = yillik.hasilat
-    carpan = None
+    carpan = kaynagi = None
     # Sıra kronolojik ve en güncel rapor SONDA: çağıranlar kaynak
     # bağlantısı için `kaynak_indeksler[-1]` kullanıyor.
     kaynak = (yillik.kap_index, son.kap_index)
     if katsayi is not None:
         k, ilk_yayin = katsayi
         carpan = k ** (Decimal(son.ay_sayisi) / Decimal(12))
-        yillik_terim = yillik.hasilat * carpan
+        kaynagi = "sirket"
         kaynak = (ilk_yayin, yillik.kap_index, son.kap_index)
+    elif tms29_uygular(donemler):
+        # Şirket yeniden ifade ediyor ama bu köprü için kendi katsayısı yok
+        # ya da kirli: resmî TÜFE oranı, o gün yayımlanmış olanıyla.
+        carpan = tufe.oran(yillik.donem_sonu, son.donem_sonu, an)
+        kaynagi = "tufe" if carpan is not None else None
+    # Katsayı da TÜFE de yoksa düzeltmesiz köprü kullanılıyor ve bu
+    # işaretleniyor (enflasyon_carpani=None).
+    if carpan is not None:
+        yillik_terim = yillik.hasilat * carpan
 
     return Ttm(
         hasilat=(yillik_terim + son.hasilat - son.onceki_yil_hasilat).quantize(Decimal(1)),
@@ -360,7 +381,35 @@ def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
         yontem="ytd_koprusu",
         kaynak_indeksler=kaynak,
         enflasyon_carpani=carpan,
+        carpan_kaynagi=kaynagi,
     )
+
+
+# TMS 29 ilk kez 31.12.2023 tarihli finansal tablolarda uygulandı. Daha
+# önce biten dönemlerin ilk yayını tarihî maliyetle yapılmıştı.
+TMS29_ILK_DONEM = date(2023, 12, 31)
+
+
+def tms29_uygular(donemler: Sequence[DonemHasilat]) -> bool | None:
+    """Şirket raporlarını TMS 29'a göre yeniden ifade ediyor mu?
+
+    Bu bir muhasebe politikası, bir değer değil: o gün raporun dipnotunda
+    yazıyordu. Burada politika, şirketin herhangi bir raporundaki yeniden
+    ifade katsayısından okunuyor (geçişle kirlenmiş katsayı da politikayı
+    doğru gösterir: 1,79 da yeniden ifade demektir). Hiçbir katsayı
+    okunamıyorsa bilinmiyor (None) ve köprü düzeltmesiz kalıyor.
+    BDDK muafiyetli bankalar ve USD raporlayanlarda katsayı 1: False.
+    """
+    katsayilar = [
+        c[0]
+        for d in donemler
+        if (c := yeniden_ifade_katsayisi(donemler, d)) is not None
+    ]
+    if any(k >= REEL_ESIK for k in katsayilar):
+        return True
+    if katsayilar:
+        return False
+    return None
 
 
 # Yeniden ifade katsayısının kabul aralığı. Arşivde 2024 dönemleri için

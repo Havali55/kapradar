@@ -29,8 +29,8 @@ from kap_radar.finansal import donem_buyumeleri, ttm_basamaklari  # noqa: E402
 
 BASAMAK_EKLE = """
 insert into public.ttm_seri (ticker, gecerlilik_basi, hasilat, donem_sonu,
-  para_birimi, yontem, enflasyon_carpani, kaynak_kap_index)
-values (%s, %s, %s, %s, %s, %s, %s, %s)
+  para_birimi, yontem, enflasyon_carpani, kaynak_kap_index, carpan_kaynagi)
+values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 BUYUME_EKLE = """
 insert into public.donem_buyume (ticker, kap_index, donem_sonu, ay_sayisi,
@@ -58,13 +58,13 @@ def main() -> int:
                 t = b.ttm
                 if t is None:
                     basamaklar.append(
-                        (ticker, b.gecerlilik_basi, None, None, None, None, None, None)
+                        (ticker, b.gecerlilik_basi, None, None, None, None, None, None, None)
                     )
                 else:
                     basamaklar.append(
                         (ticker, b.gecerlilik_basi, t.hasilat, t.donem_sonu,
                          t.para_birimi, t.yontem, t.enflasyon_carpani,
-                         t.kaynak_indeksler[-1])
+                         t.kaynak_indeksler[-1], t.carpan_kaynagi)
                     )
             for g in donem_buyumeleri(donemler):
                 buyumeler.append(
@@ -73,6 +73,7 @@ def main() -> int:
                      g.para_birimi, g.buyume, g.katsayi, g.reel)
                 )
 
+        print(f"çarpan kaynağı       : {dict(Counter(s[8] for s in basamaklar if s[2] is not None))}")
         buyumeli = [g for g in buyumeler if g[8] is not None]
         print(f"şirket (serisi olan) : {len({s[0] for s in basamaklar})}")
         print(f"ciro basamağı        : {len(basamaklar)} "
