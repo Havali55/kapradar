@@ -458,3 +458,81 @@ def _kopru_yilligi(
         d for d in acik if d.ay_sayisi == 12 and d.donem_sonu == hedef_sonu
     ]
     return max(adaylar, key=lambda d: d.yayin_zamani) if adaylar else None
+
+
+# ------------------------------------------------ türetilmiş seriler (site v3)
+
+# Katsayı bu eşiğin altındaysa rapor TMS 29'a göre yeniden ifade edilmemiş
+# sayılır ve büyümesi reel değil nominaldir. Arşivde ölçülen katsayılar iki
+# değerli: yeniden ifade eden şirkette 12 aylık TÜFE oranı (6A2026'da
+# 1,321), etmeyende tam 1,000 (2026-09-27'de 72 adaydan 7'si; BDDK
+# muafiyetli bankalar ve USD raporlayanlar da bu tarafta). Eşik, yıllık
+# enflasyon %5'in üstünde kaldıkça ikisini ayırır.
+REEL_ESIK = Decimal("1.05")
+
+
+@dataclass(frozen=True)
+class DonemBuyumesi:
+    """Bir raporun kendi karşılaştırma sütunundan çıkan büyüme."""
+
+    ticker: str
+    kap_index: int
+    donem_sonu: date
+    ay_sayisi: int
+    yayin_zamani: datetime
+    hasilat: Decimal
+    onceki_yil_hasilat: Decimal | None
+    para_birimi: str | None
+    # cari / geçen yılın aynı dönemi − 1. Karşılaştırma sütunu yoksa None.
+    buyume: Decimal | None
+    # TMS 29 katsayısı; çözülemezse None. Bkz. `yeniden_ifade_katsayisi`.
+    katsayi: Decimal | None
+
+    @property
+    def reel(self) -> bool:
+        """İki sütun aynı satın alma gücüyle mi? Değilse büyüme nominal."""
+        return self.katsayi is not None and self.katsayi >= REEL_ESIK
+
+
+def donem_buyumeleri(donemler: Sequence[DonemHasilat]) -> list[DonemBuyumesi]:
+    """Her (dönem sonu, ay sayısı) için son yayının büyümesi, eskiden yeniye.
+
+    İki sütun aynı rapordan geldiği için TMS 29 uygulayan şirkette oran,
+    dış TÜFE verisi olmadan reel büyümedir. Uygulamayanı ayırmak için
+    katsayı, raporun yayınlandığı an bilinen raporlarla çözülür
+    (point-in-time; `ttm_coz` ile aynı kural).
+
+    Aynı dönemin revizyonunda son yayın kazanır: düzeltme bir hatayı
+    gideriyorsa büyüme de düzelmiş hâliyle gösterilmeli.
+    """
+    son_yayin: dict[tuple[date, int], DonemHasilat] = {}
+    for d in donemler:
+        anahtar = (d.donem_sonu, d.ay_sayisi)
+        mevcut = son_yayin.get(anahtar)
+        if mevcut is None or d.yayin_zamani > mevcut.yayin_zamani:
+            son_yayin[anahtar] = d
+
+    sonuc = []
+    for anahtar in sorted(son_yayin):
+        d = son_yayin[anahtar]
+        buyume = katsayi = None
+        if d.onceki_yil_hasilat:
+            buyume = d.hasilat / d.onceki_yil_hasilat - 1
+            acik = [x for x in donemler if x.yayin_zamani <= d.yayin_zamani]
+            cozum = yeniden_ifade_katsayisi(acik, d)
+            katsayi = cozum[0] if cozum else None
+        sonuc.append(
+            DonemBuyumesi(
+                ticker=d.ticker,
+                kap_index=d.kap_index,
+                donem_sonu=d.donem_sonu,
+                ay_sayisi=d.ay_sayisi,
+                yayin_zamani=d.yayin_zamani,
+                hasilat=d.hasilat,
+                onceki_yil_hasilat=d.onceki_yil_hasilat,
+                para_birimi=d.para_birimi,
+                buyume=buyume,
+                katsayi=katsayi,
+            )
+        )
+    return sonuc

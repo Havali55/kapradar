@@ -23,6 +23,7 @@ from kap_radar.finansal import (
     DonemHasilat,
     aykiri_indeksler,
     birim_coz,
+    donem_buyumeleri,
     finansal_ayristir,
     gelir_tablosu_govdesi,
     konsolide_mi,
@@ -446,3 +447,63 @@ def test_yillik_yontemde_enflasyon_carpani_yok():
     sonuc = ttm_coz([FY2025], datetime(2026, 5, 1, tzinfo=ISTANBUL))
 
     assert sonuc.enflasyon_carpani is None
+
+
+# ------------------------------------------------ türetilmiş seriler (site v3)
+
+
+def test_buyume_ayni_raporun_iki_sutunundan_hesaplanir():
+    (b,) = donem_buyumeleri([YARIM2026])
+
+    assert b.buyume == Decimal("2597519683") / Decimal("2069654707") - 1
+    assert b.kap_index == 1649471
+    # Karşılaştırılan dönemin ilk yayını arşivde yok: katsayı bilinmiyor,
+    # büyüme reel sayılmıyor.
+    assert b.katsayi is None
+    assert b.reel is False
+
+
+def test_yeniden_ifade_eden_raporun_buyumesi_reel_sayilir():
+    buyumeler = donem_buyumeleri([YARIM2025_ILK, FY2025, YARIM2026])
+    b = next(x for x in buyumeler if x.donem_sonu == date(2026, 6, 30))
+
+    assert b.katsayi == Decimal("2069654707") / Decimal("1556131358")
+    assert b.reel is True
+
+
+def test_yeniden_ifade_etmeyen_sirketin_buyumesi_nominal_kalir():
+    """k = 1: iki sütun farklı TL'de, oran enflasyonu da içeriyor."""
+    ilk = donem(
+        sonu=date(2025, 6, 30), ay=6, hasilat="2069654707",
+        yayin=datetime(2025, 8, 12, tzinfo=ISTANBUL), indeks=1470000,
+    )
+    b = next(
+        x for x in donem_buyumeleri([ilk, YARIM2026])
+        if x.donem_sonu == date(2026, 6, 30)
+    )
+
+    assert b.katsayi == Decimal(1)
+    assert b.buyume is not None
+    assert b.reel is False
+
+
+def test_ayni_donemin_revizyonunda_buyume_son_yayindan():
+    duzeltme = donem(
+        sonu=date(2026, 6, 30), ay=6, hasilat="2700000000", onceki="2069654707",
+        yayin=datetime(2026, 9, 1, tzinfo=ISTANBUL), indeks=1660000,
+    )
+    (b,) = donem_buyumeleri([YARIM2026, duzeltme])
+
+    assert b.kap_index == 1660000
+    assert b.hasilat == Decimal("2700000000")
+
+
+def test_karsilastirma_sutunu_yoksa_buyume_yok():
+    tek = donem(
+        sonu=date(2026, 6, 30), ay=6, hasilat="100",
+        yayin=datetime(2026, 8, 1, tzinfo=ISTANBUL),
+    )
+    (b,) = donem_buyumeleri([tek])
+
+    assert b.buyume is None
+    assert b.reel is False
