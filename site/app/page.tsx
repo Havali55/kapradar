@@ -7,12 +7,11 @@ import NasilCalisiyor from "@/components/NasilCalisiyor";
 import SozGercek from "@/components/SozGercek";
 import { cetvelPenceresi, enBuyukler, karsiTarafMetni, ozetMetni } from "@/lib/anasayfa";
 import { gunAy, isaretliYuzde, kisaTarih, sayi } from "@/lib/bicim";
-import { ozetle, sozSatirlariKur } from "@/lib/soz";
 import {
   anaSatirlariGetir,
   hisseSecenekleriGetir,
   piyasaBandiGetir,
-  reelBuyumeGetir,
+  sozVerisiGetir,
 } from "@/lib/veri";
 
 // Veri hattı günde bir toplu koşuyor; saatlik tazeleme yeterli. Cetvel
@@ -22,9 +21,9 @@ export const revalidate = 3600;
 const SAYI_ADI = ["", "", "iki ", "üç "];
 
 export default async function AnaSayfa() {
-  const [satirlar, buyumeler, bant, hisseler] = await Promise.all([
+  const [satirlar, soz, bant, hisseler] = await Promise.all([
     anaSatirlariGetir(),
-    reelBuyumeGetir(),
+    sozVerisiGetir(),
     piyasaBandiGetir(),
     hisseSecenekleriGetir(),
   ]);
@@ -40,8 +39,6 @@ export default async function AnaSayfa() {
     zaman: s.yayin_zamani,
   }));
   const ilkUc = enBuyukler(pencere.isler);
-  const soz = sozSatirlariKur(satirlar, buyumeler);
-  const sozOzeti = soz ? ozetle(soz.satirlar) : null;
 
   const sirketSayisi = new Set(satirlar.map((s) => s.ticker)).size;
   const son = satirlar[0]?.yayin_zamani ?? null;
@@ -119,7 +116,7 @@ export default async function AnaSayfa() {
         </section>
       )}
 
-      {soz && sozOzeti && <SozGercek veri={soz} ozet={sozOzeti} />}
+      {soz?.ozet && <SozGercek veri={soz.veri} ozet={soz.ozet} />}
 
       <NasilCalisiyor
         yayinda={satirlar.length}
