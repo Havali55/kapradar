@@ -196,174 +196,160 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     });
   if (durum.yalnizTemiz)
     cipler.push({
-      ad: "Sadece sakin tahta",
+      ad: "Sakin tahta",
       temizle: () => guncelle({ yalnizTemiz: false }),
     });
   if (durum.yalnizAcik)
     cipler.push({
-      ad: "Müşteri adı açık",
+      ad: "Karşı tarafı belli",
       temizle: () => guncelle({ yalnizAcik: false }),
     });
 
   const skorsuzSayisi = bildirimler.filter((b) => b.ciro_orani === null).length;
 
-  // Gün ayraçları: liste tarihe göre sıralıyken anlamlı, skora göre değil.
+  // Gün başlıkları: liste tarihe göre sıralıyken anlamlı, büyüklüğe göre
+  // değil. Başlık o günün kaç bildirimi olduğunu da söylüyor.
   const gunlu = durum.sirala === "yeni";
+  const gunSayisi = new Map<string, number>();
+  if (gunlu) {
+    for (const b of suzulmus) {
+      const g = gunEtiketi(b.yayin_zamani);
+      gunSayisi.set(g, (gunSayisi.get(g) ?? 0) + 1);
+    }
+  }
   let oncekiGun = "";
+
+  const hap = <T extends string>(
+    secenekler: [T, string][],
+    secili: T,
+    sec: (v: T) => void,
+  ) =>
+    secenekler.map(([v, ad]) => (
+      <button key={v} type="button" aria-pressed={secili === v} onClick={() => sec(v)}>
+        {ad}
+      </button>
+    ));
 
   return (
     <>
-      <div className="filtre-cubugu">
-        <div className="akis-arama">
-          <span className="mono" aria-hidden="true">
-            ⌕
+      <div className="akis-suzgec">
+        <div className="akis-suzgec-ust">
+          <div className="akis-arama">
+            <svg className="buyutec" viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <input
+              ref={aramaRef}
+              type="search"
+              autoComplete="off"
+              spellCheck={false}
+              value={durum.arama}
+              onChange={(e) => guncelle({ arama: e.target.value })}
+              placeholder="Süz: ticker ya da unvan"
+              aria-label="Bildirimleri hisse kodu ya da şirket adıyla süz"
+            />
+            <kbd aria-hidden="true">/</kbd>
+          </div>
+          <span className="akis-sayi" aria-live="polite">
+            <b>{suzulmus.length.toLocaleString("tr-TR")}</b> /{" "}
+            {bildirimler.length.toLocaleString("tr-TR")} bildirim
           </span>
-          <input
-            ref={aramaRef}
-            value={durum.arama}
-            onChange={(e) => guncelle({ arama: e.target.value })}
-            placeholder="ASELS, THYAO…"
-            aria-label="Hisse kodu veya şirket adı ara"
-          />
-          <kbd className="tus">/</kbd>
-        </div>
-
-        <div className="segment">
-          <span className="segment-et mono">BÜYÜKLÜK</span>
-          {(["tum", "onemli", "mega"] as Buyukluk[]).map((e) => (
-            <button
-              key={e}
-              type="button"
-              aria-pressed={durum.buyukluk === e}
-              onClick={() => guncelle({ buyukluk: e })}
-            >
-              {BUYUKLUK_ADI[e]}
+          {cipler.length > 0 && (
+            <button type="button" className="sifirla" onClick={() => setDurum(BASLANGIC)}>
+              Süzgeçleri temizle
             </button>
-          ))}
+          )}
+          <p className="tus-yardim" aria-hidden="true">
+            <kbd className="tus">J</kbd>
+            <kbd className="tus">K</kbd> gez · <kbd className="tus">↵</kbd> aç ·{" "}
+            <kbd className="tus">Esc</kbd> kapat
+          </p>
         </div>
 
-        <div className="segment">
-          <span className="segment-et mono">TARİH</span>
-          {(
-            [
-              ["24", "24 saat"],
-              ["7", "7 gün"],
-              ["tum", "Tüm arşiv"],
-            ] as [Aralik, string][]
-          ).map(([d, ad]) => (
-            <button
-              key={d}
-              type="button"
-              aria-pressed={durum.aralik === d}
-              onClick={() => guncelle({ aralik: d })}
-            >
-              {ad}
-            </button>
-          ))}
+        <div className="akis-suzgec-alt">
+          <div className="suzgec-grup" role="group" aria-label="Büyüklük">
+            <span className="suzgec-et">Büyüklük</span>
+            <div className="suzgec">
+              {hap(
+                (["tum", "onemli", "mega"] as Buyukluk[]).map((e) => [e, BUYUKLUK_ADI[e]]),
+                durum.buyukluk,
+                (v) => guncelle({ buyukluk: v }),
+              )}
+            </div>
+          </div>
+          <div className="suzgec-grup" role="group" aria-label="Tarih">
+            <span className="suzgec-et">Tarih</span>
+            <div className="suzgec">
+              {hap<Aralik>(
+                [
+                  ["24", "24 saat"],
+                  ["7", "7 gün"],
+                  ["tum", "Tüm arşiv"],
+                ],
+                durum.aralik,
+                (v) => guncelle({ aralik: v }),
+              )}
+            </div>
+          </div>
+          <div className="suzgec-grup" role="group" aria-label="Sıra">
+            <span className="suzgec-et">Sıra</span>
+            <div className="suzgec">
+              {hap<Siralama>(
+                [
+                  ["yeni", "En yeni"],
+                  ["buyuk", "En büyük iş"],
+                ],
+                durum.sirala,
+                (v) => guncelle({ sirala: v }),
+              )}
+            </div>
+          </div>
+          <div className="suzgec-grup" role="group" aria-label="Yalnız şunlar">
+            <span className="suzgec-et">Göster</span>
+            <div className="suzgec">
+              <button
+                type="button"
+                aria-pressed={durum.yalnizAcik}
+                onClick={() => guncelle({ yalnizAcik: !durum.yalnizAcik })}
+                title="Şirketin iş yaptığı tarafın adını açıkladığı bildirimler"
+              >
+                Karşı tarafı belli
+              </button>
+              <button
+                type="button"
+                aria-pressed={durum.yalnizTemiz}
+                onClick={() => guncelle({ yalnizTemiz: !durum.yalnizTemiz })}
+                title="Bildirim gününde son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, volatilite tedbiri olmayan hisseler"
+              >
+                Sakin tahta
+              </button>
+              <button
+                type="button"
+                aria-pressed={durum.skorsuzlar}
+                onClick={() => guncelle({ skorsuzlar: !durum.skorsuzlar })}
+                title="Tutarı açıklanmamış ya da cirosu bilinmeyen bildirimler; varsayılan gizli"
+              >
+                Büyüklüğü bilinmeyenler ({skorsuzSayisi})
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div className="segment">
-          <span className="segment-et mono">SIRA</span>
-          {(
-            [
-              ["yeni", "En yeni"],
-              ["buyuk", "En büyük iş"],
-            ] as [Siralama, string][]
-          ).map(([d, ad]) => (
-            <button
-              key={d}
-              type="button"
-              aria-pressed={durum.sirala === d}
-              onClick={() => guncelle({ sirala: d })}
-            >
-              {ad}
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="anahtar"
-          aria-pressed={durum.yalnizTemiz}
-          onClick={() => guncelle({ yalnizTemiz: !durum.yalnizTemiz })}
-          title="Son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, volatilite tedbiri olmayan hisseler"
-        >
-          Sadece sakin tahta
-        </button>
-        <button
-          type="button"
-          className="anahtar"
-          aria-pressed={durum.skorsuzlar}
-          onClick={() => guncelle({ skorsuzlar: !durum.skorsuzlar })}
-          title="Tutarı açıklanmamış ya da cirosu bilinmeyen bildirimler"
-        >
-          Büyüklüğü bilinmeyenler ({skorsuzSayisi})
-        </button>
-        <button
-          type="button"
-          className="anahtar"
-          aria-pressed={durum.yalnizAcik}
-          onClick={() => guncelle({ yalnizAcik: !durum.yalnizAcik })}
-          title="Şirketin iş yaptığı tarafın adını açıkladığı bildirimler"
-        >
-          Müşteri adı açık
-        </button>
-
-        <div className="filtre-bos" />
-        <span className="sonuc-say mono">
-          {suzulmus.length} / {bildirimler.length} bildirim
-        </span>
-        {cipler.length > 0 && (
-          <button
-            type="button"
-            className="sifirla"
-            onClick={() => setDurum(BASLANGIC)}
-          >
-            sıfırla
-          </button>
-        )}
       </div>
 
       {cipler.length > 0 && (
         <div className="cip-satiri">
-          <span className="cip-et mono">AKTİF FİLTRE</span>
+          <span className="cip-et">Süzgeç</span>
           {cipler.map((c) => (
-            <button
-              key={c.ad}
-              type="button"
-              className="cip-filtre"
-              onClick={c.temizle}
-            >
+            <button key={c.ad} type="button" className="cip-filtre" onClick={c.temizle}>
               {c.ad} <span aria-hidden="true">×</span>
-              <span className="gizli-metin"> filtresini kaldır</span>
+              <span className="gizli-metin"> süzgecini kaldır</span>
             </button>
           ))}
-          <button
-            type="button"
-            className="sifirla"
-            onClick={() => setDurum(BASLANGIC)}
-          >
-            Tüm filtreleri temizle
-          </button>
         </div>
       )}
 
-      <p className="tus-yardim">
-        <span>
-          <kbd className="tus">J</kbd> <kbd className="tus">K</kbd> gez
-        </span>
-        <span>
-          <kbd className="tus">↵</kbd> aç
-        </span>
-        <span>
-          <kbd className="tus">/</kbd> ara
-        </span>
-        <span>
-          <kbd className="tus">Esc</kbd> kapat
-        </span>
-      </p>
-
-      <div className="liste">
+      <div className="akis-liste">
         {suzulmus.map((b, i) => {
           const gun = gunEtiketi(b.yayin_zamani);
           const ayracGoster = gunlu && gun !== oncekiGun;
@@ -371,13 +357,15 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
           return (
             <div key={b.kap_id}>
               {ayracGoster && (
-                <div className="gun-ayraci">
-                  <span className="mono">{gun.toLocaleUpperCase("tr")}</span>
-                </div>
+                <h2 className="as-gun">
+                  <b>{gun}</b>
+                  <span>{gunSayisi.get(gun)} bildirim</span>
+                </h2>
               )}
               <Kart
                 bildirim={b}
                 imlec={i === imlec}
+                gunlu={gunlu}
                 onAc={() => setSecili(b.kap_id)}
               />
             </div>
@@ -386,10 +374,9 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
 
         {suzulmus.length === 0 && (
           <div className="bos">
-            <div className="bos-bas">Filtrelere uyan bildirim yok</div>
+            <div className="bos-bas">Süzgeçlere uyan bildirim yok</div>
             <div className="bos-alt">
-              Tarih aralığını genişletmeyi veya tahta filtresini kaldırmayı
-              deneyin.
+              Tarih aralığını genişletmeyi ya da bir süzgeci kaldırmayı deneyin.
             </div>
           </div>
         )}
