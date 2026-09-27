@@ -67,7 +67,30 @@ export function onIkiAyAraligi(donemSonu: string): string {
   return `${ay(bas)} – ${ay(son)}`;
 }
 
+/**
+ * Grafikteki kısa dönem etiketi: "2026-06-30" → "6A26" (altı aylık),
+ * yıllık rapor "12A25". Ciro çizgisinin sıçradığı yerde hangi raporun
+ * geldiğini söyler.
+ */
+export function donemEtiketi(donemSonu: string): string {
+  return `${Number(donemSonu.slice(5, 7))}A${donemSonu.slice(2, 4)}`;
+}
+
 export type SeriNoktasi = { t: number; duyurulan: number; ciro: number | null };
+
+/**
+ * Cironun yeni bir değere geçtiği günlerin sırası: bir raporun
+ * yayınlandığı gün. İlk gün sıçrama sayılmaz (grafik o seviyeden
+ * başlıyor); boşluğa (ciro yok) geçiş de sayılmaz.
+ */
+export function ciroSicramalari(seri: readonly SeriNoktasi[]): number[] {
+  const sonuc: number[] = [];
+  for (let i = 1; i < seri.length; i++) {
+    const c = seri[i].ciro;
+    if (c !== null && c !== seri[i - 1].ciro) sonuc.push(i);
+  }
+  return sonuc;
+}
 
 /**
  * Son `gun` günün her günü, bugün dahil: o güne kadarki 12 ayda duyurulan

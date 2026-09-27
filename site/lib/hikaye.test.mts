@@ -9,10 +9,12 @@ import {
   aylaraBol,
   birimSec,
   cikisNoktalari,
+  ciroSicramalari,
   ciroAn,
   ciroBasamagi,
   dizinSatirlari,
   dizinSirala,
+  donemEtiketi,
   gosterilenKalemler,
   gunDegisimi,
   gunlukSeri,
@@ -323,4 +325,18 @@ test("12 ay aralığı: dönem sonunda biten 12 ay", () => {
   assert.equal(onIkiAyAraligi("2026-06-30"), "Tem 2025 – Haz 2026");
   assert.equal(onIkiAyAraligi("2025-12-31"), "Oca 2025 – Ara 2025");
   assert.equal(onIkiAyAraligi("2026-03-31T00:00:00+00:00"), "Nis 2025 – Mar 2026");
+});
+
+test("dönem etiketi: ara dönem ay sayısıyla, yıllık 12A", () => {
+  assert.equal(donemEtiketi("2026-06-30"), "6A26");
+  assert.equal(donemEtiketi("2026-03-31T00:00:00+00:00"), "3A26");
+  assert.equal(donemEtiketi("2025-09-30"), "9A25");
+  assert.equal(donemEtiketi("2025-12-31"), "12A25");
+});
+
+test("ciro sıçramaları: yeni değere geçilen günler, ilk gün ve boşluk hariç", () => {
+  const n = (ciro: number | null) => ({ t: 0, duyurulan: 0, ciro });
+  const s = [n(5), n(5), n(7), n(7), n(null), n(9), n(9), n(4)];
+  assert.deepEqual(ciroSicramalari(s), [2, 5, 7]);
+  assert.deepEqual(ciroSicramalari([n(3)]), []);
 });

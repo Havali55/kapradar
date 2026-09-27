@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
-import { buyukTl, cirosununKati, gunAy, sayi, yuzdeIyelik } from "@/lib/bicim";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { buyukTl, cirosununKati, gunAy, sayi, yuzde, yuzdeIyelik } from "@/lib/bicim";
 import {
   birimSec,
   cikisNoktalari,
   ciroBasamagi,
+  ciroSicramalari,
+  donemEtiketi,
   guzelAdim,
   kisaAd,
   onIkiAyAraligi,
@@ -32,6 +41,8 @@ const RENK: Record<Kademe, string> = {
 };
 const VARSAYILAN = 720;
 const KARAKTER = 6.6;
+/** Rapor etiketi 10 px mono. */
+const KUCUK_KARAKTER = 6;
 const AY = new Intl.DateTimeFormat("tr-TR", { month: "short", timeZone: "Europe/Istanbul" });
 const tamGun = (t: number) =>
   new Date(t).toLocaleDateString("tr-TR", {
@@ -45,12 +56,31 @@ type Kutu = { x1: number; x2: number; y1: number; y2: number };
 const cakisir = (a: Kutu, b: Kutu) =>
   a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
 
+/** Eksenin üstü: değeri kapsayan ilk "güzel" adım. */
+function olcek(maks: number): { adim: number; ust: number } {
+  const adim = guzelAdim(maks);
+  return { adim, ust: Math.ceil(maks / adim) * adim };
+}
+
+/** Uçtaki oran: birin altında yüzde, üstünde kat. */
+const oranMetni = (oran: number) => (oran < 1 ? yuzde(oran, 1) : `${sayi(oran, 1)}×`);
+
 /**
  * Kayan 12 ayda duyurulan toplam (mavi, dolgulu) ile aynı gün bilinen son
  * 12 aylık ciro (toprak, kesikli; boşlukta kopuk). Çubuklar tek tek işler,
  * kanıt sayfasına bağlantı. Boş halkalar, bir önceki yılın 12 ayını dolup
- * hesaptan çıkan işleri: mavi çizginin her inişinin sebebi. İmleçle gün gün
- * okunur; tablo alternatifi `<details>` içinde, JS'siz de açılır.
+ * hesaptan çıkan işleri: mavi çizginin her inişinin sebebi. Ciro
+ * çizgisinin her sıçrayışında o raporun dönemi yazılı ("6A26"); sağ uçta
+ * iki son değerin oranı. İmleçle gün gün okunur; tablo alternatifi
+ * `<details>` içinde, JS'siz de açılır.
+ *
+ * Dokunmatik ekranda iki aşama: çubuğa ya da halkaya ilk dokunuş ipucunu
+ * açar, ikincisi kanıt sayfasına gider. Fare ve klavyede tık doğrudan
+ * gider (ipucu üstüne gelince zaten açık).
+ *
+ * Ciro işleri ezdiğinde (TCKRC: 5,6 milyar ciro, 0,3 milyar iş) "İşlere
+ * odaklan" dikey ekseni işlere göre kurar; ciro çizgisi çizim alanında
+ * kırpılır, ölçeğin üstünde kaldığı ok ve yazıyla söylenir.
  */
 export default function DuyuruCiroGrafigi({
   seri,
@@ -70,24 +100,59 @@ export default function DuyuruCiroGrafigi({
   const [imlec, setImlec] = useState<number | null>(null);
   const [aktifIs, setAktifIs] = useState<number | null>(null);
   const [aktifCikis, setAktifCikis] = useState<number | null>(null);
+  const [odak, setOdak] = useState(false);
+  /** İpucu dokunuşla açıldıysa "bir kez daha dokunun" satırı görünür. */
+  const [dokunmali, setDokunmali] = useState(false);
+  /** Son işaretçi türü: "mouse", "touch", "pen" ya da klavye. */
+  const isaretci = useRef<string>("mouse");
+  /** İlk dokunuşu almış öğe; aynı öğeye ikinci dokunuş sayfaya gider. */
+  const dokunulan = useRef<string | null>(null);
+  const klipId = `grafik-klip-${useId().replace(/:/g, "")}`;
+
+  const sifirla = () => {
+    dokunulan.current = null;
+    setAktifIs(null);
+    setAktifCikis(null);
+    setDokunmali(false);
+  };
+
+  // Grafiğin dışına dokunulunca açık ipucu kapansın.
+  useEffect(() => {
+    const disari = (e: PointerEvent) => {
+      if (kap.current && !kap.current.contains(e.target as Node)) {
+        dokunulan.current = null;
+        setAktifIs(null);
+        setAktifCikis(null);
+        setDokunmali(false);
+      }
+    };
+    document.addEventListener("pointerdown", disari);
+    return () => document.removeEventListener("pointerdown", disari);
+  }, [kap]);
 
   const dar = W < 560;
   const H = dar ? 270 : 340;
   const m = { l: 44, r: dar ? 14 : 104, t: 26, b: 30 };
   const t0 = seri[0].t;
   const t1 = seri[seri.length - 1].t;
-  const maks = Math.max(
-    1,
-    ...seri.map((n) => Math.max(n.duyurulan, n.ciro ?? 0)),
-    ...isler.map((i) => i.tl),
-  );
-  const adim = guzelAdim(maks);
-  const ust = Math.ceil(maks / adim) * adim;
+
+  // Ölçek. Odaklama yalnız bir şey değiştiriyorsa sunuluyor: işlerin
+  // kendi ölçeği cirolu ölçekten küçükse.
+  const maksIs = Math.max(1, ...seri.map((n) => n.duyurulan), ...isler.map((i) => i.tl));
+  const maksCiro = Math.max(0, ...seri.map((n) => n.ciro ?? 0));
+  const tam = olcek(Math.max(maksIs, maksCiro));
+  const odakOlcegi = olcek(maksIs);
+  const odakAnlamli = odakOlcegi.ust < tam.ust;
+  const odakta = odak && odakAnlamli;
+  const { adim, ust } = odakta ? odakOlcegi : tam;
   const birim = birimSec(ust);
   const ondalik = adim / birim.bolen < 1 ? 1 : 0;
   const x = (t: number) => m.l + ((t - t0) / (t1 - t0)) * (W - m.l - m.r);
   const y = (v: number) => m.t + (1 - v / ust) * (H - m.t - m.b);
   const birimde = (v: number) => sayi(v / birim.bolen, v / birim.bolen < 10 ? 1 : 0);
+  const ciroBirimi = birimSec(maksCiro);
+  const ciroMetni = (v: number) =>
+    `${sayi(v / ciroBirimi.bolen, v / ciroBirimi.bolen < 10 ? 1 : 0)} ${ciroBirimi.kisa}`;
 
   const cizgiler: number[] = [];
   for (let v = 0; v <= ust + adim / 1e6; v += adim) cizgiler.push(v);
@@ -113,19 +178,20 @@ export default function DuyuruCiroGrafigi({
     ciroYolu += `${acik ? "L" : "M"}${x(n.t).toFixed(1)},${y(n.ciro).toFixed(1)}`;
     acik = true;
   }
+  const ciroTasiyor = odakta && seri.some((n) => n.ciro !== null && n.ciro > ust);
 
   const cikislar = cikisNoktalari(seri, oncekiYil);
 
-  // En büyük üç işin doğrudan etiketi (geniş ekranda): kısa ad + tutar.
-  // Başka bir etikete ya da çıkış halkasına binen, çizim alanından taşan
-  // konmaz.
+  // Çizim alanındaki yazılar çakışmasın: önce halkalar, sonra en büyük üç
+  // işin etiketi (geniş ekranda), sonra rapor etiketleri. Başka bir
+  // kutuya binen ya da alandan taşan konmaz.
+  const kutular: Kutu[] = cikislar.map((c) => {
+    const cx = x(seri[c.i].t);
+    const cy = y(seri[c.i].duyurulan);
+    return { x1: cx - 7, x2: cx + 7, y1: cy - 7, y2: cy + 7 };
+  });
   const etiketler: { i: number; x: number; y: number; metin: string }[] = [];
   if (!dar) {
-    const kutular: Kutu[] = cikislar.map((c) => {
-      const cx = x(seri[c.i].t);
-      const cy = y(seri[c.i].duyurulan);
-      return { x1: cx - 7, x2: cx + 7, y1: cy - 7, y2: cy + 7 };
-    });
     const sira = isler.map((_, i) => i).sort((a, b) => isler[b].tl - isler[a].tl);
     for (const i of sira.slice(0, 3)) {
       const is = isler[i];
@@ -139,17 +205,65 @@ export default function DuyuruCiroGrafigi({
       etiketler.push({ i, x: cx, y: ty, metin });
     }
   }
+  const raporlar: { x: number; y: number; metin: string }[] = [];
+  for (const i of ciroSicramalari(seri)) {
+    const n = seri[i];
+    if (n.ciro === null || n.ciro > ust) continue;
+    const b = ciroBasamagi(basamaklar, n.t);
+    if (!b?.donem_sonu) continue;
+    const metin = donemEtiketi(b.donem_sonu);
+    const tx = x(n.t) + 4;
+    // Önce çizginin üstü, sığmazsa altı.
+    for (const ty of [y(n.ciro) - 6, y(n.ciro) + 14]) {
+      const kt = { x1: tx - 1, x2: tx + metin.length * KUCUK_KARAKTER + 1, y1: ty - 10, y2: ty + 2 };
+      if (kt.x2 > W - m.r || kt.y1 < m.t - 2 || kt.y2 > y(0) - 2) continue;
+      if (kutular.some((k) => cakisir(k, kt))) continue;
+      kutular.push(kt);
+      raporlar.push({ x: tx, y: ty, metin });
+      break;
+    }
+  }
 
-  // Serilerin uç etiketleri: 14 px'ten yakınsa birbirinden uzaklaşır.
+  // Serilerin uç etiketleri: 14 px'ten yakınsa birbirinden uzaklaşır. Ciro
+  // ölçeğin üstündeyse ucu çizim alanının tepesinde, okla.
   const son = seri[seri.length - 1];
-  let evY = y(son.duyurulan) + 4;
-  let ecY = son.ciro !== null ? y(son.ciro) + 4 : null;
+  const sonCiroUstte = son.ciro !== null && son.ciro > ust;
+  const noktaEv = y(son.duyurulan);
+  const noktaEc = son.ciro === null ? null : sonCiroUstte ? m.t : y(son.ciro);
+  let evY = noktaEv + 4;
+  let ecY = noktaEc !== null ? noktaEc + 4 : null;
   if (ecY !== null && Math.abs(evY - ecY) < 14) {
     const orta = (evY + ecY) / 2;
     const ustte = evY <= ecY;
     evY = orta + (ustte ? -7 : 7);
     ecY = orta + (ustte ? 7 : -7);
   }
+  // Sağ uçta oran: iki değer arası yeterince açıksa ortada, bir köşeli
+  // ayraçla; değilse alttaki etiketin altında.
+  const sonOran = son.ciro ? son.duyurulan / son.ciro : null;
+  let oranY: number | null = null;
+  let ayrac = false;
+  if (sonOran !== null && ecY !== null && noktaEc !== null) {
+    if (Math.abs(noktaEv - noktaEc) >= 30) {
+      oranY = (noktaEv + noktaEc) / 2 + 4;
+      ayrac = true;
+    } else {
+      const alt = Math.max(evY, ecY) + 15;
+      oranY = alt <= y(0) ? alt : Math.min(evY, ecY) - 15;
+    }
+  }
+  // Dar ekranda uç etiketleri yok: oran ve ölçeğin üstündeki ciro sağ üstte.
+  // Geniş ekranda son ciro ölçeğin üstündeyse bunu uç etiketi söylüyor.
+  const ciroNotu = !ciroTasiyor
+    ? null
+    : sonCiroUstte && son.ciro !== null
+      ? dar
+        ? `ciro ${ciroMetni(son.ciro)} ↑`
+        : null
+      : "ciro yer yer ölçeğin üstünde ↑";
+  const sagUst = [ciroNotu, dar && sonOran !== null ? `cironun ${oranMetni(sonOran)}` : null]
+    .filter(Boolean)
+    .join(" · ");
 
   const hareket = (e: MouseEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -162,6 +276,25 @@ export default function DuyuruCiroGrafigi({
     setImlec(Math.min(seri.length - 1, Math.max(0, i)));
   };
 
+  // İşaretçi türü her basışta güncellenir; çubuk ya da halka dışına
+  // basılınca açık ipucu kapanır (günün ipucu açılabilsin).
+  const bas = (e: ReactPointerEvent<SVGSVGElement>) => {
+    isaretci.current = e.pointerType;
+    if (!(e.target as Element).closest("a")) sifirla();
+  };
+  /** Dokunmatikte ilk dokunuş ipucu, ikincisi bağlantı. */
+  const ikiAsama = (anahtar: string, goster: () => void) => (e: MouseEvent<HTMLAnchorElement>) => {
+    const dokunma = isaretci.current === "touch" || isaretci.current === "pen";
+    if (!dokunma || dokunulan.current === anahtar) return;
+    e.preventDefault();
+    dokunulan.current = anahtar;
+    goster();
+    setDokunmali(true);
+  };
+  const fareyle = (f: () => void) => (e: ReactPointerEvent) => {
+    if (e.pointerType === "mouse") f();
+  };
+
   const ai = aktifIs === null ? null : isler[aktifIs];
   const cn = ai === null && aktifCikis !== null ? cikislar[aktifCikis] : null;
   const gn = ai === null && cn === null && imlec !== null ? seri[imlec] : null;
@@ -172,12 +305,28 @@ export default function DuyuruCiroGrafigi({
     : cn
       ? y(seri[cn.i].duyurulan)
       : gn
-        ? y(Math.max(gn.duyurulan, gn.ciro ?? 0))
+        ? y(Math.max(gn.duyurulan, Math.min(gn.ciro ?? 0, ust)))
         : 0;
   const ipucuAlt = ipucuY < 100;
+  const dokunmaSatiri = dokunmali && (ai || cn) && (
+    <>
+      <br />
+      <span className="soluk">Kanıt sayfası için bir kez daha dokunun.</span>
+    </>
+  );
 
   return (
     <>
+      {odakAnlamli && (
+        <div className="olcek-sec" role="group" aria-label="Dikey ölçek">
+          <button type="button" aria-pressed={!odak} onClick={() => setOdak(false)}>
+            Ciroya göre
+          </button>
+          <button type="button" aria-pressed={odak} onClick={() => setOdak(true)}>
+            İşlere odaklan
+          </button>
+        </div>
+      )}
       <div className="grafik" ref={kap}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
@@ -185,7 +334,16 @@ export default function DuyuruCiroGrafigi({
           aria-labelledby={baslikId}
           onMouseMove={hareket}
           onMouseLeave={() => setImlec(null)}
+          onPointerDown={bas}
+          onKeyDown={() => {
+            isaretci.current = "klavye";
+          }}
         >
+          <defs>
+            <clipPath id={klipId}>
+              <rect x={m.l} y={m.t - 1} width={W - m.l - m.r} height={y(0) - m.t + 2} />
+            </clipPath>
+          </defs>
           {cizgiler.map((v) => (
             <g key={v}>
               <line
@@ -203,6 +361,11 @@ export default function DuyuruCiroGrafigi({
           <text x={m.l} y={m.t - 12} textAnchor="start">
             {birim.ad}
           </text>
+          {sagUst && (
+            <text x={W - m.r} y={m.t - 12} textAnchor="end" className="sag-ust">
+              {sagUst}
+            </text>
+          )}
           {aylar.map((t) => {
             const a = new Date(t);
             return (
@@ -223,10 +386,15 @@ export default function DuyuruCiroGrafigi({
                 key={is.kap_id}
                 href={`/kap/${is.kap_id}`}
                 aria-label={`${gunAy(new Date(is.t).toISOString())}: ${buyukTl(is.tl)}, cironun ${yuzdeIyelik(is.oran)}`}
-                onMouseEnter={ac}
-                onMouseLeave={kapat}
+                onPointerEnter={fareyle(ac)}
+                onPointerLeave={fareyle(kapat)}
                 onFocus={ac}
-                onBlur={kapat}
+                onBlur={() => {
+                  kapat();
+                  dokunulan.current = null;
+                  setDokunmali(false);
+                }}
+                onClick={ikiAsama(`i${i}`, ac)}
               >
                 <rect
                   className="cubuk"
@@ -248,6 +416,7 @@ export default function DuyuruCiroGrafigi({
               style={{ stroke: "var(--p-ciro)" }}
               strokeWidth={2.25}
               strokeDasharray="7 5"
+              clipPath={odakta ? `url(#${klipId})` : undefined}
             />
           )}
           <path
@@ -267,10 +436,15 @@ export default function DuyuruCiroGrafigi({
                 key={n.t}
                 href={`/kap/${c.cikan[0].kap_id}`}
                 aria-label={`${tamGun(n.t)}: ${tamGun(c.cikan[0].t)} tarihli ${buyukTl(inis)} tutarındaki iş 12 ayını doldurdu, toplamdan çıktı`}
-                onMouseEnter={goster}
-                onMouseLeave={gizle}
+                onPointerEnter={fareyle(goster)}
+                onPointerLeave={fareyle(gizle)}
                 onFocus={goster}
-                onBlur={gizle}
+                onBlur={() => {
+                  gizle();
+                  dokunulan.current = null;
+                  setDokunmali(false);
+                }}
+                onClick={ikiAsama(`c${k}`, goster)}
               >
                 <circle
                   className="cikis"
@@ -280,7 +454,7 @@ export default function DuyuruCiroGrafigi({
                   style={{ fill: "var(--plaka)", stroke: "var(--p-duyuru)" }}
                   strokeWidth={2}
                 />
-                <rect x={x(n.t) - 8} y={y(n.duyurulan) - 8} width={16} height={16} fill="transparent" />
+                <rect x={x(n.t) - 9} y={y(n.duyurulan) - 9} width={18} height={18} fill="transparent" />
               </a>
             );
           })}
@@ -289,22 +463,34 @@ export default function DuyuruCiroGrafigi({
               {e.metin}
             </text>
           ))}
+          {raporlar.map((r) => (
+            <text key={`${r.x}-${r.metin}`} x={r.x} y={r.y} className="rapor-etiket">
+              {r.metin}
+            </text>
+          ))}
           <circle
             cx={x(son.t)}
-            cy={y(son.duyurulan)}
+            cy={noktaEv}
             r={5}
             style={{ fill: "var(--p-duyuru)", stroke: "var(--plaka)" }}
             strokeWidth={2.5}
           />
-          {son.ciro !== null && (
-            <circle
-              cx={x(son.t)}
-              cy={y(son.ciro)}
-              r={4.5}
-              style={{ fill: "var(--p-ciro)", stroke: "var(--plaka)" }}
-              strokeWidth={2.5}
-            />
-          )}
+          {noktaEc !== null &&
+            (sonCiroUstte ? (
+              // Ölçeğin üstünde: çizim alanının tepesinde yukarı ok.
+              <path
+                d={`M${x(son.t) - 5},${m.t + 4}L${x(son.t)},${m.t - 4}L${x(son.t) + 5},${m.t + 4}Z`}
+                style={{ fill: "var(--p-ciro)" }}
+              />
+            ) : (
+              <circle
+                cx={x(son.t)}
+                cy={noktaEc}
+                r={4.5}
+                style={{ fill: "var(--p-ciro)", stroke: "var(--plaka)" }}
+                strokeWidth={2.5}
+              />
+            ))}
           {!dar && (
             <>
               <text x={x(son.t) + 11} y={evY} className="uc-etiket" style={{ fill: "var(--p-duyuru)" }}>
@@ -312,8 +498,21 @@ export default function DuyuruCiroGrafigi({
               </text>
               {son.ciro !== null && ecY !== null && (
                 <text x={x(son.t) + 11} y={ecY} className="uc-etiket" style={{ fill: "var(--p-ciro)" }}>
-                  {birimde(son.ciro)} {birim.kisa} ciro
+                  {sonCiroUstte ? `${ciroMetni(son.ciro)} ciro ↑` : `${birimde(son.ciro)} ${birim.kisa} ciro`}
                 </text>
+              )}
+              {sonOran !== null && oranY !== null && noktaEc !== null && (
+                <>
+                  {ayrac && (
+                    <path
+                      d={`M${x(son.t) + 7},${Math.min(noktaEv, noktaEc) + 8}V${Math.max(noktaEv, noktaEc) - 8}`}
+                      className="oran-ayrac"
+                    />
+                  )}
+                  <text x={x(son.t) + (ayrac ? 13 : 11)} y={oranY} className="uc-oran">
+                    {oranMetni(sonOran)}
+                  </text>
+                </>
               )}
             </>
           )}
@@ -349,6 +548,7 @@ export default function DuyuruCiroGrafigi({
                   cironun {yuzdeIyelik(ai.oran)} ·{" "}
                   {ai.karsi ?? "karşı tarafın adı verilmemiş"}
                 </span>
+                {dokunmaSatiri}
               </>
             ) : cn ? (
               <>
@@ -368,6 +568,7 @@ export default function DuyuruCiroGrafigi({
                   12 ayını doldurdu; mavi çizgi{" "}
                   {buyukTl(cn.cikan.reduce((t, is) => t + is.tl, 0))} indi
                 </span>
+                {dokunmaSatiri}
               </>
             ) : (
               gn && (
