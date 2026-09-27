@@ -1,10 +1,10 @@
 import { buyukTl, isaretliYuzde, sayi, yuzde, type TahtaGorunumu } from "@/lib/bicim";
-import type { limitDurumu } from "@/lib/hikaye";
+import type { seansDurumu } from "@/lib/hikaye";
 import type { HisseFon } from "@/lib/veri";
 
 type Props = {
-  /** Bugünkü taban/tavan durumu, son 20 seansın kapanışlarından. */
-  limit: ReturnType<typeof limitDurumu>;
+  /** Son 20 seansın durumu: ortalama hareket, taban/tavan serisi. */
+  seans: ReturnType<typeof seansDurumu>;
   /** Son kapanışın günü, "24 Eylül 2026". */
   limitGunu: string | null;
   tahta: TahtaGorunumu | null;
@@ -16,13 +16,13 @@ type Props = {
 };
 
 /**
- * Hisse ve şirket bağlamı: bugünkü taban/tavan durumu, bildirim günündeki
+ * Hisse ve şirket bağlamı: son 20 seansın hareketi, bildirim günündeki
  * tahta, bildirim sıklığı (yalnız sayım), fon sahipliği. Hiçbiri
  * büyüklüğe girmiyor; okuru yanıltmasın diye her biri neyi söylemediğini
  * ve hangi güne ait olduğunu da söylüyor.
  */
 export default function HisseBaglam({
-  limit,
+  seans,
   limitGunu,
   tahta,
   tahtaGunu,
@@ -36,16 +36,16 @@ export default function HisseBaglam({
         <span className="ust-yazi">Bağlam</span>
         <h3 id="baglam-bas">Hisse ve şirket</h3>
         <dl className="baglam">
-          {limit && (
+          {seans && (
             <div>
               <dt>
-                Bugün <span className={`durum durum-${limit.renk}`}>{limit.metin}</span>
+                Son 20 seans <span className={`durum durum-${seans.renk}`}>{seans.metin}</span>
               </dt>
               <dd>
-                {limit.alt ? `${limit.alt}. ` : ""}Günlük kapanışlardan sayıldı
-                {limitGunu ? ` (son kapanış ${limitGunu})` : ""}: −⁠%9,5 altı taban,
-                +⁠%9,5 üstü tavan günü. Tabanda kilitli, işlem görmeyen bir hisse
-                devre kesiciyi tetiklemez; aşağıdaki tahta ölçüsü bunu kaçırabilir.
+                {seans.aciklama} Günlük kapanışlardan
+                {limitGunu ? ` (son kapanış ${limitGunu})` : ""}; taban −⁠%9,5, tavan
+                +⁠%9,5 ve ötesi. Tabanda kilitli, işlem görmeyen bir hisse devre
+                kesiciyi tetiklemez; aşağıdaki tahta ölçüsü bunu kaçırabilir.
               </dd>
             </div>
           )}

@@ -627,8 +627,8 @@ export const ciroSeriGetir = onbellekli(async () => {
 });
 
 /**
- * Son 20 seansın taban/tavan sayımı, hisse başına (`hisse_limit_gunleri`,
- * 2026-09-27). Fiyatın kendisi değil yalnız sayımlar açık.
+ * Son 20 seansın taban/tavan sayımı ve ortalama hareketi, hisse başına
+ * (`hisse_limit_gunleri`, 2026-09-27). Fiyatın kendisi açık değil.
  */
 export type LimitGunleriSatiri = import("./hikaye").LimitGunleri & { ticker: string };
 
@@ -636,7 +636,9 @@ export const limitGunleriGetir = onbellekli(() =>
   hepsiniOku<LimitGunleriSatiri>("Taban/tavan", (bas, son) =>
     supabase
       .from("hisse_limit_gunleri")
-      .select("ticker, son_tarih, seans, taban_gun, tavan_gun, son_taban_serisi, son_tavan_serisi")
+      .select(
+        "ticker, son_tarih, seans, taban_gun, tavan_gun, son_taban_serisi, son_tavan_serisi, ort_hareket, gecersiz_gun",
+      )
       .order("ticker")
       .range(bas, son),
   ),

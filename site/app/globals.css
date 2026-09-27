@@ -2566,6 +2566,11 @@ a:hover {
   color: var(--kir);
   background: var(--kir-z);
 }
+.durum-notr {
+  color: var(--mut);
+  background: var(--kart-2);
+  box-shadow: inset 0 0 0 1px var(--ken-2);
+}
 /* Dizinde ±%200'ü aşan ciro büyümesi: değer duruyor, yanında uyarı. */
 .olagandisi {
   color: var(--kehribar);
@@ -2650,8 +2655,17 @@ a:hover {
 .dizin th[aria-sort="descending"] {
   color: var(--ink);
 }
-.dizin-tahta-bas {
-  padding: 10px 8px;
+.dizin td.dizin-seans {
+  white-space: nowrap;
+}
+.dizin-hareket {
+  display: inline-block;
+  min-width: 4.5ch;
+  margin-right: 10px;
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--mut);
+  font-variant-numeric: tabular-nums;
 }
 .dizin td.sayi {
   text-align: right;
@@ -2704,9 +2718,6 @@ a:hover {
     padding: 4px 10px;
     background: var(--kart);
   }
-  .dizin .dizin-tahta-bas {
-    display: none;
-  }
   .dizin tbody tr {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -2736,5 +2747,12 @@ a:hover {
   /* Hücre ızgara: çip içeriği kadar kalsın, hücre boyunca gerilmesin. */
   .dizin td .durum {
     justify-self: start;
+  }
+  .dizin td.dizin-seans {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+  .dizin td.dizin-seans::before {
+    grid-column: 1 / -1;
   }
 }

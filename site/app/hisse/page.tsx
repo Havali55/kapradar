@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import HisseDizini, { type DizinOgesi } from "@/components/HisseDizini";
 import { sayilanIs } from "@/lib/anasayfa";
 import { istanbulGunu } from "@/lib/bicim";
-import { dizinSatirlari, limitDurumu } from "@/lib/hikaye";
+import { dizinSatirlari, hareketMedyani, seansDurumu } from "@/lib/hikaye";
 import {
   anaSatirlariGetir,
   ciroSeriGetir,
@@ -26,6 +26,7 @@ export default async function HisselerSayfasi() {
     limitGunleriGetir(),
   ]);
   const limitHaritasi = new Map(limitler.map((l) => [l.ticker, l]));
+  const medyan = hareketMedyani(limitler);
   const sonKapanis = limitler.reduce<string | null>(
     (enYeni, l) => (enYeni === null || l.son_tarih > enYeni ? l.son_tarih : enYeni),
     null,
@@ -36,7 +37,10 @@ export default async function HisselerSayfasi() {
     buyumeler,
     Date.now(),
     sayilanIs,
-  ).map((d) => ({ ...d, limit: limitDurumu(limitHaritasi.get(d.ticker) ?? null) }));
+  ).map((d) => {
+    const l = limitHaritasi.get(d.ticker) ?? null;
+    return { ...d, seans: seansDurumu(l, medyan), hareket: l?.ort_hareket ?? null };
+  });
 
   return (
     <main className="govde">
@@ -48,8 +52,11 @@ export default async function HisselerSayfasi() {
           ciro&rdquo;, son 12 ayda duyurulan işlerin toplamının şirketin son 12
           aylık cirosuna oranı; &ldquo;reel ciro büyümesi&rdquo; son raporun
           enflasyondan arındırılmış büyümesi (raporunu yeniden ifade etmeyen
-          şirkette boş). &ldquo;Son 20 seans&rdquo; günlük kapanışlardan sayılan
-          taban ve tavan günleri
+          şirkette boş). &ldquo;Son 20 seans&rdquo; hissenin günlük ortalama
+          hareketi ve bunun listedeki hisselerin ortasına göre kademesi
+          {medyan !== null ? ` (orta %${(medyan * 100).toFixed(1).replace(".", ",")})` : ""};
+          süren bir taban ya da tavan serisi varsa o yazılır. Günlük
+          kapanışlardan
           {sonKapanis ? `, son kapanış ${istanbulGunu(sonKapanis + "T12:00:00Z")}` : ""}.
           Başlığa tıklayınca sıralanır.
         </p>
