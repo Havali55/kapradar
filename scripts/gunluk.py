@@ -9,7 +9,7 @@ Yeni bir hat yazmıyor; backfill için yazılmış betikleri kısa aralıklarla
 sırayla çağırıyor. Her biri idempotent ve kaldığı yerden devam ediyor,
 bu yüzden aynı günü iki kez koşmak zararsız. Sıra bağımlılıklardan:
 
-    liste+detay → DB → kur → finansal → fiyat → faktör → VBTS
+    liste+detay → DB → kur → finansal → ciro serisi → fiyat → faktör → VBTS
     → çıkarım (LLM) → bağlar → tepki → bağlam → veri denetimi
 
 Bir adım düşerse sonrakiler yine denenir (fiyat düşmesi çıkarımı
@@ -129,6 +129,7 @@ def main() -> int:
     adim("TCMB kuru", ["scripts/kur_cek.py"], hatalar)
     adim("finansal raporlar", ["scripts/finansal_cek.py", "--baslangic", bas], hatalar)
     adim("finansal -> DB", ["scripts/finansal_yukle.py"], hatalar)
+    adim("ciro serisi + dönem büyümesi", ["scripts/ciro_seri_yaz.py"], hatalar)
 
     yeni = gecmissiz_hisseler()
     if yeni:
