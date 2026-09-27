@@ -1558,3 +1558,536 @@ a:hover {
   border-radius: var(--r-kart);
   background: var(--kart);
 }
+
+/* -------------------------------------------- ana sayfa (site v3) */
+/* Sınıflar `ana-`, `is-`, `soz-`, `cetvel-` önekli: eski CSS'te
+   `.bolum-bas`, `.buyukluk`, `.arama` gibi adlar dolu, çakışma Faz 2'de
+   bir kez yaşandı. */
+
+.ana-kahraman {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 44px;
+  align-items: center;
+  padding-block: 30px 12px;
+}
+.ana-kahraman h1 {
+  font-family: var(--yazi-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(32px, 4.2vw, 52px);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  margin: 14px 0 0;
+  text-wrap: balance;
+}
+.ana-kahraman h1 em {
+  font-style: italic;
+  color: var(--mavi-koyu);
+}
+.ana-giris {
+  font-size: 16.5px;
+  color: var(--ink-2);
+  margin: 16px 0 22px;
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+.hizli {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--mut);
+}
+.hizli a {
+  font: 500 12px var(--yazi-mono), ui-monospace, monospace;
+  color: var(--ink-2);
+  border: 1px solid var(--ken);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.hizli a:hover {
+  border-color: var(--mavi);
+  color: var(--mavi-koyu);
+  background: var(--kart);
+  text-decoration: none;
+}
+.tazelik {
+  margin: 22px 0 0;
+  font-size: 13px;
+  color: var(--mut);
+}
+.tazelik b {
+  color: var(--ink);
+  font-weight: 600;
+}
+@media (max-width: 1000px) {
+  .ana-kahraman {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+    padding-top: 18px;
+  }
+}
+
+/* Plaka içi başlık satırı ve grafik. */
+.plaka-ust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.plaka-ust h2,
+.plaka-ust h3 {
+  margin: 0;
+  font-family: var(--yazi-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: 21px;
+  line-height: 1.25;
+}
+.plaka .alt-not {
+  font-size: 12.5px;
+  color: var(--plaka-mut);
+  margin: 10px 0 0;
+}
+.grafik {
+  position: relative;
+  margin-top: 8px;
+}
+.grafik svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.grafik text {
+  fill: var(--plaka-mut);
+  font: 11px var(--yazi-mono), ui-monospace, monospace;
+}
+.grafik .bolge-ad {
+  letter-spacing: 0.12em;
+}
+.grafik .yazi-acik {
+  fill: var(--plaka-yazi);
+  font-weight: 600;
+}
+/* Odak halkası: SVG'de outline güvenilmez; noktanın kenarı aydınlanır.
+   Satır içi `style` kenarı verdiği için !important gerekiyor. */
+.grafik a:focus {
+  outline: none;
+}
+.grafik a:focus-visible .nokta {
+  stroke: var(--plaka-yazi) !important;
+  stroke-width: 2.5px;
+}
+.ipucu {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, calc(-100% - 12px));
+  width: max-content;
+  max-width: 260px;
+  background: var(--kart);
+  color: var(--ink);
+  border: 1px solid var(--ken);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  box-shadow: 0 12px 24px -12px rgb(22 21 15 / 0.5);
+  pointer-events: none;
+}
+.ipucu-alt {
+  transform: translate(-50%, 12px);
+}
+.ipucu b {
+  font-family: var(--yazi-mono), ui-monospace, monospace;
+  font-weight: 600;
+}
+.ipucu .soluk {
+  color: var(--mut);
+  font-size: 11.5px;
+}
+.grafik-not {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--plaka-mut);
+}
+.bos-grafik {
+  color: var(--plaka-mut);
+  font-size: 14px;
+  padding: 30px 0;
+  margin: 0;
+}
+
+/* Ölçek cetveli (kâğıtta): log f(r), %5 ve %15 çentikli. */
+.cetvel {
+  position: relative;
+  display: block;
+  height: 12px;
+  min-width: 0;
+}
+.cetvel-ray {
+  position: absolute;
+  inset: 5px 0 auto 0;
+  height: 3px;
+  background: var(--ken-2);
+  border-radius: 2px;
+}
+.cetvel-dolu {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  height: 3px;
+  border-radius: 2px;
+}
+.cetvel-centik {
+  position: absolute;
+  top: 1px;
+  width: 1px;
+  height: 11px;
+  background: var(--ken-4);
+}
+
+/* Bölümler. */
+.ana-bolum {
+  margin-top: 64px;
+}
+.ana-bolum-bas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin-bottom: 18px;
+}
+.ana-bolum-bas h2,
+.soz-sol h2,
+.nasil-sol h2 {
+  margin: 0;
+  font-family: var(--yazi-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(24px, 2.6vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.ana-bolum-bas .sag {
+  margin-left: auto;
+  font-size: 14px;
+}
+
+/* En büyük üç iş. */
+.is-kartlari {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .is-kartlari {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.is-karti {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-content: start;
+  background: var(--kart);
+  border: 1px solid var(--ken);
+  border-radius: var(--r-kart);
+  padding: 20px;
+  color: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.is-karti:hover {
+  border-color: var(--ken-4);
+  box-shadow: 0 16px 30px -24px rgb(22 21 15 / 0.5);
+  color: inherit;
+  text-decoration: none;
+}
+.is-karti-ust {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.is-karti-ust .tk {
+  font: 600 14px var(--yazi-mono), ui-monospace, monospace;
+  flex: none;
+}
+.is-karti-ust .sr {
+  font-size: 13px;
+  color: var(--mut);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.is-karti-ust .zm {
+  font-size: 12.5px;
+  color: var(--mut-3);
+  flex: none;
+}
+.is-karti-olcu {
+  display: flex;
+  align-items: baseline;
+  gap: 4px 10px;
+  flex-wrap: wrap;
+}
+.is-karti-olcu .ne {
+  flex-basis: 100%;
+  font-size: 13.5px;
+  color: var(--mut);
+}
+.is-karti-olcu .sayi {
+  font: 500 44px/1 var(--yazi-serif), Georgia, serif;
+  letter-spacing: -0.02em;
+}
+.kademe {
+  font: 600 10.5px var(--yazi-mono), ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.kademe-mega {
+  background: var(--mavi-koyu);
+  color: #fff;
+}
+.kademe-onemli {
+  background: var(--mavi-z);
+  color: var(--mavi-koyu);
+}
+.kademe-rutin {
+  background: var(--kart-2);
+  color: var(--mut);
+  border: 1px solid var(--ken-2);
+}
+.is-karti .oz {
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.is-karti .dip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 12.5px;
+  color: var(--mut);
+  padding-top: 10px;
+  border-top: 1px solid var(--ken-2);
+}
+.is-karti .dip span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Söz ve gerçek. */
+.soz {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 28px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .soz {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.soz-sol {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.soz-sol p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  text-wrap: pretty;
+}
+.uc-sayi {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--ken);
+  margin: 0;
+}
+.uc-sayi div {
+  padding: 14px 12px 14px 0;
+  display: grid;
+  gap: 2px;
+  align-content: start;
+}
+.uc-sayi div + div {
+  padding-left: 14px;
+  border-left: 1px solid var(--ken-2);
+}
+.uc-sayi dt {
+  font-size: 12.5px;
+  color: var(--mut);
+}
+.uc-sayi dd {
+  margin: 0;
+  font: 500 30px/1.1 var(--yazi-serif), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+.uc-sayi small {
+  font-size: 12px;
+  color: var(--mut-3);
+}
+.soz-sol .durust {
+  font-size: 13.5px;
+  color: var(--mut);
+  border-left: 2px solid var(--ken);
+  padding-left: 12px;
+}
+@media (max-width: 520px) {
+  .uc-sayi dd {
+    font-size: 24px;
+  }
+}
+
+/* Nasıl çalışıyor. */
+.nasil {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  border-radius: var(--r-kart);
+  overflow: hidden;
+  border: 1px solid var(--ken);
+  background: var(--kart);
+}
+@media (max-width: 900px) {
+  .nasil {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.nasil-sol {
+  background: var(--plaka);
+  color: var(--plaka-yazi);
+  padding: 26px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.nasil-sol .ust-yazi {
+  color: var(--plaka-mut);
+}
+.nasil-sol h2 {
+  color: #fbf7ec;
+  font-size: 25px;
+  line-height: 1.2;
+}
+.nasil-sol p {
+  margin: 0;
+  font-size: 14px;
+  color: #cfc8b5;
+}
+.nasil-sol a {
+  color: #fbf7ec;
+  font-weight: 600;
+}
+.adimlar {
+  list-style: none;
+  margin: 0;
+  padding: 26px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+@media (max-width: 640px) {
+  .adimlar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.adimlar li {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+}
+.adimlar span {
+  font-size: 13.5px;
+  color: var(--mut);
+}
+.adimlar .no {
+  font: 600 12px var(--yazi-mono), ui-monospace, monospace;
+  color: var(--mavi);
+}
+.adimlar b {
+  font-size: 15px;
+  font-weight: 600;
+}
+.adimlar .kanit {
+  font: 12px var(--yazi-mono), ui-monospace, monospace;
+  color: var(--ink-2);
+  background: var(--kart-2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  justify-self: start;
+}
+
+/* Son bildirimler. */
+.piyasa-satiri {
+  color: var(--mut);
+  font-size: 13.5px;
+  margin: -6px 0 14px;
+}
+.piyasa-satiri b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.is-satiri {
+  display: grid;
+  grid-template-columns: 64px 66px minmax(0, 1fr) 190px;
+  gap: 16px;
+  align-items: center;
+  padding: 13px 6px;
+  border-bottom: 1px solid var(--ken-2);
+  color: inherit;
+}
+.is-satiri:hover {
+  background: var(--kart);
+  color: inherit;
+  text-decoration: none;
+}
+.is-satiri .zm {
+  font-size: 13px;
+  color: var(--mut);
+}
+.is-satiri .tk {
+  font: 600 13.5px var(--yazi-mono), ui-monospace, monospace;
+}
+.is-satiri .oz {
+  font-size: 14.5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.olc {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.olc .deger {
+  font-size: 12.5px;
+  color: var(--mut);
+}
+.olc .deger b {
+  font: 600 15px var(--yazi-serif), Georgia, serif;
+  color: var(--ink);
+}
+@media (max-width: 720px) {
+  .is-satiri {
+    grid-template-columns: 58px minmax(0, 1fr);
+    row-gap: 4px;
+  }
+  .is-satiri .oz {
+    grid-column: 1 / -1;
+    white-space: normal;
+  }
+  .is-satiri .olc {
+    grid-column: 1 / -1;
+  }
+}
