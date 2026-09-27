@@ -245,7 +245,7 @@ export function tabloSatirlari<T>(seri: readonly T[], aralik = 30): T[] {
   return seri.filter((_, i) => (seri.length - 1 - i) % aralik === 0);
 }
 
-// ----------------------------------------------------- taban ve tavan
+// ------------------------------------------------ son 20 seansın hareketi
 
 /** `hisse_limit_gunleri` görünümünün satırı (son 20 seans, günlük kapanış). */
 export type LimitGunleri = {
@@ -255,44 +255,88 @@ export type LimitGunleri = {
   tavan_gun: number;
   son_taban_serisi: number;
   son_tavan_serisi: number;
+  /** Ortalama |günlük getiri|; sermaye işlemi günleri hariç. */
+  ort_hareket: number | null;
+  /** %10,5'i aşan, normal işlemle oluşamayan gün (bedelsiz, veri hatası). */
+  gecersiz_gun: number;
 };
 
+export type SeansRengi = "yes" | "notr" | "kehribar" | "kir";
+
 /**
- * Bugünkü taban/tavan durumu, yalnız sayım. Tahta etiketi bildirim
- * gününün ve devre kesicinin ölçüsü; tabanda kilitli, işlem görmeyen bir
- * hisse devre kesiciyi tetiklemiyor (TEHOL, Eylül 2026). Süren bir seri
- * (en az iki seans) önce söylenir, yoksa pencerenin sayımı. `kisa`,
- * başlığı zaten "Son 20 seans" olan dizin sütunu için.
+ * Ortalama hareketin, listedeki hisselerin ortasına oranına göre kademe.
+ * Göreli: piyasanın tamamı sarsıldığında da hangi tahtanın ayrıştığını
+ * söylesin diye. Eylül 2026'da 144 hissenin dağılımıyla (orta %2,9)
+ * yaklaşık dörtte biri sakin, sekizde biri çok oynak düşüyor.
  */
-export function limitDurumu(l: LimitGunleri | null): {
-  metin: string;
+export const HAREKET_KADEMELERI: readonly { ust: number; ad: string; renk: SeansRengi }[] = [
+  { ust: 0.75, ad: "Sakin", renk: "yes" },
+  { ust: 4 / 3, ad: "Olağan", renk: "notr" },
+  { ust: 2, ad: "Oynak", renk: "kehribar" },
+  { ust: Infinity, ad: "Çok oynak", renk: "kir" },
+];
+
+/** Listedeki hisselerin ortalama hareketlerinin ortancası. */
+export function hareketMedyani(satirlar: readonly { ort_hareket: number | null }[]): number | null {
+  const d = satirlar
+    .map((s) => s.ort_hareket)
+    .filter((v): v is number => v !== null && Number.isFinite(v))
+    .sort((a, b) => a - b);
+  if (d.length === 0) return null;
+  const m = Math.floor(d.length / 2);
+  return d.length % 2 ? d[m] : (d[m - 1] + d[m]) / 2;
+}
+
+const ondalik = (v: number) => v.toFixed(1).replace(".", ",");
+
+/**
+ * Son 20 seans, okura. Tahta etiketi bildirim gününün devre kesici
+ * ölçüsü; tabanda kilitli, işlem görmeyen hisse devre kesiciyi
+ * tetiklemiyor (TEHOL, Eylül 2026). Süren taban/tavan serisi (en az iki
+ * seans) önce söylenir; yoksa ortalama hareketin kademesi. `kisa` dizin
+ * hücresi için, `aciklama` ipucu ve hisse sayfası için.
+ */
+export function seansDurumu(
+  l: LimitGunleri | null,
+  medyan: number | null,
+): {
   kisa: string;
-  alt: string | null;
-  renk: "kir" | "kehribar" | "yes";
+  metin: string;
+  aciklama: string;
+  renk: SeansRengi;
+  hareket: number | null;
 } | null {
   if (!l) return null;
-  const parcalar = [
+  const oran = l.ort_hareket !== null && medyan ? l.ort_hareket / medyan : null;
+  const kademe = oran === null ? null : HAREKET_KADEMELERI.find((k) => oran < k.ust)!;
+  const limitler = [
     l.taban_gun > 0 ? `${l.taban_gun} taban` : null,
     l.tavan_gun > 0 ? `${l.tavan_gun} tavan` : null,
   ].filter(Boolean);
-  const sayim = parcalar.length ? `Son ${l.seans} seansta ${parcalar.join(", ")} günü` : null;
+  const cumleler = [
+    l.ort_hareket !== null
+      ? `Günde ortalama %${ondalik(l.ort_hareket * 100)} hareket` +
+        (oran !== null && medyan
+          ? `; listedeki hisselerin ortası %${ondalik(medyan * 100)}, bu onun ${ondalik(oran)} katı`
+          : "")
+      : null,
+    `Son ${l.seans} seansta ${limitler.length ? `${limitler.join(", ")} günü` : "taban ya da tavan yok"}`,
+    l.gecersiz_gun > 0
+      ? `${l.gecersiz_gun} gün, fiyat marjını aşan bir sıçrama (bedelsiz ya da veri hatası) olduğu için sayılmadı`
+      : null,
+  ].filter(Boolean);
+  const aciklama = cumleler.join(". ") + ".";
+
   if (l.son_taban_serisi >= 2) {
     const kisa = `${l.son_taban_serisi} seanstır tabanda`;
-    return { metin: `Son ${kisa}`, kisa, alt: sayim, renk: "kir" };
+    return { kisa, metin: `Son ${kisa}`, aciklama, renk: "kir", hareket: l.ort_hareket };
   }
   if (l.son_tavan_serisi >= 2) {
     const kisa = `${l.son_tavan_serisi} seanstır tavanda`;
-    return { metin: `Son ${kisa}`, kisa, alt: sayim, renk: "kehribar" };
+    return { kisa, metin: `Son ${kisa}`, aciklama, renk: "kehribar", hareket: l.ort_hareket };
   }
-  if (sayim) {
-    return {
-      metin: sayim,
-      kisa: `${parcalar.join(", ")} günü`,
-      alt: null,
-      renk: l.taban_gun >= 3 ? "kir" : "kehribar",
-    };
-  }
-  return { metin: `Son ${l.seans} seansta taban ya da tavan yok`, kisa: "Yok", alt: null, renk: "yes" };
+  if (!kademe) return null;
+  return { kisa: kademe.ad, metin: kademe.ad, aciklama, renk: kademe.renk, hareket: l.ort_hareket };
 }
 
 // -------------------------------------------------------------- dizin
@@ -375,9 +419,12 @@ export function dizinSatirlari<T extends DizinGirdi>(
   });
 }
 
-export type DizinAnahtari = "ticker" | "adet12" | "sonIs" | "kat" | "buyume";
+export type DizinAnahtari = "ticker" | "adet12" | "sonIs" | "kat" | "buyume" | "hareket";
 
-type Siralanabilir = Pick<DizinSatiri, "ticker" | "adet12" | "sonIs" | "kat" | "buyume">;
+type Siralanabilir = Pick<DizinSatiri, "ticker" | "adet12" | "sonIs" | "kat" | "buyume"> & {
+  /** Son 20 seansın ortalama hareketi; dizin sayfası ekler. */
+  hareket?: number | null;
+};
 
 /** Boş değerler her iki yönde sonda; eşitlikte ticker. */
 export function dizinSirala<T extends Siralanabilir>(
@@ -386,7 +433,11 @@ export function dizinSirala<T extends Siralanabilir>(
   azalan: boolean,
 ): T[] {
   const deger = (s: T): number | string | null =>
-    anahtar === "sonIs" ? Date.parse(s.sonIs) : s[anahtar];
+    anahtar === "sonIs"
+      ? Date.parse(s.sonIs)
+      : anahtar === "hareket"
+        ? (s.hareket ?? null)
+        : s[anahtar];
   const tk = (a: T, b: T) => (a.ticker < b.ticker ? -1 : a.ticker > b.ticker ? 1 : 0);
   return [...satirlar].sort((a, b) => {
     const x = deger(a);

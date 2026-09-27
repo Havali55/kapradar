@@ -20,8 +20,9 @@ import {
   gosterilenKalemler,
   gunlukSeri,
   karsiGorunen,
+  hareketMedyani,
   kiminle,
-  limitDurumu,
+  seansDurumu,
   seriIliskisi,
   sonOnIkiAy,
   type SeriIliskisi,
@@ -147,7 +148,7 @@ export default async function HisseSayfasi({
         tahtali.tahta_piyasa_orani ?? null,
       )
     : null;
-  // Bugünkü taban/tavan durumu: tahta ölçüsünün kaçırdığı kilitli tahta.
+  // Son 20 seans: ortalama hareket ve tahta ölçüsünün kaçırdığı kilitli tahta.
   const limitSatiri = limitler.find((l) => l.ticker === ticker) ?? null;
   const limitGunu = limitSatiri ? `${limitSatiri.son_tarih}T12:00:00Z` : null;
   const ilk = bildirimler[bildirimler.length - 1].yayin_zamani;
@@ -260,7 +261,7 @@ export default async function HisseSayfasi({
         <aside className="yan">
           <Kiminle satirlar={kim} />
           <HisseBaglam
-            limit={limitDurumu(limitSatiri)}
+            seans={seansDurumu(limitSatiri, hareketMedyani(limitler))}
             limitGunu={limitGunu ? `${gunAy(limitGunu, true)} ${limitGunu.slice(0, 4)}` : null}
             tahta={tahta}
             tahtaGunu={tahtali ? `${gunAy(tahtali.yayin_zamani, true)} ${tahtali.yayin_zamani.slice(0, 4)}` : null}
