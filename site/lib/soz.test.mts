@@ -187,3 +187,22 @@ test("satır kurma: nominal ve TL dışı FY dışarıda, nominal ayrıca sayıl
 test("satır kurma: büyüme dönemi yoksa null", () => {
   assert.equal(sozSatirlariKur(DUYURULAR, []), null);
 });
+
+test("şirket sözü: sayılan her şirket, nominal ve FY'siz dahil", () => {
+  const v = sozSatirlariKur(DUYURULAR, BUYUMELER)!;
+  assert.deepEqual([...v.sirketler.keys()].sort(), ["AAA", "BBB", "CCC", "DDD"]);
+  const bbb = v.sirketler.get("BBB")!;
+  assert.equal(bbb.reel, false);
+  assert.equal(bbb.yogunluk, 10 / 100);
+  const ccc = v.sirketler.get("CCC")!;
+  assert.equal(ccc.fyCiro, null);
+  assert.equal(ccc.yogunluk, null);
+  assert.equal(ccc.buyume, 0.2);
+});
+
+test("şirket sözü: büyümenin kaynak raporu", () => {
+  const b = BUYUMELER.map((x) =>
+    x.ticker === "AAA" && x.ay_sayisi === 6 ? { ...x, kap_index: 1649471 } : x,
+  );
+  assert.equal(sozSatirlariKur(DUYURULAR, b)!.sirketler.get("AAA")!.kaynakIndex, 1649471);
+});

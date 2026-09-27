@@ -207,6 +207,21 @@ export type BuyumeGirdi = {
   para_birimi: string | null;
   buyume: number | null;
   reel: boolean;
+  /** Dönemin son yayınının KAP bildirim numarası (kaynak rapor bağlantısı). */
+  kap_index?: number | null;
+};
+
+/** Bir şirketin söz yılındaki sözü ve büyüme dönemindeki gerçeği (hisse kartı). */
+export type SirketSozu = {
+  adet: number;
+  tl: number;
+  /** Söz yılının FY cirosu (TL); rapor yoksa ya da TL değilse null. */
+  fyCiro: number | null;
+  yogunluk: number | null;
+  /** Büyüme dönemindeki en uzun kümülatif rapor; yoksa null. */
+  buyume: number | null;
+  reel: boolean | null;
+  kaynakIndex: number | null;
 };
 
 export type SozSatiriAyrintili = SozSatiri & { adet: number; tl: number; fyCiro: number };
@@ -218,6 +233,8 @@ export type SozVerisi = {
   satirlar: SozSatiriAyrintili[];
   /** Söz yılında işi ve büyümesi olan ama raporu yeniden ifade edilmemiş şirketler. */
   nominal: string[];
+  /** Söz yılında sayılan işi olan her şirket; nominal ve FY'siz olanlar dahil. */
+  sirketler: Map<string, SirketSozu>;
 };
 
 // Yıl sınırı İstanbul saatiyle: 1 Ocak 00:30'daki bildirim UTC'de önceki yıla düşerdi.
@@ -248,7 +265,10 @@ export function sozSatirlariKur(
   if (donem === null) return null;
   const sozYili = Number(donem.slice(0, 4)) - 1;
 
-  const buyume = new Map<string, { g: number; reel: boolean; ay: number }>();
+  const buyume = new Map<
+    string,
+    { g: number; reel: boolean; ay: number; kaynak: number | null }
+  >();
   const fyCiro = new Map<string, number>();
   for (const b of buyumeler) {
     if (
@@ -256,7 +276,12 @@ export function sozSatirlariKur(
       b.buyume !== null &&
       b.ay_sayisi > (buyume.get(b.ticker)?.ay ?? 0)
     ) {
-      buyume.set(b.ticker, { g: b.buyume, reel: b.reel, ay: b.ay_sayisi });
+      buyume.set(b.ticker, {
+        g: b.buyume,
+        reel: b.reel,
+        ay: b.ay_sayisi,
+        kaynak: b.kap_index ?? null,
+      });
     }
     if (
       b.donem_sonu === `${sozYili}-12-31` &&
@@ -280,17 +305,27 @@ export function sozSatirlariKur(
 
   const satirlar: SozSatiriAyrintili[] = [];
   const nominal: string[] = [];
+  const sirketler = new Map<string, SirketSozu>();
   for (const [ticker, { tl, adet }] of duyuru) {
     const g = buyume.get(ticker);
+    const ciro = fyCiro.get(ticker) ?? null;
+    sirketler.set(ticker, {
+      adet,
+      tl,
+      fyCiro: ciro,
+      yogunluk: ciro === null ? null : tl / ciro,
+      buyume: g?.g ?? null,
+      reel: g ? g.reel : null,
+      kaynakIndex: g?.kaynak ?? null,
+    });
     if (!g) continue;
     if (!g.reel) {
       nominal.push(ticker);
       continue;
     }
-    const ciro = fyCiro.get(ticker);
-    if (ciro === undefined) continue;
+    if (ciro === null) continue;
     satirlar.push({ ticker, yogunluk: tl / ciro, buyume: g.g, adet, tl, fyCiro: ciro });
   }
   nominal.sort();
-  return { donem, sozYili, satirlar, nominal };
+  return { donem, sozYili, satirlar, nominal, sirketler };
 }
