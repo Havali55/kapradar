@@ -118,16 +118,53 @@ indi. Yabancıların işlem hacmi 2023'te 773 milyar dolar, 2024'te 607,
 2025'te 713 milyar dolar.
 
 Bu veri, sıkı para döneminde bireysel katılımın geri çekildiğini
-destekliyor. **Toplam piyasa işlem hacmini ölçemedik.** yfinance'in
-endeks hacmi kullanılamaz: 2020'de endeksin sadeleştirilmesiyle 60 katlık
-bir kırılma var ve bu pay adedi, TL değil. Borsa İstanbul'un resmî aylık
-istatistikleri henüz çekilmedi.
+destekliyor.
+
+**Toplam işlem hacmi (resmî, 27.09 akşamı eklendi).** Kaynak, Borsa
+İstanbul'un günlük pay piyasası bültenleri: 2020-01-02 → 2026-09-25
+arası 1.690 işlem günü, pay (EQT) satırlarının TL işlem hacmi
+(`scripts/rejim_arsivi.py bulten` ve `rapor`). yfinance'in endeks hacmi
+kullanılamazdı: 2020'deki endeks sadeleşmesiyle 60 katlık bir kırılma
+var ve seri pay adedi, TL değil.
+
+| Yarıyıl | Günlük TL, nominal (mr) | Reel, Ağu 2026 TL (mr) | Günlük USD (mn) |
+|---|---|---|---|
+| 2020 Y1 | 18,6 | 175 | 2.872 |
+| 2020 Y2 | 32,9 | 290 | 4.355 |
+| 2021 Y1 | 31,4 | 257 | 4.093 |
+| 2021 Y2 | 28,4 | 199 | 2.752 |
+| 2022 Y1 | 43,4 | 214 | 2.926 |
+| 2022 Y2 | 95,6 | 379 | 5.192 |
+| 2023 Y1 | 90,2 | 305 | 4.590 |
+| **2023 Y2** | 163,2 | **419** | 5.951 |
+| 2024 Y1 | 153,4 | 306 | 4.857 |
+| **2024 Y2** | 117,8 | **199** | 3.466 |
+| **2025 Y1** | 142,0 | **204** | 3.792 |
+| 2025 Y2 | 192,0 | 244 | 4.621 |
+| 2026 Y1 | 266,1 | 291 | 5.970 |
+| 2026 Y2 (Tem–Ağu) | 263,2 | 270 | 5.508 |
+
+Rejim ortalamaları (reel, günlük): gevşek para 259, sıkılaştırma 308,
+kademeli indirim 249 milyar TL. Dolar bazında 3,8 → 4,7 → 4,9 milyar
+dolar.
+
+Okuma:
+
+- Reel hacmin zirvesi seçimden hemen sonraki yarıyıl (2023 Y2).
+- Dip, faizin %50'ye çıkmasından sonraki bir yıl (2024 Y2 – 2025 Y1).
+  Bu, 2021 sonundan beri en düşük seviye.
+- Örneklemimiz tam bu dipte başlıyor ve 2026'daki toparlanmayı da
+  kapsıyor.
+- **Piyasa hacmi yarıyıllar arasında ~1,5 kat oynarken Bulgu 1 bu
+  dalgayı izlemiyor** (yarıyıllık düzeltilmiş AV +%25 … +%38, dipte
+  +%25 ve +%38). Bu, bulgunun piyasa hacim düzeyinden bağımsız olduğuna
+  dair örneklem içi bir kanıt.
 
 ## 3. Hüseyin'in tespitleri, veriyle
 
 | Tespit | Veri ne diyor | Hüküm |
 |---|---|---|
-| "Seçimden sonra faiz yüksek, borsada hacim yoktu" | Bireysel pay yatırımcısı 8,6 → 6,5 milyon. Ama borsa seçimden sonra bir yıl daha güçlü yükseldi (USD +%14, +%28). Durgunluk 2024 ortasında başladı. Toplam hacim ölçülemedi. | **Kısmen doğru.** Katılım düştü. Durgunluğun başlangıcı seçim değil, faizin %50'ye çıkması. |
+| "Seçimden sonra faiz yüksek, borsada hacim yoktu" | Bireysel pay yatırımcısı 8,6 → 6,5 milyon. Resmî bültene göre reel işlem hacmi seçimden hemen sonra zirve yaptı (2023 Y2, günde 419 milyar TL, bugünün fiyatlarıyla). Dip, 2024 Y2 – 2025 Y1'de (199–204 milyar). Borsa da seçimden sonra bir yıl daha güçlü yükseldi (USD +%14, +%28). | **Kısmen doğru.** Katılım düştü ve hacim dibe vurdu, ama başlangıç seçim değil, faizin %50'ye çıkması (2024 ortası). |
 | "İki yıl borsa pek yükselmedi" | Örneklem döneminde XU100 USD −%11,3, reel kabaca −%27. | **Doğru.** |
 | "Seçimden önce enflasyon yüksekti ama borsa çok yükseldi" | Gevşek para döneminde XU100 yılda +%50 (TL), +%8 (USD). 2022 ikinci yarısı +%129. | **Doğru.** Ama bu dönem örneklemimizde hiç yok. |
 | "Bu yılki yükseliş fonlar ve manipülasyon kaynaklı" | 2026 ilk yarısında XU100 +%25,4, BIST 30 +%33,7: büyük hisseler daha çok yükseldi. Haberler faiz indirimi, enflasyon beklentisi ve yabancı işlemlerini gösteriyor. Aynı dönemde küçük hisseler (EW) analiz yılında XU100'ün %27 gerisinde kaldı. Manipülasyon iddiası düşük dolaşımlı paylarda. | **Endeks düzeyinde hayır, küçük düşük dolaşımlı paylarda evet.** |
@@ -256,9 +293,6 @@ oranı her zaman biraz büyütüyor.
 
 ## 7. Hâlâ sınanmamış kör noktalar
 
-- **Toplam işlem hacmi (TL ve USD), 2019'dan beri.** Hüseyin'in "seçimden
-  sonra hacim yok" tespitinin doğrudan sınavı bu. Borsa İstanbul'un aylık
-  istatistikleri gerekiyor.
 - **Seyrek işlem ve beta.** Tek günlük piyasa modeli, az işlem gören
   hissede betayı aşağı çeker. Dimson gecikmeli terimi denenmedi.
 - **Hayatta kalan yanlılığı.** Fiyat ve eşit ağırlıklı endeks, bugün işlem
@@ -325,6 +359,34 @@ Web kaynakları haber ve ikincil derleme niteliğinde. Faiz kronolojisi,
 TCMB'nin kendi kararlarıyla karşılaştırılarak kullanılmalı.
 
 ## 10. Karar bekleyenler
+
+**K1 durumu (27.09 akşamı).**
+
+- **Borsa İstanbul bültenleri:** tam (1.690 gün), hacim tablosu §2'de.
+- **KAP listesi:** 2020-01 → 2020-10 arası indi (100 pencere). Sonra WAF
+  IP'mizi geçici engelledi; `.env`'deki 500 ms fazla hızlıydı.
+  - Betik artık en az 2 sn aralıkla çalışıyor ve üç ardışık hatada
+    duruyor. Engel kalkınca kaldığı yerden devam edecek (347 pencere,
+    ~25 dk).
+  - Engel başka IP'lerden dolanılmayacak.
+  - Resmî ve ücretsiz alternatif: MKK API Portalı'ndaki KAP veri yayın
+    servisleri (hesabı Hüseyin açar).
+- **İlk bulgu: şablon kullanımı zamanla değişmiş.**
+  - "Yeni İş İlişkisi" konusuyla 2020'de ayda ~11 bildirim var,
+    2023-09 → 2024-08'de ayda ~65–70.
+  - 2020'de "Özel Durum Açıklaması (Genel)" ayda ~455 ve özetlerinin
+    ~%7'sinde sözleşme, ihale ya da sipariş geçiyor.
+  - Rejim karşılaştırması yalnız şablonla kurulursa rejim farkı ile
+    duyuru alışkanlığı farkı karışır. Seçim öncesi örneklem, genel özel
+    durum açıklamalarındaki sözleşme duyurularının sınıflanmasını da
+    gerektirecek.
+- **Bütçe:**
+  - Şimdilik elde olan 898 şablonlu bildirim ~1,3 M girdi token,
+    ~0,63 USD.
+  - 2021–2023 geldikçe artacak.
+  - Genel özel durum sınıflaması (senaryo B) kaba desenle +1.028
+    bildirim, ~0,73 USD.
+  - Kesin rakam KAP listesi tamamlanınca `rapor` ile.
 
 **K1 · Rejim sınaması (önerilen).** 2020-01 → 2023-05 ve 2023-06 →
 2024-08 için aynı sınavlar.

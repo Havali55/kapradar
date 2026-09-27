@@ -22,6 +22,9 @@ out/
 
 # Veri — ham KAP metinleri ve fiyat serileri repoya girmez
 data/ham/
+# Seçim öncesi rejim sınamasının ham arşivi (KAP listesi, Borsa İstanbul
+# günlük bültenleri); scripts/rejim_arsivi.py yeniden üretir.
+data/ham_rejim/
 data/cache/
 # Altın küme için üretilen okuma dökümü; scripts/altin_kume_sec.py yeniden üretir.
 # Etiketlerin kendisi (data/altin_kume.json) repoda kalır.
