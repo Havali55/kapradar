@@ -314,8 +314,9 @@ a:hover {
   display: none;
 }
 
-/* Site v3 ortak parçaları. */
-.etiket {
+/* Site v3 ortak parçaları. `.etiket` adı eski kartın çipinde dolu
+   (dosyada sonra gelip bunu eziyordu); v3 üst yazısı `.ust-yazi`. */
+.ust-yazi {
   font: 500 11px var(--yazi-mono), ui-monospace, monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -339,7 +340,7 @@ a:hover {
     0 1px 0 rgb(255 255 255 / 0.04) inset,
     0 24px 48px -28px rgb(22 21 15 / 0.6);
 }
-.plaka .etiket {
+.plaka .ust-yazi {
   color: var(--plaka-mut);
 }
 .plaka h2,

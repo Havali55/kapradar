@@ -7,7 +7,14 @@ process.env.TZ = "UTC";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { isaretliYuzde, istanbulGunu, tahtaGorunumu, yuzdeIyelik } from "./bicim.ts";
+import {
+  gunAy,
+  isaretliYuzde,
+  istanbulGunu,
+  tahtaGorunumu,
+  yilda,
+  yuzdeIyelik,
+} from "./bicim.ts";
 
 test("iyelik eki son okunan sözcüğe uyar: birler basamağı", () => {
   assert.equal(yuzdeIyelik(0.055), "%5,5'i");
@@ -52,4 +59,22 @@ test("tahta notuna aynı günün piyasa taban oranı eklenir", () => {
 test("İstanbul günü UTC gününden farklı olabilir", () => {
   // 21:30 UTC = ertesi gün 00:30 İstanbul
   assert.equal(istanbulGunu("2025-12-08T21:30:00+00:00"), "09.12.2025");
+});
+
+test("gunAy İstanbul takvimiyle: 21:00 UTC'den sonrası ertesi gün", () => {
+  assert.equal(gunAy("2026-09-25T22:30:00Z"), "26 Eyl");
+  assert.equal(gunAy("2026-09-25T20:30:00Z"), "25 Eyl");
+  assert.equal(gunAy("2026-09-25T22:30:00Z", true), "26 Eylül");
+});
+
+test("yilda: bulunma eki yılın okunuşundaki son sözcüğe uyar", () => {
+  assert.equal(yilda(2025), "2025'te"); // beş
+  assert.equal(yilda(2026), "2026'da"); // altı
+  assert.equal(yilda(2027), "2027'de"); // yedi
+  assert.equal(yilda(2024), "2024'te"); // dört
+  assert.equal(yilda(2029), "2029'da"); // dokuz
+  assert.equal(yilda(2020), "2020'de"); // yirmi
+  assert.equal(yilda(2030), "2030'da"); // otuz
+  assert.equal(yilda(2040), "2040'ta"); // kırk
+  assert.equal(yilda(2000), "2000'de"); // bin
 });

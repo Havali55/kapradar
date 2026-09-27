@@ -278,3 +278,28 @@ export const KADEME_ADI: Record<string, string> = {
   onemli: "Önemli iş",
   mega: "Mega iş",
 };
+
+/** İstanbul takvimiyle "26 Eyl" ya da uzun hâli "26 Eylül". */
+export function gunAy(isoTarih: string, uzun = false): string {
+  return new Date(isoTarih).toLocaleDateString(TR, {
+    timeZone: "Europe/Istanbul",
+    day: "numeric",
+    month: uzun ? "long" : "short",
+  });
+}
+
+/**
+ * Yıl + bulunma eki: "2025'te", "2026'da". Ek, yılın okunuşundaki son
+ * sözcüğe uyar (beş → te, altı → da). Birler sıfırsa onlar, o da
+ * sıfırsa yüz/bin ("de").
+ */
+const BIRLER_DE = ["", "'de", "'de", "'te", "'te", "'te", "'da", "'de", "'de", "'da"];
+const ONLAR_DE = ["", "'da", "'de", "'da", "'ta", "'de", "'ta", "'te", "'de", "'da"];
+
+export function yilda(yil: number): string {
+  const birler = yil % 10;
+  const onlar = Math.floor(yil / 10) % 10;
+  if (birler) return `${yil}${BIRLER_DE[birler]}`;
+  if (onlar) return `${yil}${ONLAR_DE[onlar]}`;
+  return `${yil}'de`;
+}
