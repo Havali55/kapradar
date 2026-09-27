@@ -278,3 +278,48 @@ export const KADEME_ADI: Record<string, string> = {
   onemli: "Önemli iş",
   mega: "Mega iş",
 };
+
+/**
+ * Kat biçimi: "1,38×". İki ondalıkta sıfıra yuvarlanan oran "<0,01×":
+ * "0,00×" duyurulmuş bir işi hiç yokmuş gibi gösterirdi.
+ */
+export function kat(oran: number): string {
+  return oran > 0 && oran < 0.005 ? "<0,01×" : `${sayi(oran, 2)}×`;
+}
+
+/** İstanbul takvimiyle "26 Eyl" ya da uzun hâli "26 Eylül". */
+export function gunAy(isoTarih: string, uzun = false): string {
+  return new Date(isoTarih).toLocaleDateString(TR, {
+    timeZone: "Europe/Istanbul",
+    day: "numeric",
+    month: uzun ? "long" : "short",
+  });
+}
+
+/**
+ * Yıl + bulunma eki: "2025'te", "2026'da". Ek, yılın okunuşundaki son
+ * sözcüğe uyar (beş → te, altı → da). Birler sıfırsa onlar, o da
+ * sıfırsa yüz/bin ("de").
+ */
+const BIRLER_DE = ["", "'de", "'de", "'te", "'te", "'te", "'da", "'de", "'de", "'da"];
+const ONLAR_DE = ["", "'da", "'de", "'da", "'ta", "'de", "'ta", "'te", "'de", "'da"];
+
+export function yilda(yil: number): string {
+  const birler = yil % 10;
+  const onlar = Math.floor(yil / 10) % 10;
+  if (birler) return `${yil}${BIRLER_DE[birler]}`;
+  if (onlar) return `${yil}${ONLAR_DE[onlar]}`;
+  return `${yil}'de`;
+}
+
+/** Tez cümlesinde tutar: "375,5 milyar TL", "92,4 milyon TL". */
+export function uzunTl(tl: number): string {
+  if (tl >= 1e9) return `${sayi(tl / 1e9, 1)} milyar TL`;
+  if (tl >= 1e6) return `${sayi(tl / 1e6, 1)} milyon TL`;
+  return `${sayi(tl, 0)} TL`;
+}
+
+/** "yıllık cirosunun …": 1 ve üstünde "1,7 katı", altında "%12,3'ü". */
+export function cirosununKati(oran: number): string {
+  return oran >= 1 ? `${sayi(oran, 1)} katı` : yuzdeIyelik(oran, 1);
+}

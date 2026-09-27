@@ -18,6 +18,10 @@ ilk denetimin bulguları: docs/arastirma/2026-09-26-veri-denetimi.md.
      veritabanındakiyle aynı mı (açık pencere hatası 2026-09-26).
   5. Bilinen sapmalar (bilgi): KDV dahil tutar, özette metinde olmayan
      sayı, ciro oranı %50 üstü.
+  6. Ciro serisi tutarlılığı (bilgi): her şirketin son `ttm_seri`
+     değeri `sirket.son_yillik_hasilat_tl` önbelleğiyle aynı mı. İkisi
+     de `ttm_coz`'dan geliyor; fark, adımlardan birinin düştüğünü ya da
+     önbelleğin çözülemeyen TTM'de eski değerde kaldığını gösterir.
 """
 
 from __future__ import annotations
@@ -182,6 +186,27 @@ def main() -> int:
           f"değişecek: {kademe_degisen})")
     print(f"  özette metinde olmayan sayı       : {ozet_sayi}")
     print(f"  ciro oranı %50 üstü               : {asiri}")
+
+    # 6. ciro serisi tutarlılığı (bilgi)
+    with psycopg.connect(dsn_bul(), connect_timeout=30) as baglanti:
+        with baglanti.cursor() as imlec:
+            imlec.execute(
+                """
+                select s.ticker, s.son_yillik_hasilat_tl, c.hasilat
+                from public.sirket s
+                join lateral (
+                  select hasilat from public.ttm_seri t
+                  where t.ticker = s.ticker
+                  order by t.gecerlilik_basi desc limit 1
+                ) c on true
+                where s.son_yillik_hasilat_tl is not null
+                  and c.hasilat is distinct from s.son_yillik_hasilat_tl
+                """
+            )
+            ciro_farki = imlec.fetchall()
+    baslik(f"6. ciro serisi önbellekten farklı (bilgi): {len(ciro_farki)}")
+    for ticker, onbellek, seri in ciro_farki[:n]:
+        print(f"  {ticker:6} önbellek {onbellek} / seri {seri}")
 
     bulgu = len(regresyon) + len(bekleyen)
     if secenek.kati and bulgu:

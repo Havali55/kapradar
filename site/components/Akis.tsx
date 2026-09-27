@@ -162,8 +162,12 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
         setSecili(suzulmus[imlec].kap_id);
       }
     };
-    window.addEventListener("keydown", tus);
-    return () => window.removeEventListener("keydown", tus);
+    // Yakalama aşaması: başlıktaki hisse araması da "/" dinliyor. Akış
+    // önce çalışıp olayı işaretliyor (preventDefault), başlık da
+    // `defaultPrevented` görünce geri çekiliyor; bu sayfada "/" akışın
+    // kendi süzgecine gider.
+    window.addEventListener("keydown", tus, true);
+    return () => window.removeEventListener("keydown", tus, true);
   }, [seciliBildirim, gezin, suzulmus, imlec]);
 
   // Panelde gezinirken imleç de takip etsin: panel kapanınca kullanıcı
@@ -210,7 +214,7 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
   return (
     <>
       <div className="filtre-cubugu">
-        <div className="arama">
+        <div className="akis-arama">
           <span className="mono" aria-hidden="true">
             ⌕
           </span>

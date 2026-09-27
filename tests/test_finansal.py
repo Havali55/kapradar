@@ -23,12 +23,16 @@ from kap_radar.finansal import (
     DonemHasilat,
     aykiri_indeksler,
     birim_coz,
+    donem_buyumeleri,
     finansal_ayristir,
     gelir_tablosu_govdesi,
     konsolide_mi,
     sunum_para_birimi,
+    tms29_uygular,
+    ttm_basamaklari,
     ttm_coz,
 )
+from kap_radar import tufe
 
 FIXTURE = Path(__file__).parent / "fixtures"
 ISTANBUL = ZoneInfo("Europe/Istanbul")
@@ -446,3 +450,186 @@ def test_yillik_yontemde_enflasyon_carpani_yok():
     sonuc = ttm_coz([FY2025], datetime(2026, 5, 1, tzinfo=ISTANBUL))
 
     assert sonuc.enflasyon_carpani is None
+
+
+# ------------------------------------------------ türetilmiş seriler (site v3)
+
+
+def test_buyume_ayni_raporun_iki_sutunundan_hesaplanir():
+    (b,) = donem_buyumeleri([YARIM2026])
+
+    assert b.buyume == Decimal("2597519683") / Decimal("2069654707") - 1
+    assert b.kap_index == 1649471
+    # Karşılaştırılan dönemin ilk yayını arşivde yok: katsayı bilinmiyor,
+    # büyüme reel sayılmıyor.
+    assert b.katsayi is None
+    assert b.reel is False
+
+
+def test_yeniden_ifade_eden_raporun_buyumesi_reel_sayilir():
+    buyumeler = donem_buyumeleri([YARIM2025_ILK, FY2025, YARIM2026])
+    b = next(x for x in buyumeler if x.donem_sonu == date(2026, 6, 30))
+
+    assert b.katsayi == Decimal("2069654707") / Decimal("1556131358")
+    assert b.reel is True
+
+
+def test_yeniden_ifade_etmeyen_sirketin_buyumesi_nominal_kalir():
+    """k = 1: iki sütun farklı TL'de, oran enflasyonu da içeriyor."""
+    ilk = donem(
+        sonu=date(2025, 6, 30), ay=6, hasilat="2069654707",
+        yayin=datetime(2025, 8, 12, tzinfo=ISTANBUL), indeks=1470000,
+    )
+    b = next(
+        x for x in donem_buyumeleri([ilk, YARIM2026])
+        if x.donem_sonu == date(2026, 6, 30)
+    )
+
+    assert b.katsayi == Decimal(1)
+    assert b.buyume is not None
+    assert b.reel is False
+
+
+def test_ayni_donemin_revizyonunda_buyume_son_yayindan():
+    duzeltme = donem(
+        sonu=date(2026, 6, 30), ay=6, hasilat="2700000000", onceki="2069654707",
+        yayin=datetime(2026, 9, 1, tzinfo=ISTANBUL), indeks=1660000,
+    )
+    (b,) = donem_buyumeleri([YARIM2026, duzeltme])
+
+    assert b.kap_index == 1660000
+    assert b.hasilat == Decimal("2700000000")
+
+
+def test_karsilastirma_sutunu_yoksa_buyume_yok():
+    tek = donem(
+        sonu=date(2026, 6, 30), ay=6, hasilat="100",
+        yayin=datetime(2026, 8, 1, tzinfo=ISTANBUL),
+    )
+    (b,) = donem_buyumeleri([tek])
+
+    assert b.buyume is None
+    assert b.reel is False
+
+
+def test_ttm_basamagi_her_rapor_yayininda_degisir():
+    basamaklar = ttm_basamaklari([FY2025, YARIM2026])
+
+    assert [b.gecerlilik_basi for b in basamaklar] == [
+        FY2025.yayin_zamani,
+        YARIM2026.yayin_zamani,
+    ]
+    assert basamaklar[0].ttm.hasilat == Decimal("3495512127")
+    assert basamaklar[1].ttm.hasilat == Decimal("4023377103")
+
+
+def test_ttmi_degistirmeyen_revizyon_basamak_yazmaz():
+    """Eski bir yılın geç revizyonu en güncel dönemi değiştirmez."""
+    eski_revizyon = donem(
+        sonu=date(2024, 12, 31), ay=12, hasilat="4488280980",
+        yayin=datetime(2026, 9, 1, tzinfo=ISTANBUL), indeks=1655000,
+    )
+    basamaklar = ttm_basamaklari([FY2025, YARIM2026, eski_revizyon])
+
+    assert len(basamaklar) == 2
+
+
+def test_tek_basina_ara_donem_seriyi_baslatmaz():
+    """Köprünün yıllık bacağı yoksa TTM yok; seri ilk çözülen anda başlar."""
+    assert ttm_basamaklari([YARIM2026]) == []
+
+
+def test_kopru_kurulamayinca_bosluk_basamagi_yazilir():
+    """Önceki değer taşınmaz: yeni yılın ilk çeyreğinde FY2026 henüz yok."""
+    ceyrek = donem(
+        sonu=date(2027, 3, 31), ay=3, hasilat="900000000", onceki="800000000",
+        yayin=datetime(2027, 5, 10, tzinfo=ISTANBUL), indeks=1700000,
+    )
+    basamaklar = ttm_basamaklari([FY2025, YARIM2026, ceyrek])
+
+    assert len(basamaklar) == 3
+    assert basamaklar[-1].ttm is None
+    assert basamaklar[-1].gecerlilik_basi == ceyrek.yayin_zamani
+
+
+# --------------------------------------- TMS 29 geçişi ve resmî TÜFE yedeği
+
+# 2023 ara dönemlerinin ilk yayını TMS 29 öncesi, tarihî maliyetle yapıldı.
+DOKUZ_2023_ILK = donem(
+    sonu=date(2023, 9, 30), ay=9, hasilat="1000000000",
+    yayin=datetime(2023, 11, 8, tzinfo=ISTANBUL), indeks=1200000,
+)
+FY2023 = donem(
+    sonu=date(2023, 12, 31), ay=12, hasilat="1500000000",
+    yayin=datetime(2024, 3, 11, tzinfo=ISTANBUL), indeks=1250000,
+)
+# 9A2024 karşılaştırma sütununda 9A2023'ü Eylül 2024 TL'sine taşıyor. İlk
+# yayın tarihî maliyetle olduğu için oran 1,79: enflasyon değil geçiş.
+DOKUZ_2024 = donem(
+    sonu=date(2024, 9, 30), ay=9, hasilat="2000000000", onceki="1790000000",
+    yayin=datetime(2024, 11, 11, tzinfo=ISTANBUL), indeks=1300000,
+)
+ALTI_2024 = donem(
+    sonu=date(2024, 6, 30), ay=6, hasilat="1300000000", onceki="1150000000",
+    yayin=datetime(2024, 8, 12, tzinfo=ISTANBUL), indeks=1280000,
+)
+
+
+def fy2024(onceki: str) -> DonemHasilat:
+    """FY2023'ü karşılaştıran yıllık rapor: FY2023'ün ilk yayını zaten TMS 29'lu."""
+    return donem(
+        sonu=date(2024, 12, 31), ay=12, hasilat="3000000000", onceki=onceki,
+        yayin=datetime(2025, 3, 10, tzinfo=ISTANBUL), indeks=1400000,
+    )
+
+
+def test_tms29_gecisinde_kopru_resmi_tufe_ile_tasinir():
+    """Şirket katsayısı 1,79^(9/12) ≈ 1,55 verirdi; Ara 2023 → Eyl 2024 TÜFE 1,359."""
+    sonuc = ttm_coz(
+        [DOKUZ_2023_ILK, FY2023, DOKUZ_2024], datetime(2024, 12, 2, tzinfo=ISTANBUL)
+    )
+
+    t = tufe.oran(date(2023, 12, 31), date(2024, 9, 30))
+    assert sonuc.carpan_kaynagi == "tufe"
+    assert sonuc.enflasyon_carpani == t
+    assert sonuc.hasilat == (
+        Decimal("1500000000") * t + Decimal("2000000000") - Decimal("1790000000")
+    ).quantize(Decimal(1))
+    assert sonuc.kaynak_indeksler == (1250000, 1300000)
+
+
+def test_katsayisi_olmayan_kopru_tms29_uygulayan_sirkette_tufe_ile_tasinir():
+    """6A2023'ün ilk yayını arşivde yok; şirketin politikası FY2024'ten okunuyor."""
+    sonuc = ttm_coz(
+        [FY2023, ALTI_2024, fy2024(onceki="2166000000")],
+        datetime(2024, 9, 2, tzinfo=ISTANBUL),
+    )
+
+    assert sonuc.carpan_kaynagi == "tufe"
+    assert sonuc.enflasyon_carpani == tufe.oran(date(2023, 12, 31), date(2024, 6, 30))
+
+
+def test_tms29_uygulamayan_sirkette_kopru_duzeltmesiz_kalir():
+    """Banka gibi: FY2024'ün karşılaştırma sütunu FY2023'ün ilk yayınıyla aynı."""
+    sonuc = ttm_coz(
+        [FY2023, ALTI_2024, fy2024(onceki="1500000000")],
+        datetime(2024, 9, 2, tzinfo=ISTANBUL),
+    )
+
+    assert sonuc.enflasyon_carpani is None
+    assert sonuc.carpan_kaynagi is None
+    assert sonuc.hasilat == Decimal("1500000000") + Decimal("1300000000") - Decimal("1150000000")
+
+
+def test_sirket_katsayisi_varken_kaynagi_isaretlenir():
+    sonuc = ttm_coz(
+        [YARIM2025_ILK, FY2025, YARIM2026], datetime(2026, 9, 18, tzinfo=ISTANBUL)
+    )
+
+    assert sonuc.carpan_kaynagi == "sirket"
+
+
+def test_tms29_politikasi_herhangi_bir_katsayidan_okunur():
+    assert tms29_uygular([FY2023, fy2024(onceki="2166000000")]) is True
+    assert tms29_uygular([FY2023, fy2024(onceki="1500000000")]) is False
+    assert tms29_uygular([FY2023, ALTI_2024]) is None

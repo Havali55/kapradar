@@ -1,3 +1,5 @@
+import type { HisseSecenek } from "./arama";
+import { ozetle, sozSatirlariKur } from "./soz";
 import { supabase } from "./supabase";
 import {
   buyuklukBul,
@@ -352,6 +354,27 @@ export async function bildirimleriGetir(): Promise<Bildirim[]> {
  * değeriyle aynı — yani önbellek sayfadan daha uzun yaşamıyor.
  */
 const PANEL_TTL_MS = 3600_000;
+
+/**
+ * Süreç düzeyinde, sayfaların `revalidate` süresi kadar yaşayan önbellek.
+ * Söz (promise) saklanıyor: derlemede yüzlerce sayfa aynı anda
+ * isteyince tek sorgu koşar. Hata olursa önbellek boşalır, sonraki çağrı
+ * yeniden dener.
+ */
+function onbellekli<T>(yukle: () => Promise<T>): () => Promise<T> {
+  let bellek: { zaman: number; veri: Promise<T> } | null = null;
+  return () => {
+    if (!bellek || Date.now() - bellek.zaman >= PANEL_TTL_MS) {
+      const veri = yukle();
+      bellek = { zaman: Date.now(), veri };
+      veri.catch(() => {
+        if (bellek?.veri === veri) bellek = null;
+      });
+    }
+    return bellek.veri;
+  };
+}
+
 let panelBellek: { zaman: number; veri: PanelGirdi[] } | null = null;
 
 async function panelGirdileriGetir(): Promise<PanelGirdi[]> {
@@ -478,6 +501,138 @@ export async function hisseleriGetir(): Promise<HisseOzeti[]> {
     }))
     .sort((a, b) => b.adet - a.adet || a.ticker.localeCompare(b.ticker, "tr"));
 }
+
+/**
+ * Başlıktaki arama listesi. Layout her statik sayfada koşuyor (1.400+
+ * sayfa), bu yüzden `panelGirdileriGetir` gibi süreç düzeyinde ve aynı
+ * TTL ile önbellekte.
+ */
+let aramaBellek: { zaman: number; veri: HisseSecenek[] } | null = null;
+
+export async function hisseSecenekleriGetir(): Promise<HisseSecenek[]> {
+  if (aramaBellek && Date.now() - aramaBellek.zaman < PANEL_TTL_MS) {
+    return aramaBellek.veri;
+  }
+  const veri = (await hisseleriGetir()).map((h) => ({
+    t: h.ticker,
+    s: h.sirket,
+    n: h.adet,
+  }));
+  aramaBellek = { zaman: Date.now(), veri };
+  return veri;
+}
+
+/**
+ * Ana sayfanın, dizinin ve bildirim sayfası eklentisinin okuduğu
+ * sütunlar. `bildirimleriGetir` 60 sütun çekip her satıra akran paneli
+ * kuruyor; bunlara hiçbiri gerekmiyor.
+ */
+const ANA_SUTUNLAR =
+  "kap_id, ticker, sirket, yayin_zamani, hap_ozet, is_tanimi, ciro_orani, " +
+  "net_tutar_tl, karsi_taraf, karsi_taraf_acik, onceki_tur, ttm_hasilat, elle_karar, " +
+  "tahta, tahta_v90, tahta_v5, tahta_vbts_kademe";
+
+export type AnaSatir = Pick<
+  AkisSatiri,
+  | "kap_id"
+  | "ticker"
+  | "sirket"
+  | "yayin_zamani"
+  | "hap_ozet"
+  | "is_tanimi"
+  | "ciro_orani"
+  | "net_tutar_tl"
+  | "karsi_taraf"
+  | "karsi_taraf_acik"
+  | "onceki_tur"
+  | "ttm_hasilat"
+  | "elle_karar"
+  | "tahta"
+  | "tahta_v90"
+  | "tahta_v5"
+  | "tahta_vbts_kademe"
+>;
+
+/**
+ * Yayındaki bütün bildirimler, yeniden eskiye. Önbellekte: 1.267 bildirim
+ * sayfası da şirketin diğer işleri için bunu okuyor. Dönen dizi paylaşılıyor,
+ * çağıran değiştirmemeli.
+ */
+export const anaSatirlariGetir = onbellekli(() =>
+  hepsiniOku<AnaSatir>("Ana sayfa", (bas, son) =>
+    supabase
+      .from("akis")
+      .select(ANA_SUTUNLAR)
+      .order("yayin_zamani", { ascending: false })
+      .order("kap_id")
+      .range(bas, son),
+  ),
+);
+
+/** `reel_buyume` görünümü: rapor başına büyüme (`donem_buyume`, Faz 1). */
+export type ReelBuyumeSatiri = {
+  ticker: string;
+  donem_sonu: string;
+  ay_sayisi: number;
+  kap_index: number;
+  hasilat: number;
+  para_birimi: string | null;
+  buyume: number | null;
+  reel: boolean;
+};
+
+export const reelBuyumeGetir = onbellekli(async () => {
+  const satirlar = await hepsiniOku<ReelBuyumeSatiri>("Reel büyüme", (bas, son) =>
+    supabase
+      .from("reel_buyume")
+      .select("ticker, donem_sonu, ay_sayisi, kap_index, hasilat, para_birimi, buyume, reel")
+      .order("ticker")
+      .order("donem_sonu")
+      .order("ay_sayisi")
+      .range(bas, son),
+  );
+  // numeric sütunlar JSON'da sayı gelir; metin gelirse karşılaştırma
+  // ve bölme sessizce bozulmasın.
+  return satirlar.map((s) => ({
+    ...s,
+    hasilat: Number(s.hasilat),
+    buyume: s.buyume === null ? null : Number(s.buyume),
+  }));
+});
+
+/** `ciro_seri` görünümü: point-in-time son 12 aylık ciro basamakları (Faz 1). */
+export type CiroSeriSatiri = {
+  ticker: string;
+  gecerlilik_basi: string;
+  hasilat: number | null;
+  para_birimi: string | null;
+  kaynak_kap_index: number | null;
+};
+
+export const ciroSeriGetir = onbellekli(async () => {
+  const satirlar = await hepsiniOku<CiroSeriSatiri>("Ciro serisi", (bas, son) =>
+    supabase
+      .from("ciro_seri")
+      .select("ticker, gecerlilik_basi, hasilat, para_birimi, kaynak_kap_index")
+      .order("ticker")
+      .order("gecerlilik_basi")
+      .range(bas, son),
+  );
+  return satirlar.map((s) => ({
+    ...s,
+    hasilat: s.hasilat === null ? null : Number(s.hasilat),
+  }));
+});
+
+/**
+ * Söz ve gerçek, bütün şirketler için bir kez: ana sayfanın modülü ve 144
+ * hisse sayfasının kartı aynı gruplardan okuyor.
+ */
+export const sozVerisiGetir = onbellekli(async () => {
+  const [satirlar, buyumeler] = await Promise.all([anaSatirlariGetir(), reelBuyumeGetir()]);
+  const veri = sozSatirlariKur(satirlar, buyumeler);
+  return veri ? { veri, ozet: ozetle(veri.satirlar) } : null;
+});
 
 /** `/kap/[kap_id]` için statik parametreler. */
 export async function kapIdleriGetir(): Promise<string[]> {

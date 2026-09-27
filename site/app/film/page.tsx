@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -17,24 +16,6 @@ export const metadata: Metadata = {
 export default function FilmSayfasi() {
   return (
     <>
-      <header className="bas">
-        <div className="bas-ic">
-          <Link href="/" className="logo">
-            <span className="logo-ad mono">
-              KAP<i>·</i>RADAR
-            </span>
-            <span className="logo-alt mono">FİLM</span>
-          </Link>
-          <div className="bas-bos" />
-          <Link href="/proje-hakkinda" className="bag">
-            Proje hakkında
-          </Link>
-          <Link href="/" className="bag bag-koyu">
-            Akışa dön
-          </Link>
-        </div>
-      </header>
-
       <main className="govde govde-dar">
         <div className="baslik-blok">
           <p className="baslik-ust mono">50 SANİYEDE KAP·RADAR</p>

@@ -1,0 +1,24 @@
+{
+  "aciklama": "Söz ve gerçek hesabının ortak fikstürü. tests/test_soz_gercek.py ve site/lib/soz.test.mts aynı dosyayı okur; biri değişip öteki unutulursa testlerden biri kırılır.",
+  "satirlar": [
+    {"ticker": "AAA", "yogunluk": 0.05, "buyume": 0.10},
+    {"ticker": "BBB", "yogunluk": 0.10, "buyume": -0.05},
+    {"ticker": "CCC", "yogunluk": 0.20, "buyume": 0.00},
+    {"ticker": "DDD", "yogunluk": 0.40, "buyume": 0.30},
+    {"ticker": "EEE", "yogunluk": 0.80, "buyume": 0.15},
+    {"ticker": "FFF", "yogunluk": 1.20, "buyume": 0.28},
+    {"ticker": "GGG", "yogunluk": 2.00, "buyume": 0.40}
+  ],
+  "beklenen": {
+    "n": 7,
+    "grup_tickerlari": [["AAA", "BBB"], ["CCC", "DDD"], ["EEE", "FFF", "GGG"]],
+    "medyan_buyume": [0.025, 0.15, 0.28],
+    "medyan_yogunluk": [0.075, 0.30, 1.20],
+    "rho": 0.7857142857142857,
+    "t": 2.840187787218772,
+    "ust_grup_onde": true
+  },
+  "spearman_esitlik": {"x": [1, 2, 2, 3], "y": [1, 2, 3, 4], "rho": 0.9486832980505138},
+  "kapsam": {"2025-12-31": 138, "2026-03-31": 137, "2026-06-30": 140, "2026-09-30": 12},
+  "beklenen_donem": "2026-06-30"
+}

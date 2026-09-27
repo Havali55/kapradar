@@ -1,19 +1,36 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { hisseFonGetir, hisseGetir, hisseleriGetir } from "@/lib/veri";
-import { oranRengi, siklikRenk, yuzdelik } from "@/lib/skor";
+import DuyuruCiroGrafigi, { type GrafikIsi } from "@/components/DuyuruCiroGrafigi";
+import HisseBaglam from "@/components/HisseBaglam";
+import IsListesi, { type IsOgesi } from "@/components/IsListesi";
+import Kiminle from "@/components/Kiminle";
+import SozKarti from "@/components/SozKarti";
+import { karsiTarafMetni, ozetMetni, sayilanIs } from "@/lib/anasayfa";
 import {
-  KADEME_ADI,
-  SIKLIK_ADI,
-  VBTS_KADEME_ADI,
-  buyukTl,
-  gunEtiketi,
-  isaretliYuzde,
-  sayi,
+  cirosununKati,
+  gunAy,
+  kalemTutari,
   tahtaGorunumu,
-  yuzde,
+  uzunTl,
 } from "@/lib/bicim";
+import {
+  ciroAn,
+  gosterilenKalemler,
+  gunlukSeri,
+  karsiGorunen,
+  kiminle,
+  seriIliskisi,
+  sonOnIkiAy,
+  type SeriIliskisi,
+} from "@/lib/hikaye";
+import {
+  ciroSeriGetir,
+  hisseFonGetir,
+  hisseGetir,
+  hisseleriGetir,
+  sozVerisiGetir,
+} from "@/lib/veri";
 
 export const revalidate = 3600;
 
@@ -34,9 +51,18 @@ export async function generateMetadata({
   const sirket = bildirimler[0].sirket;
   return {
     title: `${ticker} — ${sirket}`,
-    description: `${sirket} (${ticker}) için ${bildirimler.length} yeni iş ilişkisi bildirimi, her biri şirketin kendi cirosuna göre boyutlandırılmış. Fiyat tahmini içermez.`,
+    description: `${sirket} (${ticker}): son 12 ayda duyurduğu yeni işler şirketin kendi yıllık cirosuna göre, ve cirosu gerçekten büyüdü mü. Fiyat tahmini içermez.`,
   };
 }
+
+// Başlık veriden (tasarım §4.2): "her gününde" iddiası ancak her gün ciro
+// biliniyorsa kuruluyor (`seriIliskisi`).
+const BASLIK: Record<SeriIliskisi, string> = {
+  ustte: "Son bir yılın her gününde, duyurulan işler yıllık cirodan büyüktü",
+  altta: "Son bir yılın her gününde, duyurulan işler yıllık cironun altında kaldı",
+  karisik: "Son 12 ayda duyurulan işler ve yıllık ciro",
+  "ciro-yok": "Son 12 ayda duyurulan işler",
+};
 
 export default async function HisseSayfasi({
   params,
@@ -44,261 +70,181 @@ export default async function HisseSayfasi({
   params: Promise<{ ticker: string }>;
 }) {
   const { ticker } = await params;
-  const [bildirimler, fon] = await Promise.all([
+  const [bildirimler, fon, ciroSeri, soz] = await Promise.all([
     hisseGetir(ticker),
     hisseFonGetir(ticker),
+    ciroSeriGetir(),
+    sozVerisiGetir(),
   ]);
   if (bildirimler.length === 0) notFound();
 
+  const simdi = Date.now();
   const sirket = bildirimler[0].sirket;
-  // Başlıktaki büyüklük ölçüsü de kart gibi ciro oranından — S değil.
-  const oranlar = bildirimler
-    .map((b) => b.ciro_orani)
-    .filter((r): r is number => r !== null)
-    .sort((a, b) => a - b);
-  const medyan = oranlar.length ? yuzdelik(oranlar, 0.5) : null;
-  const enBuyuk = oranlar.length ? oranlar[oranlar.length - 1] : null;
+  const basamaklar = ciroSeri.filter((s) => s.ticker === ticker);
+  const sayilan = bildirimler.filter(sayilanIs);
+  const son12 = sonOnIkiAy(sayilan, simdi);
+  const tl12 = son12.reduce((t, b) => t + (b.net_tutar_tl ?? 0), 0);
+  const ttm = ciroAn(basamaklar, simdi);
 
-  // Tahta ve hasılat hissenin özelliği, bildirimin değil: en yeni
-  // bildirimden okunuyor. Liste yeniden eskiye sıralı geliyor.
-  const sonTahta = bildirimler.find((b) => b.tahta !== null);
-  const tahta = sonTahta
+  const seri = gunlukSeri(sayilan, basamaklar, simdi);
+  const grafikIsleri: GrafikIsi[] = sayilan
+    .filter((b) => Date.parse(b.yayin_zamani) >= seri[0].t)
+    .map((b) => ({
+      kap_id: b.kap_id,
+      t: Date.parse(b.yayin_zamani),
+      tl: b.net_tutar_tl ?? 0,
+      oran: b.ciro_orani as number,
+      ozet: ozetMetni(b),
+      karsi: karsiTarafMetni(b),
+    }));
+  const grafikVar = grafikIsleri.length > 0 || seri.some((n) => n.ciro !== null);
+
+  const isler: IsOgesi[] = bildirimler.map((b) => {
+    const kalemler = gosterilenKalemler(b.tutarlar);
+    const karsi = karsiTarafMetni(b);
+    return {
+      kap_id: b.kap_id,
+      zaman: b.yayin_zamani,
+      ozet: ozetMetni(b),
+      karsi: karsi === null ? null : karsiGorunen(karsi),
+      kalem: kalemler[0] ? kalemTutari(kalemler[0].deger, kalemler[0].para_birimi) : null,
+      kalemEk: Math.max(0, kalemler.length - 1),
+      tl: b.net_tutar_tl,
+      oran: b.ciro_orani,
+      tekrar: b.onceki_tur === "ayni_is",
+      guncelleme: b.guncelleme_mi || b.onceki_tur === "guncelleme",
+      duzeltme: b.onceki_tur === "duzeltme",
+    };
+  });
+
+  const kim = kiminle(
+    son12.map((b) => {
+      const karsi = karsiTarafMetni(b);
+      return { net_tutar_tl: b.net_tutar_tl, karsi: karsi === null ? null : karsiGorunen(karsi) };
+    }),
+  );
+
+  // Tahta hissenin özelliği, bildirimin değil: en yeni ölçüm. Liste
+  // yeniden eskiye sıralı geliyor.
+  const tahtali = bildirimler.find((b) => b.tahta !== null);
+  const tahta = tahtali
     ? tahtaGorunumu(
-        sonTahta.tahta,
-        sonTahta.tahta_v90,
-        sonTahta.tahta_v5,
-        sonTahta.tahta_vbts_kademe,
+        tahtali.tahta,
+        tahtali.tahta_v90,
+        tahtali.tahta_v5,
+        tahtali.tahta_vbts_kademe,
+        tahtali.tahta_piyasa_orani ?? null,
       )
     : null;
-  const sonHasilat = bildirimler.find((b) => b.ttm_hasilat !== null);
-
-  // Sıklık şirket başına sabit; view'dan geliyor ve 613'ün tamamını
-  // sayıyor. Sayfadaki liste yalnız yayına hazır olanları gösterdiği
-  // için `bildirimler.length` ondan küçük olabilir — bu yüzden ikisi
-  // ayrı ayrı yazılıyor.
-  const siklikAdet = bildirimler[0].bildirim_sikligi;
-  const siklik = bildirimler[0].siklik;
+  const ilk = bildirimler[bildirimler.length - 1].yayin_zamani;
 
   return (
-    <>
-      <header className="bas">
-        <div className="bas-ic">
-          <Link href="/" className="logo">
-            <span className="logo-ad mono">
-              KAP<i>·</i>RADAR
-            </span>
-            <span className="logo-alt mono">HİSSE</span>
-          </Link>
-          <div className="bas-bos" />
-          <Link href="/metodoloji" className="bag">
-            Metodoloji
-          </Link>
-          <Link href="/" className="bag bag-koyu">
-            Akışa dön
-          </Link>
-        </div>
-      </header>
+    <main className="govde">
+      <nav className="iz mono" aria-label="Konum">
+        <Link href="/hisse">Hisseler</Link>
+        <span aria-hidden="true">/</span>
+        <span>{ticker}</span>
+      </nav>
 
-      <main className="govde govde-dar">
-        <nav className="iz mono" aria-label="Konum">
-          <Link href="/">Akış</Link>
-          <span aria-hidden="true">/</span>
-          <span>{ticker}</span>
-        </nav>
+      <div className="hisse-kimlik">
+        <h1 className="mono">{ticker}</h1>
+        <span className="ad unvan">{sirket}</span>
+        <span className="meta">
+          Arşivde {bildirimler.length} yeni iş bildirimi · ilki {gunAy(ilk, true)}{" "}
+          {ilk.slice(0, 4)}
+          {ttm !== null && ` · son 12 aylık ciro ${uzunTl(ttm)}`}
+        </span>
+      </div>
 
-        <div className="baslik-blok">
-          <h1 style={{ fontSize: 28 }}>
-            <span className="mono">{ticker}</span>{" "}
-            <span style={{ fontWeight: 400, color: "var(--mut-2)" }}>
-              {sirket}
-            </span>
-          </h1>
-          <p>
-            Arşivde bu hisseye ait {bildirimler.length} &ldquo;yeni iş
-            ilişkisi&rdquo; bildirimi var. Her biri şirketin{" "}
-            <strong>kendi cirosuna göre</strong> boyutlandırıldı; sıralama
-            yeniden eskiye.
+      <div className="tez-blok">
+        <div>
+          <p className="tez">
+            {son12.length === 0 ? (
+              <>Son 12 ayda büyüklüğü hesaplanabilen yeni iş duyurmadı.</>
+            ) : (
+              <>
+                Son 12 ayda <b>{son12.length} iş</b> duyurdu. Toplamı{" "}
+                <b>{uzunTl(tl12)}</b>
+                {ttm ? (
+                  <>
+                    : yıllık cirosunun <em>{cirosununKati(tl12 / ttm)}</em>.
+                  </>
+                ) : (
+                  "."
+                )}
+              </>
+            )}
+          </p>
+          <p className="tez-not">
+            Duyurulan tutarlar çoğu zaman birkaç yıla yayılan sözleşmeler; ciro ise
+            bir yılda gerçekleşen satış. Oran bir işin şirket için büyüklüğünü
+            söyler, gelecek yılın cirosunu söylemez. O yüzden yanında gerçekleşeni
+            de gösteriyoruz.
           </p>
         </div>
+        {soz && <SozKarti ticker={ticker} veri={soz.veri} ozet={soz.ozet} />}
+      </div>
 
-        <div className="olcuum">
-          <div className="olcu">
-            <div className="olcu-et mono">BİLDİRİM SIKLIĞI</div>
-            <div
-              className="olcu-deger mono"
-              style={{
-                color: siklik ? `var(--${siklikRenk(siklik)})` : undefined,
-              }}
-            >
-              {siklikAdet ?? bildirimler.length}
-            </div>
-            <div className="olcu-alt">
-              {siklik ? `${SIKLIK_ADI[siklik].toLocaleLowerCase("tr")} · ` : ""}
-              12 ayda; {oranlar.length} duyurunun büyüklüğü hesaplanabildi
-            </div>
-          </div>
-          <div className="olcu">
-            <div className="olcu-et mono">MEDYAN BÜYÜKLÜK</div>
-            <div
-              className="olcu-deger mono"
-              style={{ color: oranRengi(medyan) }}
-            >
-              {medyan === null ? "—" : yuzde(medyan, 1)}
-            </div>
-            <div className="olcu-alt">
-              {enBuyuk !== null
-                ? `hasılata oranla · en büyüğü ${yuzde(enBuyuk, 1)}`
-                : "büyüklüğü hesaplanan bildirim yok"}
-            </div>
-          </div>
-          <div className="olcu">
-            <div className="olcu-et mono">SON 3 AY</div>
-            <div
-              className="olcu-deger olcu-kisa"
-              style={{ color: tahta ? `var(--${tahta.renk})` : undefined }}
-            >
-              {tahta ? tahta.ad : "—"}
-            </div>
-            <div className="olcu-alt">
-              {sonTahta?.tahta
-                ? sonTahta.tahta_vbts_kademe
-                  ? `VBTS: ${VBTS_KADEME_ADI[sonTahta.tahta_vbts_kademe]}`
-                  : `90 seansta ${sonTahta.tahta_v90 ?? "—"} devre kesici günü`
-                : "ölçülemedi"}
-            </div>
-          </div>
-          <div className="olcu">
-            <div className="olcu-et mono">SON 12 AYLIK CİRO</div>
-            <div className="olcu-deger olcu-kisa">
-              {sonHasilat?.ttm_hasilat != null
-                ? buyukTl(sonHasilat.ttm_hasilat)
-                : "—"}
-            </div>
-            <div className="olcu-alt">büyüklük oranının paydası</div>
-          </div>
-        </div>
-
-        {sonTahta?.tahta === "tedbirli" && tahta && (
-          <p className="panel-uyari" style={{ marginBottom: 18 }}>
-            {tahta.not} İki ayrı yılın verisinde de çok oynak ya da borsa
-            tedbiri altındaki hisselerde duyuru sonrası ortalama tepki, sakin
-            hisselerdekinden belirgin biçimde düşük çıktı; nedeni bilinmiyor.
-          </p>
-        )}
-        {fon && (
-          <section style={{ margin: "8px 0 22px" }}>
-            <h3 className="bolum-bas mono">
-              FON SAHİPLİĞİ · BUGÜN
-              {fon.son_rapor_donemi ? ` · SON RAPOR ${fon.son_rapor_donemi}` : ""}
-            </h3>
-            <dl className="kutu">
-              <div className="kutu-satir">
-                <dt>Pozisyon açıklayan fonlar</dt>
-                <dd className="mono">
-                  {fon.fon_sayisi} fon · {fon.portfoy_sirketi_sayisi} portföy şirketi
-                  · {buyukTl(fon.fon_tl)}
-                </dd>
+      <div className="hisse-govde">
+        <div>
+          {grafikVar && (
+            <section className="plaka grafik-plaka" aria-labelledby="grafik-bas">
+              <div className="ust-yazi">Son 12 ayın duyuruları ve ciro</div>
+              <h2 id="grafik-bas">{BASLIK[seriIliskisi(seri)]}</h2>
+              <p className="aciklama">
+                Mavi çizgi, o güne kadarki 12 ayda duyurulan işlerin toplamı; kesikli
+                çizgi aynı gün bilinen son 12 aylık ciro. Çubuklar tek tek işler. İhale
+                ve sözleşme aşamasında iki kez duyurulan iş bir kez sayılır.
+              </p>
+              <div className="lejant" aria-hidden="true">
+                <span>
+                  <i style={{ borderColor: "var(--p-duyuru)" }} />
+                  12 ayda duyurulan işler
+                </span>
+                <span>
+                  <i className="kesik" style={{ borderColor: "var(--p-ciro)" }} />
+                  12 aylık ciro
+                </span>
+                <span>
+                  <i className="cubuk-lejant" style={{ background: "var(--p-mega)" }} />
+                  Mega iş
+                </span>
+                <span>
+                  <i className="cubuk-lejant" style={{ background: "var(--p-onemli)" }} />
+                  Önemli iş
+                </span>
+                <span>
+                  <i className="cubuk-lejant" style={{ background: "var(--p-rutin)" }} />
+                  Rutin iş
+                </span>
               </div>
-              {fon.fon_tl_3ay_once !== null && fon.fon_tl_3ay_once > 0 && (
-                <div className="kutu-satir">
-                  <dt>3 ay önceki fon pozisyonu</dt>
-                  <dd className="mono">
-                    {buyukTl(fon.fon_tl_3ay_once)} (
-                    {isaretliYuzde(fon.fon_tl / fon.fon_tl_3ay_once - 1, 0)})
-                  </dd>
-                </div>
-              )}
-              {fon.en_buyuk_pay !== null && fon.portfoy_sirketi_sayisi > 1 && (
-                <div className="kutu-satir">
-                  <dt>En büyük portföy şirketinin payı</dt>
-                  <dd className="mono">{yuzde(fon.en_buyuk_pay, 0)}</dd>
-                </div>
-              )}
-              {fon.tasfiye_tl > 0 && (
-                <div className="kutu-satir">
-                  <dt>Tasfiyedeki fonların pozisyonu</dt>
-                  <dd className="mono">
-                    {buyukTl(fon.tasfiye_tl)} · {fon.tasfiye_fon_sayisi} fon
-                    {fon.gunluk_hacim_tl
-                      ? ` · ≈ ${sayi(fon.tasfiye_tl / fon.gunluk_hacim_tl, 1)} günlük işlem hacmi`
-                      : ""}
-                  </dd>
-                </div>
-              )}
-            </dl>
-            {fon.tasfiye_tl > 0 && (
-              <p className="tutar-yok-not">
-                SPK&apos;nın tasfiyeye aldığı fonların varlıkları tasfiye süresince
-                satılacak. &ldquo;Günlük işlem hacmi&rdquo; oranı, bu pozisyonun
-                son 20 seansın ortalama TL hacmine bölünmesiyle bulunur; satışın
-                ne zaman ve nasıl yapılacağını söylemez.
+              <DuyuruCiroGrafigi seri={seri} isler={grafikIsleri} baslikId="grafik-bas" />
+              <p className="alt-not">
+                Tutarlar duyuru günü TCMB kuruyla TL. Ciro her finansal rapor
+                yayınlandığı gün güncellenir; sonradan gelen rapor geçmişe yazılmaz.
               </p>
-            )}
-            {fon.muaf_fon_sayisi > 0 && (
-              <p className="tutar-yok-not">
-                Bu hissede pozisyonu olan portföy şirketlerinin, nitelikli
-                yatırımcı muafiyetiyle portföyünü açıklamayan{" "}
-                {fon.muaf_fon_sayisi} fonu daha var. Gerçek fon pozisyonu
-                yukarıdakinden büyük olabilir.
-              </p>
-            )}
-            <p className="tutar-yok-not">
-              Kaynak: fonların KAP&apos;taki Portföy Dağılım Raporları. Raporlar
-              çoğunlukla aylık ve yaklaşık bir ay geriden gelir. Fon pozisyonu
-              büyüklüğe girmez.
-            </p>
-          </section>
-        )}
-
-        <div className="liste" style={{ marginTop: 6 }}>
-          {bildirimler.map((b) => (
-            <Link key={b.kap_id} href={`/kap/${b.kap_id}`} className="hisse-satir">
-              <span
-                className="kart-ray"
-                style={{ background: oranRengi(b.ciro_orani) }}
-                aria-hidden="true"
-              />
-              <span className="hisse-satir-ic">
-                <span className="hisse-satir-ust">
-                  <span className="mono hisse-satir-tarih">
-                    {gunEtiketi(b.yayin_zamani)}
-                  </span>
-                  {b.guncelleme_mi && (
-                    <span className="cip cip-notr mono">GÜNCELLEME</span>
-                  )}
-                  <span className="kart-bos" />
-                  {b.ciro_orani !== null ? (
-                    <span className="hisse-satir-skor mono">
-                      <strong style={{ color: oranRengi(b.ciro_orani) }}>
-                        {yuzde(b.ciro_orani, 2)}
-                      </strong>
-                      <span style={{ color: "var(--mut-3)" }}> cirosunun</span>
-                      {b.kademe ? ` · ${KADEME_ADI[b.kademe]}` : ""}
-                    </span>
-                  ) : (
-                    <span className="cip cip-notr mono">BÜYÜKLÜK BİLİNMİYOR</span>
-                  )}
-                </span>
-                <span className="hisse-satir-is">{b.is_tanimi ?? "—"}</span>
-                <span className="hisse-satir-alt">
-                  Karşı taraf:{" "}
-                  {b.karsiTarafAcik && b.karsi_taraf ? b.karsi_taraf : "adı verilmemiş"}
-                  {b.car_3g !== null && (
-                    <> · 3 günde piyasaya göre {isaretliYuzde(b.car_3g)}</>
-                  )}
-                </span>
-              </span>
-            </Link>
-          ))}
+            </section>
+          )}
+          <IsListesi isler={isler} />
         </div>
+        <aside className="yan">
+          <Kiminle satirlar={kim} />
+          <HisseBaglam
+            tahta={tahta}
+            tahtaGunu={tahtali ? `${gunAy(tahtali.yayin_zamani, true)} ${tahtali.yayin_zamani.slice(0, 4)}` : null}
+            son12Adet={sonOnIkiAy(bildirimler, simdi).length}
+            toplam={bildirimler.length}
+            fon={fon}
+          />
+        </aside>
+      </div>
 
-        <p className="dipnot">
-          Skorlar kamuya açık KAP metinleri ve finansal tablolar üzerinden
-          hesaplanır. Gösterilen anormal getiriler geçmiş gözlemlerdir, tahmin
-          değildir; bu sayfa yatırım tavsiyesi içermez.{" "}
-          <Link href="/metodoloji">Yöntemin tamamı ve sınırları</Link>.
-        </p>
-      </main>
-    </>
+      <p className="dipnot">
+        Sayılar kamuya açık KAP metinleri ve finansal tablolar üzerinden
+        hesaplanır; her işin kaynağı satırına tıklayınca açılan kanıt sayfasında.
+        Bu sayfa yatırım tavsiyesi içermez, fiyat tahmini üretmez.{" "}
+        <Link href="/metodoloji">Yöntemin tamamı ve sınırları</Link>.
+      </p>
+    </main>
   );
 }

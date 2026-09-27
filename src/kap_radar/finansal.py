@@ -24,6 +24,7 @@ from typing import Sequence
 
 from selectolax.parser import HTMLParser
 
+from kap_radar import tufe
 from kap_radar.ayristirici import tarih_listesi_coz, yayin_zamani_coz
 
 # Gelir tablosu parçası `3100xx` rol ailesiyle işaretli. Parça sırası
@@ -300,9 +301,12 @@ class Ttm:
     yontem: str  # "yillik" | "ytd_koprusu"
     kaynak_indeksler: tuple[int, ...]
     # Köprüde yıllık terime uygulanan TMS 29 çarpanı. None: uygulanmadı
-    # (yıllık yöntem ya da katsayı çözülemedi); 1: şirket yeniden ifade
-    # etmiyor. Bkz. `_yeniden_ifade_katsayisi`.
+    # (yıllık yöntem, TMS 29 uygulamayan ya da politikası bilinmeyen
+    # şirket); 1: şirket yeniden ifade etmiyor. Bkz. `yeniden_ifade_katsayisi`.
     enflasyon_carpani: Decimal | None = None
+    # Çarpan nereden: "sirket" (kendi yeniden ifade katsayısı) ya da
+    # "tufe" (resmî TÜFE oranı; katsayı yok ya da TMS 29 geçişiyle kirli).
+    carpan_kaynagi: str | None = None
 
 
 def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
@@ -339,19 +343,36 @@ def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
 
     # TMS 29: iki YTD terimi cari dönem sonunun TL'sinde, yıllık terim bir
     # önceki Aralık'ın TL'sinde. Yıllık terim `ay_sayisi` ay ileri taşınır.
-    # Katsayı çözülemezse düzeltmesiz köprü kullanılıyor ve bu işaretleniyor
-    # (enflasyon_carpani=None) — payda yine de eskisi kadar doğru.
-    katsayi = _yeniden_ifade_katsayisi(acik, son)
+    katsayi = yeniden_ifade_katsayisi(acik, son)
+    if (
+        katsayi is not None
+        and son.onceki_donem_sonu is not None
+        and son.onceki_donem_sonu < TMS29_ILK_DONEM
+    ):
+        # Karşılaştırılan dönem TMS 29'dan önce bitti: ilk yayını tarihî
+        # maliyetle yapılmıştı, oran enflasyonu değil muhasebe geçişini
+        # ölçüyor (9A2024 medyanı 1,79; aynı şirketlerin 12 aylık katsayısı
+        # 1,44 — dokuz aylık düzeltme on iki aylıktan büyük olamaz).
+        katsayi = None
     yillik_terim = yillik.hasilat
-    carpan = None
+    carpan = kaynagi = None
     # Sıra kronolojik ve en güncel rapor SONDA: çağıranlar kaynak
     # bağlantısı için `kaynak_indeksler[-1]` kullanıyor.
     kaynak = (yillik.kap_index, son.kap_index)
     if katsayi is not None:
         k, ilk_yayin = katsayi
         carpan = k ** (Decimal(son.ay_sayisi) / Decimal(12))
-        yillik_terim = yillik.hasilat * carpan
+        kaynagi = "sirket"
         kaynak = (ilk_yayin, yillik.kap_index, son.kap_index)
+    elif tms29_uygular(donemler):
+        # Şirket yeniden ifade ediyor ama bu köprü için kendi katsayısı yok
+        # ya da kirli: resmî TÜFE oranı, o gün yayımlanmış olanıyla.
+        carpan = tufe.oran(yillik.donem_sonu, son.donem_sonu, an)
+        kaynagi = "tufe" if carpan is not None else None
+    # Katsayı da TÜFE de yoksa düzeltmesiz köprü kullanılıyor ve bu
+    # işaretleniyor (enflasyon_carpani=None).
+    if carpan is not None:
+        yillik_terim = yillik.hasilat * carpan
 
     return Ttm(
         hasilat=(yillik_terim + son.hasilat - son.onceki_yil_hasilat).quantize(Decimal(1)),
@@ -360,7 +381,35 @@ def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
         yontem="ytd_koprusu",
         kaynak_indeksler=kaynak,
         enflasyon_carpani=carpan,
+        carpan_kaynagi=kaynagi,
     )
+
+
+# TMS 29 ilk kez 31.12.2023 tarihli finansal tablolarda uygulandı. Daha
+# önce biten dönemlerin ilk yayını tarihî maliyetle yapılmıştı.
+TMS29_ILK_DONEM = date(2023, 12, 31)
+
+
+def tms29_uygular(donemler: Sequence[DonemHasilat]) -> bool | None:
+    """Şirket raporlarını TMS 29'a göre yeniden ifade ediyor mu?
+
+    Bu bir muhasebe politikası, bir değer değil: o gün raporun dipnotunda
+    yazıyordu. Burada politika, şirketin herhangi bir raporundaki yeniden
+    ifade katsayısından okunuyor (geçişle kirlenmiş katsayı da politikayı
+    doğru gösterir: 1,79 da yeniden ifade demektir). Hiçbir katsayı
+    okunamıyorsa bilinmiyor (None) ve köprü düzeltmesiz kalıyor.
+    BDDK muafiyetli bankalar ve USD raporlayanlarda katsayı 1: False.
+    """
+    katsayilar = [
+        c[0]
+        for d in donemler
+        if (c := yeniden_ifade_katsayisi(donemler, d)) is not None
+    ]
+    if any(k >= REEL_ESIK for k in katsayilar):
+        return True
+    if katsayilar:
+        return False
+    return None
 
 
 # Yeniden ifade katsayısının kabul aralığı. Arşivde 2024 dönemleri için
@@ -371,7 +420,7 @@ YENIDEN_IFADE_ALT = Decimal("0.95")
 YENIDEN_IFADE_UST = Decimal("2.2")
 
 
-def _yeniden_ifade_katsayisi(
+def yeniden_ifade_katsayisi(
     acik: Sequence[DonemHasilat], son: DonemHasilat
 ) -> tuple[Decimal, int] | None:
     """Şirketin kendi 12 aylık TMS 29 katsayısı ve dayandığı rapor.
@@ -458,3 +507,124 @@ def _kopru_yilligi(
         d for d in acik if d.ay_sayisi == 12 and d.donem_sonu == hedef_sonu
     ]
     return max(adaylar, key=lambda d: d.yayin_zamani) if adaylar else None
+
+
+# ------------------------------------------------ türetilmiş seriler (site v3)
+
+# Katsayı bu eşiğin altındaysa rapor TMS 29'a göre yeniden ifade edilmemiş
+# sayılır ve büyümesi reel değil nominaldir. Arşivde ölçülen katsayılar iki
+# değerli: yeniden ifade eden şirkette 12 aylık TÜFE oranı (6A2026'da
+# 1,321), etmeyende tam 1,000 (2026-09-27'de 72 adaydan 7'si; BDDK
+# muafiyetli bankalar ve USD raporlayanlar da bu tarafta). Eşik, yıllık
+# enflasyon %5'in üstünde kaldıkça ikisini ayırır.
+REEL_ESIK = Decimal("1.05")
+
+
+@dataclass(frozen=True)
+class DonemBuyumesi:
+    """Bir raporun kendi karşılaştırma sütunundan çıkan büyüme."""
+
+    ticker: str
+    kap_index: int
+    donem_sonu: date
+    ay_sayisi: int
+    yayin_zamani: datetime
+    hasilat: Decimal
+    onceki_yil_hasilat: Decimal | None
+    para_birimi: str | None
+    # cari / geçen yılın aynı dönemi − 1. Karşılaştırma sütunu yoksa None.
+    buyume: Decimal | None
+    # TMS 29 katsayısı; çözülemezse None. Bkz. `yeniden_ifade_katsayisi`.
+    katsayi: Decimal | None
+
+    @property
+    def reel(self) -> bool:
+        """İki sütun aynı satın alma gücüyle mi? Değilse büyüme nominal."""
+        return self.katsayi is not None and self.katsayi >= REEL_ESIK
+
+
+def donem_buyumeleri(donemler: Sequence[DonemHasilat]) -> list[DonemBuyumesi]:
+    """Her (dönem sonu, ay sayısı) için son yayının büyümesi, eskiden yeniye.
+
+    İki sütun aynı rapordan geldiği için TMS 29 uygulayan şirkette oran,
+    dış TÜFE verisi olmadan reel büyümedir. Uygulamayanı ayırmak için
+    katsayı, raporun yayınlandığı an bilinen raporlarla çözülür
+    (point-in-time; `ttm_coz` ile aynı kural).
+
+    Aynı dönemin revizyonunda son yayın kazanır: düzeltme bir hatayı
+    gideriyorsa büyüme de düzelmiş hâliyle gösterilmeli.
+    """
+    son_yayin: dict[tuple[date, int], DonemHasilat] = {}
+    for d in donemler:
+        anahtar = (d.donem_sonu, d.ay_sayisi)
+        mevcut = son_yayin.get(anahtar)
+        if mevcut is None or d.yayin_zamani > mevcut.yayin_zamani:
+            son_yayin[anahtar] = d
+
+    sonuc = []
+    for anahtar in sorted(son_yayin):
+        d = son_yayin[anahtar]
+        buyume = katsayi = None
+        if d.onceki_yil_hasilat:
+            buyume = d.hasilat / d.onceki_yil_hasilat - 1
+            acik = [x for x in donemler if x.yayin_zamani <= d.yayin_zamani]
+            cozum = yeniden_ifade_katsayisi(acik, d)
+            katsayi = cozum[0] if cozum else None
+        sonuc.append(
+            DonemBuyumesi(
+                ticker=d.ticker,
+                kap_index=d.kap_index,
+                donem_sonu=d.donem_sonu,
+                ay_sayisi=d.ay_sayisi,
+                yayin_zamani=d.yayin_zamani,
+                hasilat=d.hasilat,
+                onceki_yil_hasilat=d.onceki_yil_hasilat,
+                para_birimi=d.para_birimi,
+                buyume=buyume,
+                katsayi=katsayi,
+            )
+        )
+    return sonuc
+
+
+@dataclass(frozen=True)
+class TtmBasamagi:
+    """Son 12 aylık cironun `gecerlilik_basi` anından itibaren değeri.
+
+    `ttm` None: o andan sonra TTM çözülemiyor (ör. köprünün yıllık bacağı
+    henüz yayınlanmadı). Grafik bu aralığı boş bırakır, önceki değeri
+    taşımaz.
+    """
+
+    gecerlilik_basi: datetime
+    ttm: Ttm | None
+
+
+def ttm_basamaklari(donemler: Sequence[DonemHasilat]) -> list[TtmBasamagi]:
+    """Son 12 aylık cironun değiştiği anlar, eskiden yeniye.
+
+    TTM yalnız bir rapor yayınlandığında değişebilir. Bu yüzden her yayın
+    anında `ttm_coz` çağırmak serinin tamamını verir, aylık örneklemenin
+    bir aya varan gecikmesi olmadan. Değer değişmediyse (eski bir dönemin
+    revizyonu gibi) basamak yazılmaz. Seri ilk çözülebilen andan başlar.
+    """
+    basamaklar: list[TtmBasamagi] = []
+    for an in sorted({d.yayin_zamani for d in donemler}):
+        ttm = ttm_coz(donemler, an)
+        if not basamaklar and ttm is None:
+            continue
+        if basamaklar and _ayni_ttm(basamaklar[-1].ttm, ttm):
+            continue
+        basamaklar.append(TtmBasamagi(gecerlilik_basi=an, ttm=ttm))
+    return basamaklar
+
+
+def _ayni_ttm(a: Ttm | None, b: Ttm | None) -> bool:
+    """Görünen değer aynı mı? Kaynak rapor farkı yeni basamak sayılmaz."""
+    if a is None or b is None:
+        return a is b
+    return (a.hasilat, a.para_birimi, a.donem_sonu) == (
+        b.hasilat,
+        b.para_birimi,
+        b.donem_sonu,
+    )

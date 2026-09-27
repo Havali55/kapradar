@@ -5,7 +5,7 @@
 > by the company's point-in-time trailing-twelve-month revenue, parsed from
 > XBRL filings. An LLM only extracts amounts from free text; every number it
 > returns must quote the source sentence verbatim or the disclosure is
-> withheld (deterministic gate A1–A6, B1–B3). FX conversion, ratios and the
+> withheld (deterministic gate A1–A7, B1–B6). FX conversion, ratios and the
 > score are plain code. Runs daily on GitHub Actions for a few cents a month.
 > Live site: [kap.calibresolve.com](https://kap.calibresolve.com) · Methodology
 > and validation (Turkish): [/metodoloji](https://kap.calibresolve.com/metodoloji).
@@ -51,7 +51,7 @@ KAP listesi  ──► ham arşiv (disk)  ──► Postgres
                                         ▼
                            çıkarım (LLM, katmanlı)
                                         ▼
-                     doğrulama kapısı  A1–A6 · B1–B3
+                     doğrulama kapısı  A1–A7 · B1–B6
                                         ▼
                           büyüklük skoru + tepki paneli
 ```
@@ -73,12 +73,19 @@ Kapıdan geçmeyen bildirim yayınlanmaz; kısmi yayın yok.
 | A4 | `tutar_gizli` ile dolu tutar listesi çelişiyor mu |
 | A5 | Aynı tip + aynı para biriminde mükerrer kalem |
 | A6 | Modelin kendi güven beyanı |
+| A7 | Özette metinde geçmeyen bir yıl var mı |
 | B1 | Ciro oranı makul üst sınırın üstünde mi |
 | B2 | Bildirim tarihli TCMB kuru bulunabildi mi |
 | B3 | Aynı tutar iki para biriminde tekrarlanmış mı |
+| B4 | KAP karşı taraf niteliği "tedarikçi" mi (şirket alıcı olabilir) |
+| B5 | Tutarın cümlesinde muhammen bedel, yatırım tutarı, görüşme ya da ön ödeme var mı |
+| B6 | Bir kalem, başka bir kalem ile metindeki bir sayının toplamı mı (artış ve yeni toplam birlikte) |
 
 A reddi bir üst katman modele **yükseltilir**; B reddi model hatası değil veri
-şüphesidir, doğrudan elle inceleme kuyruğuna düşer.
+şüphesidir, doğrudan elle inceleme kuyruğuna düşer. A7 ve B4–B6, 26.09.2026
+veri denetiminden doğdu: A1–A3 sayının metinde **geçtiğini** denetliyor,
+**neyin sayısı olduğunu** denetlemiyordu (bkz.
+`docs/arastirma/2026-09-26-veri-denetimi.md`).
 
 B3 gerçek bir vakadan doğdu: `1.040.400 USD (50.613.963 TL)` — şirket kendi
 çevirisini parantez içinde vermiş. İkisi de kalem sayılırsa net tutar tam iki
