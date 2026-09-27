@@ -121,7 +121,8 @@ export default async function HisseSayfasi({
       karsi: karsi === null ? null : karsiGorunen(karsi),
       kalem: kalemler[0] ? kalemTutari(kalemler[0].deger, kalemler[0].para_birimi) : null,
       kalemEk: Math.max(0, kalemler.length - 1),
-      tl: b.net_tutar_tl,
+      // Asıl para birimi TL ise TL karşılığı aynı sayıyı ikinci kez yazardı.
+      tl: kalemler[0]?.para_birimi === "TRY" ? null : b.net_tutar_tl,
       oran: b.ciro_orani,
       tekrar: b.onceki_tur === "ayni_is",
       guncelleme: b.guncelleme_mi || b.onceki_tur === "guncelleme",
