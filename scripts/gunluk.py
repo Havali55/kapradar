@@ -4,6 +4,7 @@ Kullanım:
     python scripts/gunluk.py                 # LLM'siz: her şey, çıkarım hariç
     python scripts/gunluk.py --llm           # ücretli çıkarım dahil (~0,0001 USD/bildirim)
     python scripts/gunluk.py --llm --adet 5  # çıkarım üst sınırı
+    python scripts/gunluk.py --llm --x-gonder  # yeni bildirimleri X'te GERÇEKTEN paylaş
 
 Yeni bir hat yazmıyor; backfill için yazılmış betikleri kısa aralıklarla
 sırayla çağırıyor. Her biri idempotent ve kaldığı yerden devam ediyor,
@@ -11,6 +12,7 @@ bu yüzden aynı günü iki kez koşmak zararsız. Sıra bağımlılıklardan:
 
     liste+detay → DB → kur → finansal → ciro serisi → fiyat → faktör → VBTS
     → çıkarım (LLM) → bağlar → tepki → bağlam → veri denetimi
+    → X paylaşımı (varsayılan kuru)
 
 Bir adım düşerse sonrakiler yine denenir (fiyat düşmesi çıkarımı
 engellememeli) ama koşu sıfırdan farklı kodla biter; CI kırmızı görünür.
@@ -100,6 +102,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--llm", action="store_true", help="ÜCRETLİ çıkarımı da koş")
     ap.add_argument("--adet", type=int, default=30, help="çıkarım üst sınırı")
+    ap.add_argument("--x-gonder", action="store_true",
+                    help="X paylaşımını GERÇEKTEN yap (verilmezse kuru: yalnız basar)")
     ap.add_argument("--geri-gun", type=int, default=GERI_GUN)
     secenek = ap.parse_args()
 
@@ -156,6 +160,11 @@ def main() -> int:
     # Rapor; yayında kapıya takılan satır ya da karar bekleyen bildirim
     # varsa adım hata sayılır ve özette görünür.
     adim("veri denetimi", ["scripts/veri_denetimi.py", "--kati"], hatalar)
+
+    if secenek.x_gonder:
+        adim("X paylaşımı", ["scripts/x_paylas.py", "--gonder"], hatalar)
+    else:
+        adim("X paylaşımı (kuru)", ["scripts/x_paylas.py"], hatalar)
 
     print("\n=== özet ===")
     if hatalar:
