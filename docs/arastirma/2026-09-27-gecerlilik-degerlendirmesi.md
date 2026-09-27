@@ -1,7 +1,12 @@
 # Bulgular ne kadar genellenebilir? Piyasa rejimi, kirlenme ve güç (2026-09-27)
 
-**Durum: DEĞERLENDİRME.** Skorda, sitede ve metodoloji makalesinde henüz
-hiçbir şey değişmedi. Sondaki kararlar Hüseyin'in.
+**Durum: KARARLAR VERİLDİ (2026-09-27).** Hüseyin K1 (bedava katman),
+K2 (a) ve K3'ü onayladı:
+
+- **K2:** 2024 paydası resmî TÜFE ile düzeltildi. 253 skor değişti.
+  Commit `f2f083d`.
+- **K3:** Metodoloji makalesi sürüm 2.1'e güncellendi.
+- **K1:** 2020–2024 arşivi `scripts/rejim_arsivi.py` ile hazırlanıyor.
 
 Yeniden üretim (ikisi de yazmaz, LLM yok):
 
@@ -206,7 +211,23 @@ Okuma:
   kanıtı değil. Doğru cümle: "oynak tahtadaki aşağı yönlü tepki, sonradan
   tasfiye edilen fonların ağırlıklı olduğu hisselerde toplanıyor".
 
-## 6. Yeni bulunan kusur: 2024 paydası
+## 6. Yeni bulunan kusur: 2024 paydası (DÜZELTİLDİ, `f2f083d`)
+
+**Düzeltme.** Karşılaştırılan dönem 31.12.2023'ten önce bittiyse ya da
+katsayı yoksa, şirket TMS 29 uyguluyorsa yıllık terim resmî TÜFE
+oranıyla taşınıyor: TÜFE(dönem sonu) / TÜFE(önceki Aralık), o gün
+yayımlanmış olanıyla. Şirketin TMS 29 uygulayıp uygulamadığı, herhangi
+bir raporundaki katsayıdan okunuyor.
+
+Sonuç:
+
+- 2024 köprülerinin 227'si TÜFE ile taşındı (ortalama çarpan 1,316).
+- 253 skor değişti.
+- Sitede 13 bildirimin kademesi iki yönde kaydı.
+- Yayın kararı değişmedi.
+- Politikası okunamayan 19 köprü düzeltmesiz kaldı.
+
+Aşağıdaki metin kusurun kendisini anlatıyor.
 
 Skorun paydası, ara dönem raporlarından kurulan bir köprüyle hesaplanıyor.
 Köprünün yıllık terimi, şirketin kendi TMS 29 katsayısıyla cari birime
