@@ -199,3 +199,24 @@ def test_ben_kullanici_adini_dondurur():
         return httpx.Response(200, json={"data": {"id": "1", "username": "kapradar"}})
 
     assert istemci(isleyici).ben() == "kapradar"
+
+
+def test_kimlik_erisim_duzeyini_basliktan_okur():
+    """X erişim düzeyini `x-access-level` başlığında veriyor. "read" ise
+    gönderim 403 döner: token izin değişikliğinden önce üretilmiş."""
+
+    def isleyici(istek: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"data": {"id": "1", "username": "kapradar"}},
+            headers={"x-access-level": "read-write"},
+        )
+
+    assert istemci(isleyici).kimlik() == ("kapradar", "read-write")
+
+
+def test_kimlik_baslik_yoksa_duzey_bilinmiyor():
+    def isleyici(istek: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"data": {"id": "1", "username": "kapradar"}})
+
+    assert istemci(isleyici).kimlik() == ("kapradar", None)

@@ -262,7 +262,7 @@ class XIstemci:
         self._saat = saat
         self._oturum = httpx.Client(base_url=self.KOK, transport=transport, timeout=zaman_asimi)
 
-    def _istek(self, yontem: str, yol: str, **kw) -> dict:
+    def _cevap(self, yontem: str, yol: str, **kw) -> httpx.Response:
         baslik = oauth_basligi(
             yontem,
             self.KOK + yol,
@@ -273,11 +273,22 @@ class XIstemci:
         cevap = self._oturum.request(yontem, yol, headers={"Authorization": baslik}, **kw)
         if not cevap.is_success:
             raise XHatasi(cevap.status_code, cevap.text)
-        return cevap.json()
+        return cevap
+
+    def _istek(self, yontem: str, yol: str, **kw) -> dict:
+        return self._cevap(yontem, yol, **kw).json()
 
     def ben(self) -> str:
         """Anahtarların sahibi olan hesabın kullanıcı adı. Tweet atmaz."""
-        return self._istek("GET", "/2/users/me")["data"]["username"]
+        return self.kimlik()[0]
+
+    def kimlik(self) -> tuple[str, str | None]:
+        """Kullanıcı adı ve anahtarın erişim düzeyi (`x-access-level`:
+        read, read-write, …). Tweet atmaz. Düzey "read" ise gönderim 403
+        döner: uygulama izni "Read and write" yapıldıktan sonra Access
+        Token yeniden üretilmemiş demektir."""
+        cevap = self._cevap("GET", "/2/users/me")
+        return cevap.json()["data"]["username"], cevap.headers.get("x-access-level")
 
     def gonder(self, metin: str) -> str:
         """Tweet'i atar, kimliğini döndürür. Yeniden denemez."""

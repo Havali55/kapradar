@@ -70,7 +70,16 @@ def dogrula() -> int:
         return 1
     x = XIstemci(anahtarlar)
     try:
-        print(f"anahtarlar çalışıyor: @{x.ben()}")
+        kullanici, duzey = x.kimlik()
+        print(f"anahtarlar çalışıyor: @{kullanici} · erişim düzeyi: {duzey or 'bilinmiyor'}")
+        # "read" düzeyindeki token'la gönderim 403 döner; izin sonradan
+        # "Read and write" yapıldıysa token yeniden üretilmeli.
+        if not duzey or "write" not in duzey:
+            print(
+                "YAZMA İZNİ YOK: portalda uygulama izni 'Read and write' yapılıp "
+                "Access Token and Secret yeniden üretilmeli; bu anahtarla tweet atılamaz."
+            )
+            return 1
         return 0
     except XHatasi as h:
         print(f"anahtarlar REDDEDİLDİ: {h}")

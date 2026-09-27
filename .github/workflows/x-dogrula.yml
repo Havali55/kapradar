@@ -1,0 +1,33 @@
+# X anahtarlarını tweet atmadan sınar: GET /2/users/me, hesap adı ve
+# erişim düzeyi (x-access-level). Veritabanına dokunmaz, yalnız elle
+# tetiklenir. Anahtarlar GitHub'da, yerelde değilken tek doğrulama yolu.
+name: x-dogrula
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dogrula:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -e .
+
+      # Anahtarlar ortamdan okunuyor (x_paylasim.anahtarlari_bul); .env yazılmıyor.
+      - name: Anahtarları sına
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: python scripts/x_paylas.py --dogrula
