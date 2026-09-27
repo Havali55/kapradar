@@ -187,6 +187,56 @@ export function tabloSatirlari<T>(seri: readonly T[], aralik = 30): T[] {
   return seri.filter((_, i) => (seri.length - 1 - i) % aralik === 0);
 }
 
+// ----------------------------------------------------- taban ve tavan
+
+/** `hisse_limit_gunleri` görünümünün satırı (son 20 seans, günlük kapanış). */
+export type LimitGunleri = {
+  son_tarih: string;
+  seans: number;
+  taban_gun: number;
+  tavan_gun: number;
+  son_taban_serisi: number;
+  son_tavan_serisi: number;
+};
+
+/**
+ * Bugünkü taban/tavan durumu, yalnız sayım. Tahta etiketi bildirim
+ * gününün ve devre kesicinin ölçüsü; tabanda kilitli, işlem görmeyen bir
+ * hisse devre kesiciyi tetiklemiyor (TEHOL, Eylül 2026). Süren bir seri
+ * (en az iki seans) önce söylenir, yoksa pencerenin sayımı. `kisa`,
+ * başlığı zaten "Son 20 seans" olan dizin sütunu için.
+ */
+export function limitDurumu(l: LimitGunleri | null): {
+  metin: string;
+  kisa: string;
+  alt: string | null;
+  renk: "kir" | "kehribar" | "yes";
+} | null {
+  if (!l) return null;
+  const parcalar = [
+    l.taban_gun > 0 ? `${l.taban_gun} taban` : null,
+    l.tavan_gun > 0 ? `${l.tavan_gun} tavan` : null,
+  ].filter(Boolean);
+  const sayim = parcalar.length ? `Son ${l.seans} seansta ${parcalar.join(", ")} günü` : null;
+  if (l.son_taban_serisi >= 2) {
+    const kisa = `${l.son_taban_serisi} seanstır tabanda`;
+    return { metin: `Son ${kisa}`, kisa, alt: sayim, renk: "kir" };
+  }
+  if (l.son_tavan_serisi >= 2) {
+    const kisa = `${l.son_tavan_serisi} seanstır tavanda`;
+    return { metin: `Son ${kisa}`, kisa, alt: sayim, renk: "kehribar" };
+  }
+  if (sayim) {
+    return {
+      metin: sayim,
+      kisa: `${parcalar.join(", ")} günü`,
+      alt: null,
+      renk: l.taban_gun >= 3 ? "kir" : "kehribar",
+    };
+  }
+  return { metin: `Son ${l.seans} seansta taban ya da tavan yok`, kisa: "Yok", alt: null, renk: "yes" };
+}
+
 // -------------------------------------------------------------- dizin
 
 export type DizinSatiri = {

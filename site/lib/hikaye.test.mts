@@ -18,6 +18,7 @@ import {
   karsiGorunen,
   kiminle,
   kisaAd,
+  limitDurumu,
   seriIliskisi,
   sonOnIkiAy,
   tabloSatirlari,
@@ -210,4 +211,36 @@ test("dizin sıralaması: boş değer her iki yönde sonda", () => {
   assert.deepEqual(dizinSirala(r, "kat", false).map((x) => x.ticker), ["C", "B", "A"]);
   assert.deepEqual(dizinSirala(r, "sonIs", true).map((x) => x.ticker), ["B", "C", "A"]);
   assert.deepEqual(dizinSirala(r, "ticker", false).map((x) => x.ticker), ["A", "B", "C"]);
+});
+
+test("limit durumu: süren seri önce, sonra 20 seanslık sayım", () => {
+  const l = (taban: number, tavan: number, st: number, sv: number) => ({
+    son_tarih: "2026-09-24",
+    seans: 20,
+    taban_gun: taban,
+    tavan_gun: tavan,
+    son_taban_serisi: st,
+    son_tavan_serisi: sv,
+  });
+  assert.deepEqual(limitDurumu(l(7, 1, 7, 0)), {
+    metin: "Son 7 seanstır tabanda",
+    kisa: "7 seanstır tabanda",
+    alt: "Son 20 seansta 7 taban, 1 tavan günü",
+    renk: "kir",
+  });
+  assert.equal(limitDurumu(l(1, 3, 0, 2)).metin, "Son 2 seanstır tavanda");
+  assert.equal(limitDurumu(l(1, 3, 0, 2)).renk, "kehribar");
+  assert.deepEqual(limitDurumu(l(2, 0, 1, 0)), {
+    metin: "Son 20 seansta 2 taban günü",
+    kisa: "2 taban günü",
+    alt: null,
+    renk: "kehribar",
+  });
+  assert.deepEqual(limitDurumu(l(0, 0, 0, 0)), {
+    metin: "Son 20 seansta taban ya da tavan yok",
+    kisa: "Yok",
+    alt: null,
+    renk: "yes",
+  });
+  assert.equal(limitDurumu(null), null);
 });

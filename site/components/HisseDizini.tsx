@@ -4,13 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { eslesir } from "@/lib/arama";
 import { isaretliYuzde, istanbulGunu, kat } from "@/lib/bicim";
-import { dizinSirala, type DizinAnahtari, type DizinSatiri } from "@/lib/hikaye";
+import { dizinSirala, type DizinAnahtari, type DizinSatiri, type limitDurumu } from "@/lib/hikaye";
 import { donemAdi } from "@/lib/soz";
 
 export type DizinOgesi = DizinSatiri & {
-  tahtaAd: string | null;
-  tahtaRenk: string | null;
+  /** Bugünkü taban/tavan durumu (son 20 seans); bildirim günündeki tahta değil. */
+  limit: ReturnType<typeof limitDurumu>;
 };
+
+// Bu büyüklükte bir değişim (±%200) çoğu zaman organik büyüme değil:
+// TEHOL'un 6A2026 hasılatı bir yılda 59 milyon TL'den 4,6 milyar TL'ye
+// çıktı (+%5.785). Değer gösteriliyor, yanında uyarı.
+const OLAGANDISI = 2;
 
 const SUTUNLAR: { k: DizinAnahtari; ad: string; sayi: boolean; ipucu?: string }[] = [
   { k: "ticker", ad: "Hisse", sayi: false },
@@ -71,8 +76,12 @@ export default function HisseDizini({ satirlar }: { satirlar: DizinOgesi[] }) {
                 </button>
               </th>
             ))}
-            <th scope="col" className="dizin-tahta-bas">
-              Tahta
+            <th
+              scope="col"
+              className="dizin-tahta-bas"
+              title="Günlük kapanışlardan: -%9,5 altı taban, +%9,5 üstü tavan günü"
+            >
+              Son 20 seans
             </th>
           </tr>
         </thead>
@@ -91,8 +100,12 @@ export default function HisseDizini({ satirlar }: { satirlar: DizinOgesi[] }) {
               <td data-et="Son bildirim" className="sayi">
                 {istanbulGunu(s.sonIs)}
               </td>
-              <td data-et="Duyurulan / ciro" className="sayi">
-                {s.kat !== null ? kat(s.kat) : "—"}
+              <td
+                data-et="Duyurulan / ciro"
+                className="sayi"
+                title={s.adet12 === 0 ? "Son 12 ayda büyüklüğü hesaplanan iş yok" : undefined}
+              >
+                {s.kat !== null && s.adet12 > 0 ? kat(s.kat) : "—"}
               </td>
               <td
                 data-et="Reel ciro büyümesi"
@@ -100,16 +113,26 @@ export default function HisseDizini({ satirlar }: { satirlar: DizinOgesi[] }) {
                 title={
                   s.nominal
                     ? "Rapor enflasyona göre yeniden ifade edilmemiş; büyüme nominal"
-                    : s.buyumeDonemi
-                      ? donemAdi(s.buyumeDonemi)
-                      : undefined
+                    : s.buyume !== null && Math.abs(s.buyume) > OLAGANDISI
+                      ? `${s.buyumeDonemi ? donemAdi(s.buyumeDonemi) + ". " : ""}Olağandışı büyük değişim: birleşme, konsolidasyon ya da çok küçük bir karşılaştırma tabanı olabilir; organik büyüme sanılmamalı.`
+                      : s.buyumeDonemi
+                        ? donemAdi(s.buyumeDonemi)
+                        : undefined
                 }
               >
                 {s.buyume !== null ? isaretliYuzde(s.buyume, 1) : "—"}
+                {s.buyume !== null && Math.abs(s.buyume) > OLAGANDISI && (
+                  <span className="olagandisi" aria-label="olağandışı">
+                    {" "}
+                    ⚠
+                  </span>
+                )}
               </td>
-              <td data-et="Tahta">
-                {s.tahtaAd ? (
-                  <span className={`durum durum-${s.tahtaRenk}`}>{s.tahtaAd}</span>
+              <td data-et="Son 20 seans">
+                {s.limit ? (
+                  <span className={`durum durum-${s.limit.renk}`} title={s.limit.alt ?? s.limit.metin}>
+                    {s.limit.kisa}
+                  </span>
                 ) : (
                   "—"
                 )}

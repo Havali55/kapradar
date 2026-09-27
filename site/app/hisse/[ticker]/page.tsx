@@ -20,6 +20,7 @@ import {
   gunlukSeri,
   karsiGorunen,
   kiminle,
+  limitDurumu,
   seriIliskisi,
   sonOnIkiAy,
   type SeriIliskisi,
@@ -29,6 +30,7 @@ import {
   hisseFonGetir,
   hisseGetir,
   hisseleriGetir,
+  limitGunleriGetir,
   sozVerisiGetir,
 } from "@/lib/veri";
 
@@ -70,11 +72,12 @@ export default async function HisseSayfasi({
   params: Promise<{ ticker: string }>;
 }) {
   const { ticker } = await params;
-  const [bildirimler, fon, ciroSeri, soz] = await Promise.all([
+  const [bildirimler, fon, ciroSeri, soz, limitler] = await Promise.all([
     hisseGetir(ticker),
     hisseFonGetir(ticker),
     ciroSeriGetir(),
     sozVerisiGetir(),
+    limitGunleriGetir(),
   ]);
   if (bildirimler.length === 0) notFound();
 
@@ -136,6 +139,9 @@ export default async function HisseSayfasi({
         tahtali.tahta_piyasa_orani ?? null,
       )
     : null;
+  // Bugünkü taban/tavan durumu: tahta ölçüsünün kaçırdığı kilitli tahta.
+  const limitSatiri = limitler.find((l) => l.ticker === ticker) ?? null;
+  const limitGunu = limitSatiri ? `${limitSatiri.son_tarih}T12:00:00Z` : null;
   const ilk = bildirimler[bildirimler.length - 1].yayin_zamani;
 
   return (
@@ -230,6 +236,8 @@ export default async function HisseSayfasi({
         <aside className="yan">
           <Kiminle satirlar={kim} />
           <HisseBaglam
+            limit={limitDurumu(limitSatiri)}
+            limitGunu={limitGunu ? `${gunAy(limitGunu, true)} ${limitGunu.slice(0, 4)}` : null}
             tahta={tahta}
             tahtaGunu={tahtali ? `${gunAy(tahtali.yayin_zamani, true)} ${tahtali.yayin_zamani.slice(0, 4)}` : null}
             son12Adet={sonOnIkiAy(bildirimler, simdi).length}

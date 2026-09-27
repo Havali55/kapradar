@@ -1,7 +1,12 @@
 import { buyukTl, isaretliYuzde, sayi, yuzde, type TahtaGorunumu } from "@/lib/bicim";
+import type { limitDurumu } from "@/lib/hikaye";
 import type { HisseFon } from "@/lib/veri";
 
 type Props = {
+  /** Bugünkü taban/tavan durumu, son 20 seansın kapanışlarından. */
+  limit: ReturnType<typeof limitDurumu>;
+  /** Son kapanışın günü, "24 Eylül 2026". */
+  limitGunu: string | null;
   tahta: TahtaGorunumu | null;
   /** Tahtanın ölçüldüğü bildirimin günü, "25 Eylül 2026". */
   tahtaGunu: string | null;
@@ -11,25 +16,47 @@ type Props = {
 };
 
 /**
- * Hisse ve şirket bağlamı: tahta, bildirim sıklığı (yalnız sayım), fon
- * sahipliği. Hiçbiri büyüklüğe girmiyor; okuru yanıltmasın diye her biri
- * neyi söylemediğini de söylüyor.
+ * Hisse ve şirket bağlamı: bugünkü taban/tavan durumu, bildirim günündeki
+ * tahta, bildirim sıklığı (yalnız sayım), fon sahipliği. Hiçbiri
+ * büyüklüğe girmiyor; okuru yanıltmasın diye her biri neyi söylemediğini
+ * ve hangi güne ait olduğunu da söylüyor.
  */
-export default function HisseBaglam({ tahta, tahtaGunu, son12Adet, toplam, fon }: Props) {
+export default function HisseBaglam({
+  limit,
+  limitGunu,
+  tahta,
+  tahtaGunu,
+  son12Adet,
+  toplam,
+  fon,
+}: Props) {
   return (
     <>
       <section className="yan-kutu" aria-labelledby="baglam-bas">
         <span className="ust-yazi">Bağlam</span>
         <h3 id="baglam-bas">Hisse ve şirket</h3>
         <dl className="baglam">
+          {limit && (
+            <div>
+              <dt>
+                Bugün <span className={`durum durum-${limit.renk}`}>{limit.metin}</span>
+              </dt>
+              <dd>
+                {limit.alt ? `${limit.alt}. ` : ""}Günlük kapanışlardan sayıldı
+                {limitGunu ? ` (son kapanış ${limitGunu})` : ""}: −⁠%9,5 altı taban,
+                +⁠%9,5 üstü tavan günü. Tabanda kilitli, işlem görmeyen bir hisse
+                devre kesiciyi tetiklemez; aşağıdaki tahta ölçüsü bunu kaçırabilir.
+              </dd>
+            </div>
+          )}
           <div>
             <dt>
-              Tahta{" "}
+              Tahta, son bildirim günü{" "}
               {tahta && <span className={`durum durum-${tahta.renk}`}>{tahta.ad}</span>}
             </dt>
             <dd>
               {tahta
-                ? `${tahta.not}${tahtaGunu ? ` (Son bildirim günü, ${tahtaGunu}.)` : ""}`
+                ? `${tahta.not}${tahtaGunu ? ` (${tahtaGunu}.)` : ""}`
                 : "Ölçülemedi."}
             </dd>
           </div>

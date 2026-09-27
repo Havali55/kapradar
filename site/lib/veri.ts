@@ -625,6 +625,22 @@ export const ciroSeriGetir = onbellekli(async () => {
 });
 
 /**
+ * Son 20 seansın taban/tavan sayımı, hisse başına (`hisse_limit_gunleri`,
+ * 2026-09-27). Fiyatın kendisi değil yalnız sayımlar açık.
+ */
+export type LimitGunleriSatiri = import("./hikaye").LimitGunleri & { ticker: string };
+
+export const limitGunleriGetir = onbellekli(() =>
+  hepsiniOku<LimitGunleriSatiri>("Taban/tavan", (bas, son) =>
+    supabase
+      .from("hisse_limit_gunleri")
+      .select("ticker, son_tarih, seans, taban_gun, tavan_gun, son_taban_serisi, son_tavan_serisi")
+      .order("ticker")
+      .range(bas, son),
+  ),
+);
+
+/**
  * Söz ve gerçek, bütün şirketler için bir kez: ana sayfanın modülü ve 144
  * hisse sayfasının kartı aynı gruplardan okuyor.
  */

@@ -2557,6 +2557,11 @@ a:hover {
   color: var(--kir);
   background: var(--kir-z);
 }
+/* Dizinde ±%200'ü aşan ciro büyümesi: değer duruyor, yanında uyarı. */
+.olagandisi {
+  color: var(--kehribar);
+  cursor: help;
+}
 
 /* Bildirim sayfası eklentisi. */
 .hikaye-bag {
