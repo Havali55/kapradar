@@ -15,6 +15,7 @@ import {
   uzunTl,
 } from "@/lib/bicim";
 import {
+  GUN_MS,
   ciroAn,
   gosterilenKalemler,
   gunlukSeri,
@@ -90,16 +91,23 @@ export default async function HisseSayfasi({
   const ttm = ciroAn(basamaklar, simdi);
 
   const seri = gunlukSeri(sayilan, basamaklar, simdi);
-  const grafikIsleri: GrafikIsi[] = sayilan
-    .filter((b) => Date.parse(b.yayin_zamani) >= seri[0].t)
-    .map((b) => ({
-      kap_id: b.kap_id,
-      t: Date.parse(b.yayin_zamani),
-      tl: b.net_tutar_tl ?? 0,
-      oran: b.ciro_orani as number,
-      ozet: ozetMetni(b),
-      karsi: karsiTarafMetni(b),
-    }));
+  const grafikIsi = (b: (typeof sayilan)[number]): GrafikIsi => ({
+    kap_id: b.kap_id,
+    t: Date.parse(b.yayin_zamani),
+    tl: b.net_tutar_tl ?? 0,
+    oran: b.ciro_orani as number,
+    ozet: ozetMetni(b),
+    karsi: karsiTarafMetni(b),
+  });
+  const grafikIsleri = sayilan.filter((b) => Date.parse(b.yayin_zamani) >= seri[0].t).map(grafikIsi);
+  // Grafikten önceki yılın işleri: grafik boyunca 12 ayı dolup hesaptan
+  // çıkıyorlar, mavi çizginin inişleri bunlar.
+  const oncekiYil = sayilan
+    .filter((b) => {
+      const z = Date.parse(b.yayin_zamani);
+      return z < seri[0].t && z > seri[0].t - 365 * GUN_MS;
+    })
+    .map(grafikIsi);
   const grafikVar = grafikIsleri.length > 0 || seri.some((n) => n.ciro !== null);
 
   const isler: IsOgesi[] = bildirimler.map((b) => {
@@ -198,9 +206,13 @@ export default async function HisseSayfasi({
               <div className="ust-yazi">Son 12 ayın duyuruları ve ciro</div>
               <h2 id="grafik-bas">{BASLIK[seriIliskisi(seri)]}</h2>
               <p className="aciklama">
-                Mavi çizgi, o güne kadarki 12 ayda duyurulan işlerin toplamı; kesikli
-                çizgi aynı gün bilinen son 12 aylık ciro. Çubuklar tek tek işler. İhale
-                ve sözleşme aşamasında iki kez duyurulan iş bir kez sayılır.
+                Mavi çizgi geriye dönük bir toplam, tahmin değil: o güne kadarki 12
+                ayda duyurulan işlerin tutarı. Bir iş duyurulduğu gün çizgiyi
+                yükseltir, tam bir yıl sonra hesaptan çıkar ve çizgi o tutar kadar
+                iner{oncekiYil.length > 0 && " (boş halka)"}. Kesikli çizgi şirketin
+                son 12 ayda gerçekten yaptığı satış, yani ciro; her finansal rapor
+                açıklandığında güncellenir. Çubuklar tek tek işler; ihale ve sözleşme
+                aşamasında iki kez duyurulan iş bir kez sayılır.
               </p>
               <div className="lejant" aria-hidden="true">
                 <span>
@@ -223,8 +235,20 @@ export default async function HisseSayfasi({
                   <i className="cubuk-lejant" style={{ background: "var(--p-rutin)" }} />
                   Rutin iş
                 </span>
+                {oncekiYil.length > 0 && (
+                  <span>
+                    <i className="halka-lejant" style={{ borderColor: "var(--p-duyuru)" }} />
+                    12 ayı dolup hesaptan çıkan iş
+                  </span>
+                )}
               </div>
-              <DuyuruCiroGrafigi seri={seri} isler={grafikIsleri} baslikId="grafik-bas" />
+              <DuyuruCiroGrafigi
+                seri={seri}
+                isler={grafikIsleri}
+                oncekiYil={oncekiYil}
+                basamaklar={basamaklar}
+                baslikId="grafik-bas"
+              />
               <p className="alt-not">
                 Tutarlar duyuru günü TCMB kuruyla TL. Ciro her finansal rapor
                 yayınlandığı gün güncellenir; sonradan gelen rapor geçmişe yazılmaz.

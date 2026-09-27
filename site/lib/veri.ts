@@ -607,13 +607,15 @@ export type CiroSeriSatiri = {
   hasilat: number | null;
   para_birimi: string | null;
   kaynak_kap_index: number | null;
+  /** 12 ayın bittiği gün; grafik ipucu "Tem 2025 – Haz 2026 satışı" der. */
+  donem_sonu: string | null;
 };
 
 export const ciroSeriGetir = onbellekli(async () => {
   const satirlar = await hepsiniOku<CiroSeriSatiri>("Ciro serisi", (bas, son) =>
     supabase
       .from("ciro_seri")
-      .select("ticker, gecerlilik_basi, hasilat, para_birimi, kaynak_kap_index")
+      .select("ticker, gecerlilik_basi, hasilat, para_birimi, kaynak_kap_index, donem_sonu")
       .order("ticker")
       .order("gecerlilik_basi")
       .range(bas, son),

@@ -8,10 +8,13 @@ import {
   GUN_MS,
   aylaraBol,
   birimSec,
+  cikisNoktalari,
   ciroAn,
+  ciroBasamagi,
   dizinSatirlari,
   dizinSirala,
   gosterilenKalemler,
+  gunDegisimi,
   gunlukSeri,
   guzelAdim,
   isleriSuz,
@@ -19,6 +22,7 @@ import {
   kiminle,
   kisaAd,
   limitDurumu,
+  onIkiAyAraligi,
   seriIliskisi,
   sonOnIkiAy,
   tabloSatirlari,
@@ -213,6 +217,21 @@ test("dizin sıralaması: boş değer her iki yönde sonda", () => {
   assert.deepEqual(dizinSirala(r, "ticker", false).map((x) => x.ticker), ["A", "B", "C"]);
 });
 
+test("gün değişimi: pencereye giren ve 12 ay sonra çıkan iş", () => {
+  const isler = [
+    { yayin_zamani: once(10), net_tutar_tl: 5, t: SIMDI - 10 * GUN_MS },
+    { yayin_zamani: once(370), net_tutar_tl: 7, t: SIMDI - 370 * GUN_MS },
+  ];
+  const s = gunlukSeri(isler, [], SIMDI);
+  // 370 gün önceki iş, 5 gün önce pencereden çıkar: çizgi o gün iner.
+  const cikis = s.findIndex((n) => n.t === SIMDI - 5 * GUN_MS);
+  assert.deepEqual(gunDegisimi(s, cikis, isler), { giren: [], cikan: [isler[1]] });
+  assert.ok(s[cikis].duyurulan < s[cikis - 1].duyurulan);
+  const giris = s.findIndex((n) => n.t === SIMDI - 10 * GUN_MS);
+  assert.deepEqual(gunDegisimi(s, giris, isler), { giren: [isler[0]], cikan: [] });
+  assert.deepEqual(gunDegisimi(s, 0, isler), { giren: [], cikan: [] });
+});
+
 test("limit durumu: süren seri önce, sonra 20 seanslık sayım", () => {
   const l = (taban: number, tavan: number, st: number, sv: number) => ({
     son_tarih: "2026-09-24",
@@ -243,4 +262,44 @@ test("limit durumu: süren seri önce, sonra 20 seanslık sayım", () => {
     renk: "yes",
   });
   assert.equal(limitDurumu(null), null);
+});
+
+test("çıkış noktaları: 12 ay önceki iş, çizginin indiği gün", () => {
+  const isler = [
+    { t: SIMDI - 370 * GUN_MS, net_tutar_tl: 7, yayin_zamani: once(370) },
+    { t: SIMDI - 390 * GUN_MS, net_tutar_tl: 3, yayin_zamani: once(390) },
+    { t: SIMDI - 10 * GUN_MS, net_tutar_tl: 5, yayin_zamani: once(10) },
+    { t: SIMDI - 800 * GUN_MS, net_tutar_tl: 9, yayin_zamani: once(800) },
+  ];
+  const s = gunlukSeri(isler, [], SIMDI);
+  const c = cikisNoktalari(s, isler);
+  // Grafik boyunca yalnız bir önceki yılın işleri çıkar; 800 gün önceki
+  // grafik başlamadan, 10 gün önceki grafik bittikten sonra çıkar.
+  assert.deepEqual(
+    c.map((n) => [s[n.i].t, n.cikan.map((x) => x.net_tutar_tl)]),
+    [
+      [SIMDI - 25 * GUN_MS, [3]],
+      [SIMDI - 5 * GUN_MS, [7]],
+    ],
+  );
+  for (const n of c) {
+    const inis = n.cikan.reduce((t, x) => t + x.net_tutar_tl, 0);
+    assert.equal(s[n.i - 1].duyurulan - s[n.i].duyurulan, inis);
+  }
+});
+
+test("ciro basamağı: o ana kadarki son rapor, dönemiyle", () => {
+  const b = [
+    { ...basamak(300, 100), donem_sonu: "2025-12-31" },
+    { ...basamak(100, 200), donem_sonu: "2026-03-31" },
+  ];
+  assert.equal(ciroBasamagi(b, SIMDI - 200 * GUN_MS)?.donem_sonu, "2025-12-31");
+  assert.equal(ciroBasamagi(b, SIMDI)?.donem_sonu, "2026-03-31");
+  assert.equal(ciroBasamagi(b, SIMDI - 400 * GUN_MS), null);
+});
+
+test("12 ay aralığı: dönem sonunda biten 12 ay", () => {
+  assert.equal(onIkiAyAraligi("2026-06-30"), "Tem 2025 – Haz 2026");
+  assert.equal(onIkiAyAraligi("2025-12-31"), "Oca 2025 – Ara 2025");
+  assert.equal(onIkiAyAraligi("2026-03-31T00:00:00+00:00"), "Nis 2025 – Mar 2026");
 });
