@@ -536,3 +536,46 @@ def donem_buyumeleri(donemler: Sequence[DonemHasilat]) -> list[DonemBuyumesi]:
             )
         )
     return sonuc
+
+
+@dataclass(frozen=True)
+class TtmBasamagi:
+    """Son 12 aylık cironun `gecerlilik_basi` anından itibaren değeri.
+
+    `ttm` None: o andan sonra TTM çözülemiyor (ör. köprünün yıllık bacağı
+    henüz yayınlanmadı). Grafik bu aralığı boş bırakır, önceki değeri
+    taşımaz.
+    """
+
+    gecerlilik_basi: datetime
+    ttm: Ttm | None
+
+
+def ttm_basamaklari(donemler: Sequence[DonemHasilat]) -> list[TtmBasamagi]:
+    """Son 12 aylık cironun değiştiği anlar, eskiden yeniye.
+
+    TTM yalnız bir rapor yayınlandığında değişebilir. Bu yüzden her yayın
+    anında `ttm_coz` çağırmak serinin tamamını verir, aylık örneklemenin
+    bir aya varan gecikmesi olmadan. Değer değişmediyse (eski bir dönemin
+    revizyonu gibi) basamak yazılmaz. Seri ilk çözülebilen andan başlar.
+    """
+    basamaklar: list[TtmBasamagi] = []
+    for an in sorted({d.yayin_zamani for d in donemler}):
+        ttm = ttm_coz(donemler, an)
+        if not basamaklar and ttm is None:
+            continue
+        if basamaklar and _ayni_ttm(basamaklar[-1].ttm, ttm):
+            continue
+        basamaklar.append(TtmBasamagi(gecerlilik_basi=an, ttm=ttm))
+    return basamaklar
+
+
+def _ayni_ttm(a: Ttm | None, b: Ttm | None) -> bool:
+    """Görünen değer aynı mı? Kaynak rapor farkı yeni basamak sayılmaz."""
+    if a is None or b is None:
+        return a is b
+    return (a.hasilat, a.para_birimi, a.donem_sonu) == (
+        b.hasilat,
+        b.para_birimi,
+        b.donem_sonu,
+    )

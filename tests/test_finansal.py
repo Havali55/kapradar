@@ -28,6 +28,7 @@ from kap_radar.finansal import (
     gelir_tablosu_govdesi,
     konsolide_mi,
     sunum_para_birimi,
+    ttm_basamaklari,
     ttm_coz,
 )
 
@@ -507,3 +508,43 @@ def test_karsilastirma_sutunu_yoksa_buyume_yok():
 
     assert b.buyume is None
     assert b.reel is False
+
+
+def test_ttm_basamagi_her_rapor_yayininda_degisir():
+    basamaklar = ttm_basamaklari([FY2025, YARIM2026])
+
+    assert [b.gecerlilik_basi for b in basamaklar] == [
+        FY2025.yayin_zamani,
+        YARIM2026.yayin_zamani,
+    ]
+    assert basamaklar[0].ttm.hasilat == Decimal("3495512127")
+    assert basamaklar[1].ttm.hasilat == Decimal("4023377103")
+
+
+def test_ttmi_degistirmeyen_revizyon_basamak_yazmaz():
+    """Eski bir yılın geç revizyonu en güncel dönemi değiştirmez."""
+    eski_revizyon = donem(
+        sonu=date(2024, 12, 31), ay=12, hasilat="4488280980",
+        yayin=datetime(2026, 9, 1, tzinfo=ISTANBUL), indeks=1655000,
+    )
+    basamaklar = ttm_basamaklari([FY2025, YARIM2026, eski_revizyon])
+
+    assert len(basamaklar) == 2
+
+
+def test_tek_basina_ara_donem_seriyi_baslatmaz():
+    """Köprünün yıllık bacağı yoksa TTM yok; seri ilk çözülen anda başlar."""
+    assert ttm_basamaklari([YARIM2026]) == []
+
+
+def test_kopru_kurulamayinca_bosluk_basamagi_yazilir():
+    """Önceki değer taşınmaz: yeni yılın ilk çeyreğinde FY2026 henüz yok."""
+    ceyrek = donem(
+        sonu=date(2027, 3, 31), ay=3, hasilat="900000000", onceki="800000000",
+        yayin=datetime(2027, 5, 10, tzinfo=ISTANBUL), indeks=1700000,
+    )
+    basamaklar = ttm_basamaklari([FY2025, YARIM2026, ceyrek])
+
+    assert len(basamaklar) == 3
+    assert basamaklar[-1].ttm is None
+    assert basamaklar[-1].gecerlilik_basi == ceyrek.yayin_zamani
