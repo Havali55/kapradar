@@ -301,7 +301,7 @@ class Ttm:
     kaynak_indeksler: tuple[int, ...]
     # Köprüde yıllık terime uygulanan TMS 29 çarpanı. None: uygulanmadı
     # (yıllık yöntem ya da katsayı çözülemedi); 1: şirket yeniden ifade
-    # etmiyor. Bkz. `_yeniden_ifade_katsayisi`.
+    # etmiyor. Bkz. `yeniden_ifade_katsayisi`.
     enflasyon_carpani: Decimal | None = None
 
 
@@ -341,7 +341,7 @@ def ttm_coz(donemler: Sequence[DonemHasilat], an: datetime) -> Ttm | None:
     # önceki Aralık'ın TL'sinde. Yıllık terim `ay_sayisi` ay ileri taşınır.
     # Katsayı çözülemezse düzeltmesiz köprü kullanılıyor ve bu işaretleniyor
     # (enflasyon_carpani=None) — payda yine de eskisi kadar doğru.
-    katsayi = _yeniden_ifade_katsayisi(acik, son)
+    katsayi = yeniden_ifade_katsayisi(acik, son)
     yillik_terim = yillik.hasilat
     carpan = None
     # Sıra kronolojik ve en güncel rapor SONDA: çağıranlar kaynak
@@ -371,7 +371,7 @@ YENIDEN_IFADE_ALT = Decimal("0.95")
 YENIDEN_IFADE_UST = Decimal("2.2")
 
 
-def _yeniden_ifade_katsayisi(
+def yeniden_ifade_katsayisi(
     acik: Sequence[DonemHasilat], son: DonemHasilat
 ) -> tuple[Decimal, int] | None:
     """Şirketin kendi 12 aylık TMS 29 katsayısı ve dayandığı rapor.
