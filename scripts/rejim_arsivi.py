@@ -83,13 +83,16 @@ SOZLESME_DESENI = re.compile(r"sözleşme|ihale|sipariş|iş ilişkisi|anlaşma|
 # fazla agresif çıktı (2026-09-27: 100 pencereden sonra blok). En az 2 sn,
 # ve üç ardışık pencere hatasında koşu durur; blok soğuyunca aynı komut
 # kaldığı yerden devam eder. Bloğa istek yağdırmak onu uzatır.
+# 20 dakikalık soğumadan sonra 2 sn'de de 28 pencerede bloklandı: hız değil,
+# yaklaşık yarım saatte ~130 isteklik bir kota gibi davranıyor. Uzun çekimde
+# `--aralik-ms 45000` (saatte ~80 istek).
 KAP_ASGARI_ARALIK_MS = 2000
 ARDISIK_HATA_SINIRI = 3
 
 
-def istemci_kur() -> KapIstemcisi:
+def istemci_kur(asgari_ms: int = KAP_ASGARI_ARALIK_MS) -> KapIstemcisi:
     env = env_oku()
-    aralik = max(int(env.get("KAP_ISTEK_ARALIGI_MS", "0")), KAP_ASGARI_ARALIK_MS)
+    aralik = max(int(env.get("KAP_ISTEK_ARALIGI_MS", "0")), KAP_ASGARI_ARALIK_MS, asgari_ms)
     return KapIstemcisi(
         user_agent=env.get("KAP_USER_AGENT") or VARSAYILAN_USER_AGENT,
         istek_araligi_sn=aralik / 1000,
@@ -99,10 +102,10 @@ def istemci_kur() -> KapIstemcisi:
 
 # ------------------------------------------------------------------ KAP
 
-def kap_cek() -> int:
+def kap_cek(asgari_ms: int = KAP_ASGARI_ARALIK_MS) -> int:
     arsiv = HamArsiv(REJIM_KOK)
     ozet = BackfillOzeti()
-    istemci = istemci_kur()
+    istemci = istemci_kur(asgari_ms)
     pencereler = haftalik_pencereler(KAP_BAS, KAP_SON, 3)
     print(f"KAP listesi {KAP_BAS} → {KAP_SON}: {len(pencereler)} pencere, arşiv {REJIM_KOK}", flush=True)
     ardisik = 0
@@ -341,8 +344,12 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("komut", choices=("kap", "bulten", "rapor"))
-    komut = ap.parse_args().komut
-    return {"kap": kap_cek, "bulten": bulten_cek, "rapor": rapor}[komut]()
+    ap.add_argument("--aralik-ms", type=int, default=KAP_ASGARI_ARALIK_MS,
+                    help=f"KAP istekleri arası en az bekleme (varsayılan {KAP_ASGARI_ARALIK_MS})")
+    args = ap.parse_args()
+    if args.komut == "kap":
+        return kap_cek(args.aralik_ms)
+    return {"bulten": bulten_cek, "rapor": rapor}[args.komut]()
 
 
 if __name__ == "__main__":
