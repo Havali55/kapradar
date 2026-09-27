@@ -4,9 +4,13 @@ import { useState, type MouseEvent } from "react";
 import { buyukTl, cirosununKati, gunAy, sayi, yuzdeIyelik } from "@/lib/bicim";
 import {
   birimSec,
+  cikisNoktalari,
+  ciroBasamagi,
   guzelAdim,
   kisaAd,
+  onIkiAyAraligi,
   tabloSatirlari,
+  type CiroBasamagi,
   type SeriNoktasi,
 } from "@/lib/hikaye";
 import { buyuklukBul, type Kademe } from "@/lib/skor";
@@ -44,21 +48,28 @@ const cakisir = (a: Kutu, b: Kutu) =>
 /**
  * Kayan 12 ayda duyurulan toplam (mavi, dolgulu) ile aynı gün bilinen son
  * 12 aylık ciro (toprak, kesikli; boşlukta kopuk). Çubuklar tek tek işler,
- * kanıt sayfasına bağlantı. İmleçle gün gün okunur; tablo alternatifi
- * `<details>` içinde, JS'siz de açılır.
+ * kanıt sayfasına bağlantı. Boş halkalar, bir önceki yılın 12 ayını dolup
+ * hesaptan çıkan işleri: mavi çizginin her inişinin sebebi. İmleçle gün gün
+ * okunur; tablo alternatifi `<details>` içinde, JS'siz de açılır.
  */
 export default function DuyuruCiroGrafigi({
   seri,
   isler,
+  oncekiYil,
+  basamaklar,
   baslikId,
 }: {
   seri: SeriNoktasi[];
   isler: GrafikIsi[];
+  /** Grafik başlamadan önceki 12 ayın işleri; grafik boyunca hesaptan çıkarlar. */
+  oncekiYil: GrafikIsi[];
+  basamaklar: CiroBasamagi[];
   baslikId: string;
 }) {
   const [kap, W] = useGenislik<HTMLDivElement>(VARSAYILAN);
   const [imlec, setImlec] = useState<number | null>(null);
   const [aktifIs, setAktifIs] = useState<number | null>(null);
+  const [aktifCikis, setAktifCikis] = useState<number | null>(null);
 
   const dar = W < 560;
   const H = dar ? 270 : 340;
@@ -103,11 +114,18 @@ export default function DuyuruCiroGrafigi({
     acik = true;
   }
 
+  const cikislar = cikisNoktalari(seri, oncekiYil);
+
   // En büyük üç işin doğrudan etiketi (geniş ekranda): kısa ad + tutar.
-  // Başka bir etikete binen ya da çizim alanından taşan konmaz.
+  // Başka bir etikete ya da çıkış halkasına binen, çizim alanından taşan
+  // konmaz.
   const etiketler: { i: number; x: number; y: number; metin: string }[] = [];
   if (!dar) {
-    const kutular: Kutu[] = [];
+    const kutular: Kutu[] = cikislar.map((c) => {
+      const cx = x(seri[c.i].t);
+      const cy = y(seri[c.i].duyurulan);
+      return { x1: cx - 7, x2: cx + 7, y1: cy - 7, y2: cy + 7 };
+    });
     const sira = isler.map((_, i) => i).sort((a, b) => isler[b].tl - isler[a].tl);
     for (const i of sira.slice(0, 3)) {
       const is = isler[i];
@@ -145,9 +163,17 @@ export default function DuyuruCiroGrafigi({
   };
 
   const ai = aktifIs === null ? null : isler[aktifIs];
-  const gn = aktifIs === null && imlec !== null ? seri[imlec] : null;
-  const ipucuX = ai ? x(ai.t) : gn ? x(gn.t) : 0;
-  const ipucuY = ai ? y(ai.tl) : gn ? y(Math.max(gn.duyurulan, gn.ciro ?? 0)) : 0;
+  const cn = ai === null && aktifCikis !== null ? cikislar[aktifCikis] : null;
+  const gn = ai === null && cn === null && imlec !== null ? seri[imlec] : null;
+  const gnCiro = gn && gn.ciro !== null ? ciroBasamagi(basamaklar, gn.t) : null;
+  const ipucuX = ai ? x(ai.t) : cn ? x(seri[cn.i].t) : gn ? x(gn.t) : 0;
+  const ipucuY = ai
+    ? y(ai.tl)
+    : cn
+      ? y(seri[cn.i].duyurulan)
+      : gn
+        ? y(Math.max(gn.duyurulan, gn.ciro ?? 0))
+        : 0;
   const ipucuAlt = ipucuY < 100;
 
   return (
@@ -231,6 +257,33 @@ export default function DuyuruCiroGrafigi({
             strokeWidth={2.75}
             strokeLinejoin="round"
           />
+          {cikislar.map((c, k) => {
+            const n = seri[c.i];
+            const inis = c.cikan.reduce((t, is) => t + is.tl, 0);
+            const goster = () => setAktifCikis(k);
+            const gizle = () => setAktifCikis(null);
+            return (
+              <a
+                key={n.t}
+                href={`/kap/${c.cikan[0].kap_id}`}
+                aria-label={`${tamGun(n.t)}: ${tamGun(c.cikan[0].t)} tarihli ${buyukTl(inis)} tutarındaki iş 12 ayını doldurdu, toplamdan çıktı`}
+                onMouseEnter={goster}
+                onMouseLeave={gizle}
+                onFocus={goster}
+                onBlur={gizle}
+              >
+                <circle
+                  className="cikis"
+                  cx={x(n.t)}
+                  cy={y(n.duyurulan)}
+                  r={4}
+                  style={{ fill: "var(--plaka)", stroke: "var(--p-duyuru)" }}
+                  strokeWidth={2}
+                />
+                <rect x={x(n.t) - 8} y={y(n.duyurulan) - 8} width={16} height={16} fill="transparent" />
+              </a>
+            );
+          })}
           {etiketler.map((e) => (
             <text key={e.i} x={e.x} y={e.y} textAnchor="middle" className="yazi-acik">
               {e.metin}
@@ -275,7 +328,7 @@ export default function DuyuruCiroGrafigi({
             />
           )}
         </svg>
-        {(ai || gn) && (
+        {(ai || cn || gn) && (
           <div
             className={ipucuAlt ? "ipucu ipucu-alt" : "ipucu"}
             aria-hidden="true"
@@ -297,6 +350,25 @@ export default function DuyuruCiroGrafigi({
                   {ai.karsi ?? "karşı tarafın adı verilmemiş"}
                 </span>
               </>
+            ) : cn ? (
+              <>
+                <b>{tamGun(seri[cn.i].t)}: toplamdan çıktı</b>
+                {cn.cikan.map((is) => (
+                  <span key={is.kap_id}>
+                    <br />
+                    {is.ozet}
+                    <br />
+                    <span className="soluk">
+                      {tamGun(is.t)} duyurusu · {buyukTl(is.tl)}
+                    </span>
+                  </span>
+                ))}
+                <br />
+                <span className="soluk">
+                  12 ayını doldurdu; mavi çizgi{" "}
+                  {buyukTl(cn.cikan.reduce((t, is) => t + is.tl, 0))} indi
+                </span>
+              </>
             ) : (
               gn && (
                 <>
@@ -305,6 +377,15 @@ export default function DuyuruCiroGrafigi({
                   12 ayda duyurulan: <b>{buyukTl(gn.duyurulan)}</b>
                   <br />
                   12 aylık ciro: <b>{gn.ciro !== null ? buyukTl(gn.ciro) : "bilinmiyor"}</b>
+                  {gnCiro?.donem_sonu && (
+                    <>
+                      <br />
+                      <span className="soluk">
+                        {onIkiAyAraligi(gnCiro.donem_sonu)} satışı,{" "}
+                        {tamGun(Date.parse(gnCiro.gecerlilik_basi))} raporundan
+                      </span>
+                    </>
+                  )}
                   {gn.ciro !== null && gn.ciro > 0 && (
                     <>
                       <br />

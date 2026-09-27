@@ -14,6 +14,8 @@ export type CiroBasamagi = {
   gecerlilik_basi: string;
   hasilat: number | null;
   para_birimi: string | null;
+  /** Basamağın 12 ayının bittiği gün (`ciro_seri.donem_sonu`). */
+  donem_sonu?: string | null;
 };
 
 /** (simdi − 365 gün, simdi] içindekiler. */
@@ -33,16 +35,36 @@ export function sonOnIkiAy<T extends { yayin_zamani: string }>(
  * önceki değer taşınmaz.
  */
 export function ciroAn(basamaklar: readonly CiroBasamagi[], t: number): number | null {
+  const b = ciroBasamagi(basamaklar, t);
+  return b !== null && b.hasilat !== null && b.para_birimi === "TL" ? b.hasilat : null;
+}
+
+/** `t` anında yürürlükteki basamak: o ana kadar yayınlanmış en yeni rapor. */
+export function ciroBasamagi<B extends CiroBasamagi>(basamaklar: readonly B[], t: number): B | null {
   let enYeni = -Infinity;
-  let deger: number | null = null;
+  let secilen: B | null = null;
   for (const b of basamaklar) {
     const z = Date.parse(b.gecerlilik_basi);
     if (z <= t && z > enYeni) {
       enYeni = z;
-      deger = b.hasilat !== null && b.para_birimi === "TL" ? b.hasilat : null;
+      secilen = b;
     }
   }
-  return deger;
+  return secilen;
+}
+
+const KISA_AY = new Intl.DateTimeFormat("tr-TR", { month: "short", timeZone: "UTC" });
+
+/**
+ * Dönem sonunda biten 12 ay, okura: "2026-06-30" → "Tem 2025 – Haz 2026".
+ * Kesikli çizginin gerçekleşmiş satış olduğunu, tahmin olmadığını söylemek
+ * için.
+ */
+export function onIkiAyAraligi(donemSonu: string): string {
+  const son = new Date(`${donemSonu.slice(0, 10)}T00:00:00Z`);
+  const bas = new Date(Date.UTC(son.getUTCFullYear(), son.getUTCMonth() - 11, 1));
+  const ay = (d: Date) => `${KISA_AY.format(d)} ${d.getUTCFullYear()}`;
+  return `${ay(bas)} – ${ay(son)}`;
 }
 
 export type SeriNoktasi = { t: number; duyurulan: number; ciro: number | null };
@@ -66,6 +88,42 @@ export function gunlukSeri(
     seri.push({ t, duyurulan: toplam, ciro: ciroAn(basamaklar, t) });
   }
   return seri;
+}
+
+/**
+ * `i`. günde 12 aylık pencereye giren ve pencereden çıkan işler: grafiğin
+ * neden yükselip indiğini ipucunda söylemek için. Pencere `gunlukSeri` ile
+ * aynı, (t − 365 gün, t]: önceki günden bu yana duyurulan girer, tam 12 ay
+ * önceki gün aralığında duyurulan çıkar.
+ */
+export function gunDegisimi<T extends { t: number }>(
+  seri: readonly SeriNoktasi[],
+  i: number,
+  isler: readonly T[],
+): { giren: T[]; cikan: T[] } {
+  if (i <= 0) return { giren: [], cikan: [] };
+  const a = seri[i - 1].t;
+  const b = seri[i].t;
+  return {
+    giren: isler.filter((x) => x.t > a && x.t <= b),
+    cikan: isler.filter((x) => x.t > a - YIL_MS && x.t <= b - YIL_MS),
+  };
+}
+
+/**
+ * Serinin 12 ayı dolup hesaptan çıkan işleri, çıktıkları günün sırasıyla:
+ * mavi çizginin her inişinin sebebi. Aynı gün birden çok iş çıkabilir.
+ */
+export function cikisNoktalari<T extends { t: number }>(
+  seri: readonly SeriNoktasi[],
+  isler: readonly T[],
+): { i: number; cikan: T[] }[] {
+  const sonuc: { i: number; cikan: T[] }[] = [];
+  for (let i = 1; i < seri.length; i++) {
+    const { cikan } = gunDegisimi(seri, i, isler);
+    if (cikan.length) sonuc.push({ i, cikan });
+  }
+  return sonuc;
 }
 
 export type SeriIliskisi = "ustte" | "altta" | "karisik" | "ciro-yok";
@@ -185,6 +243,56 @@ export function aylaraBol<T extends { zaman: string }>(
 /** Tablo alternatifi: son noktadan geriye her `aralik` günde bir, eskiden yeniye. */
 export function tabloSatirlari<T>(seri: readonly T[], aralik = 30): T[] {
   return seri.filter((_, i) => (seri.length - 1 - i) % aralik === 0);
+}
+
+// ----------------------------------------------------- taban ve tavan
+
+/** `hisse_limit_gunleri` görünümünün satırı (son 20 seans, günlük kapanış). */
+export type LimitGunleri = {
+  son_tarih: string;
+  seans: number;
+  taban_gun: number;
+  tavan_gun: number;
+  son_taban_serisi: number;
+  son_tavan_serisi: number;
+};
+
+/**
+ * Bugünkü taban/tavan durumu, yalnız sayım. Tahta etiketi bildirim
+ * gününün ve devre kesicinin ölçüsü; tabanda kilitli, işlem görmeyen bir
+ * hisse devre kesiciyi tetiklemiyor (TEHOL, Eylül 2026). Süren bir seri
+ * (en az iki seans) önce söylenir, yoksa pencerenin sayımı. `kisa`,
+ * başlığı zaten "Son 20 seans" olan dizin sütunu için.
+ */
+export function limitDurumu(l: LimitGunleri | null): {
+  metin: string;
+  kisa: string;
+  alt: string | null;
+  renk: "kir" | "kehribar" | "yes";
+} | null {
+  if (!l) return null;
+  const parcalar = [
+    l.taban_gun > 0 ? `${l.taban_gun} taban` : null,
+    l.tavan_gun > 0 ? `${l.tavan_gun} tavan` : null,
+  ].filter(Boolean);
+  const sayim = parcalar.length ? `Son ${l.seans} seansta ${parcalar.join(", ")} günü` : null;
+  if (l.son_taban_serisi >= 2) {
+    const kisa = `${l.son_taban_serisi} seanstır tabanda`;
+    return { metin: `Son ${kisa}`, kisa, alt: sayim, renk: "kir" };
+  }
+  if (l.son_tavan_serisi >= 2) {
+    const kisa = `${l.son_tavan_serisi} seanstır tavanda`;
+    return { metin: `Son ${kisa}`, kisa, alt: sayim, renk: "kehribar" };
+  }
+  if (sayim) {
+    return {
+      metin: sayim,
+      kisa: `${parcalar.join(", ")} günü`,
+      alt: null,
+      renk: l.taban_gun >= 3 ? "kir" : "kehribar",
+    };
+  }
+  return { metin: `Son ${l.seans} seansta taban ya da tavan yok`, kisa: "Yok", alt: null, renk: "yes" };
 }
 
 // -------------------------------------------------------------- dizin

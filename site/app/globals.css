@@ -2248,6 +2248,15 @@ a:hover {
   border: 0;
   border-radius: 2px;
 }
+.lejant i.halka-lejant {
+  width: 9px;
+  height: 9px;
+  border: 2px solid;
+  border-radius: 50%;
+}
+.grafik a:focus-visible .cikis {
+  stroke-width: 3.5px;
+}
 .grafik .uc-etiket {
   font-weight: 600;
   font-size: 11.5px;
@@ -2556,6 +2565,11 @@ a:hover {
 .durum-kir {
   color: var(--kir);
   background: var(--kir-z);
+}
+/* Dizinde ±%200'ü aşan ciro büyümesi: değer duruyor, yanında uyarı. */
+.olagandisi {
+  color: var(--kehribar);
+  cursor: help;
 }
 
 /* Bildirim sayfası eklentisi. */

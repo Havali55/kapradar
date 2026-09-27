@@ -607,13 +607,15 @@ export type CiroSeriSatiri = {
   hasilat: number | null;
   para_birimi: string | null;
   kaynak_kap_index: number | null;
+  /** 12 ayın bittiği gün; grafik ipucu "Tem 2025 – Haz 2026 satışı" der. */
+  donem_sonu: string | null;
 };
 
 export const ciroSeriGetir = onbellekli(async () => {
   const satirlar = await hepsiniOku<CiroSeriSatiri>("Ciro serisi", (bas, son) =>
     supabase
       .from("ciro_seri")
-      .select("ticker, gecerlilik_basi, hasilat, para_birimi, kaynak_kap_index")
+      .select("ticker, gecerlilik_basi, hasilat, para_birimi, kaynak_kap_index, donem_sonu")
       .order("ticker")
       .order("gecerlilik_basi")
       .range(bas, son),
@@ -623,6 +625,22 @@ export const ciroSeriGetir = onbellekli(async () => {
     hasilat: s.hasilat === null ? null : Number(s.hasilat),
   }));
 });
+
+/**
+ * Son 20 seansın taban/tavan sayımı, hisse başına (`hisse_limit_gunleri`,
+ * 2026-09-27). Fiyatın kendisi değil yalnız sayımlar açık.
+ */
+export type LimitGunleriSatiri = import("./hikaye").LimitGunleri & { ticker: string };
+
+export const limitGunleriGetir = onbellekli(() =>
+  hepsiniOku<LimitGunleriSatiri>("Taban/tavan", (bas, son) =>
+    supabase
+      .from("hisse_limit_gunleri")
+      .select("ticker, son_tarih, seans, taban_gun, tavan_gun, son_taban_serisi, son_tavan_serisi")
+      .order("ticker")
+      .range(bas, son),
+  ),
+);
 
 /**
  * Söz ve gerçek, bütün şirketler için bir kez: ana sayfanın modülü ve 144
