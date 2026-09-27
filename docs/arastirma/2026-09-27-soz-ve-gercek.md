@@ -66,8 +66,8 @@ reel olarak %24,7 büyüdü. "Çok duyuran" grubunda, grubun medyanının
 
 | Varyant | n | Az / Orta / Çok | ρ | t |
 |---|---|---|---|---|
-| A · Σ ciro oranı, süzgeçsiz (maket v2) | 72 | +2,5 / −1,7 / +20,8 | 0,20 | 1,67 |
-| B · Σ ciro oranı, yalnız reel | 65 | +0,8 / +2,0 / +19,6 | 0,24 | 1,99 |
+| A · Σ ciro oranı, süzgeçsiz (maket v2) | 72 | +2,5 / −1,7 / +20,8 | 0,20 | 1,74 |
+| B · Σ ciro oranı, yalnız reel | 65 | −1,6 / +2,1 / +19,6 | 0,25 | 2,06 |
 | C · TL ÷ FY ciro, süzgeçsiz | 71 | +4,3 / +2,0 / +19,6 | 0,18 | 1,51 |
 | **D · TL ÷ FY ciro, yalnız reel (seçilen)** | **64** | **+4,3 / −5,4 / +20,8** | **0,24** | **1,91** |
 
@@ -84,8 +84,19 @@ bakılarak seçilmedi, iki ilkeyle seçildi:
    son 12 ayında iki biçim 1,98 ve 1,67 veriyor.
 
 Varyant tablosu D'nin şanslı bir seçim olmadığını göstermek için
-burada: ρ dört varyantta 0,18–0,24 arasında, hiçbiri %5'te anlamlı değil.
-B'nin t'si (1,99) en yüksek olanı; seçilen D ondan düşük.
+burada: ρ dört varyantta 0,18–0,25 arasında.
+
+**Güncelleme (27.09.2026, TÜFE düzeltmesinden sonra).** K2 (`f2f083d`)
+2024 ara dönemlerinin paydasını düzeltti; her işi kendi tarihindeki
+ciroya bölen A ve B değişti, FY cirosunu kullanan C ve D değişmedi.
+B'nin t'si 1,99'dan **2,06**'ya çıktı ve %5 eşiğini (62 sd için 2,00)
+kıl payı geçiyor. İlk sürümdeki "hiçbiri %5'te anlamlı değil" cümlesi
+artık doğru değil. Seçilen D (t = 1,91) geçmiyor. D'de kalınıyor: tanım
+yukarıdaki iki ilkeyle ve sonuç görülmeden seçildi; B'nin eşiği
+geçmesi ona geçmek için gerekçe olamaz, sonuca bakarak tanım değiştirmek
+tam kaçınılan şey. Dürüst özet: **ilişkinin %5'te anlamlılığı tanım
+seçimine duyarlı ve eşiğin iki yanında duruyor; üst grubun ~%20'si
+dört tanımda da sabit.**
 
 ## Sınırlar
 

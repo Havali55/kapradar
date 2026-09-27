@@ -216,8 +216,8 @@ Tanım varyantlarında sonuç ne kadar oynuyor (hepsi 6A2026):
 
 | Varyant | n | Az / Orta / Çok | ρ | t |
 |---|---|---|---|---|
-| Maket v2 (Σ ciro oranı, TMS 29 süzgeci yok) | 72 | +2,5 / −1,7 / +20,8 | 0,20 | 1,67 |
-| Σ ciro oranı, TMS 29 süzgeçli | 65 | +0,8 / +2,0 / +19,6 | 0,24 | 1,99 |
+| Maket v2 (Σ ciro oranı, TMS 29 süzgeci yok) | 72 | +2,5 / −1,7 / +20,8 | 0,20 | 1,74 |
+| Σ ciro oranı, TMS 29 süzgeçli | 65 | −1,6 / +2,1 / +19,6 | 0,25 | 2,06 |
 | TL ÷ FY ciro, süzgeçsiz | 71 | +4,3 / +2,0 / +19,6 | 0,18 | 1,51 |
 | **TL ÷ FY ciro, TMS 29 süzgeçli (seçilen)** | **64** | **+4,3 / −5,4 / +20,8** | **0,24** | **1,91** |
 
@@ -225,6 +225,12 @@ Her varyantta sabit kalan tek şey: **en çok duyuran üçte bir yaklaşık
 %20 reel büyüdü, alttaki iki grup birbirinden ayrışmıyor.** Seçilen
 tanım sonuca bakılarak değil iki ilkeyle seçildi: reel olmayanı reel
 diye göstermemek ve sitede tek oran biçimi kullanmak.
+
+*Güncelleme (27.09.2026, K2 TÜFE düzeltmesinden sonra):* A ve B satırları
+değişti (her işi kendi tarihindeki ciroya bölüyorlar, 2024 ara dönem
+paydası düzeldi). B'nin t'si 2,06: %5 eşiğini kıl payı geçiyor. Seçilen
+D değişmedi (1,91) ve D'de kalınıyor; gerekçe
+`docs/arastirma/2026-09-27-soz-ve-gercek.md`'de.
 
 Sitedeki "dürüst okuma" metni bu cümleyi söyler, sonra şunları ekler:
 ρ ve anlamlı olmadığı, tek dönem olduğu, sözleşmelerin çok yıllık
