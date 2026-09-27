@@ -28,27 +28,6 @@ export default async function ProjeHakkinda() {
 
   return (
     <>
-      <header className="bas">
-        <div className="bas-ic">
-          <Link href="/" className="logo">
-            <span className="logo-ad mono">
-              KAP<i>·</i>RADAR
-            </span>
-            <span className="logo-alt mono">PROJE HAKKINDA</span>
-          </Link>
-          <div className="bas-bos" />
-          <Link href="/film" className="bag">
-            Filmi izle ▸
-          </Link>
-          <Link href="/metodoloji" className="bag">
-            Metodoloji
-          </Link>
-          <Link href="/" className="bag bag-koyu">
-            Akışa dön
-          </Link>
-        </div>
-      </header>
-
       <main className="govde govde-dar yazi">
         <div className="ust-etiket mono">VAKA ÇALIŞMASI · 2026</div>
         <h1>KAP bildirimlerini yorumdan arındırmak</h1>

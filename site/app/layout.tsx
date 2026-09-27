@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Serif, JetBrains_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
-import { isaretliYuzde, kisaTarih } from "@/lib/bicim";
-import { piyasaBandiGetir } from "@/lib/veri";
+import Baslik from "@/components/Baslik";
+import { hisseSecenekleriGetir } from "@/lib/veri";
 
 // Yazı tipleri build anında indirilip kendi sunucumuzdan veriliyor:
 // CDN çağrısı yok, layout kayması yok.
@@ -39,52 +40,33 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// Başlıktaki arama listesi veritabanından geliyor; statik sayfalarda da
+// (film, metodoloji) saatlik tazelensin, yoksa yeni hisse bir sonraki
+// yayına kadar aranamaz.
+export const revalidate = 3600;
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const bant = await piyasaBandiGetir();
+  const hisseler = await hisseSecenekleriGetir();
   return (
     <html lang="tr" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
       <body>
-        <div className="serit">
-          <div className="serit-ic">
-            <span className="rozet mono">UYARI</span>
+        <Baslik hisseler={hisseler} />
+        {children}
+        <footer className="altbilgi">
+          <div className="altbilgi-ic">
             <span>
-              Bu bir kişisel araştırma projesidir. Yatırım tavsiyesi değildir,
+              KAP·RADAR · Kişisel araştırma projesi. Yatırım tavsiyesi değildir,
               fiyat tahmini üretmez.
             </span>
+            <span>
+              Kaynak: KAP, TCMB · <Link href="/metodoloji">Yöntem ve sınırlar</Link>
+            </span>
           </div>
-        </div>
-        {bant && (
-          // Bağlam katmanı: piyasanın geneli. Olgu + tarih, yorum yok.
-          <div className="bant">
-            <div className="bant-ic">
-              <span className="rozet mono">PİYASA</span>
-              <span>
-                Son 5 seans ({kisaTarih(bant.son_tarih)} itibarıyla): eşit ağırlıklı
-                BIST{" "}
-                <strong className="mono">
-                  {bant.ew_5s !== null ? isaretliYuzde(bant.ew_5s, 1) : "—"}
-                </strong>{" "}
-                · XU100{" "}
-                <strong className="mono">
-                  {bant.xu100_5s !== null ? isaretliYuzde(bant.xu100_5s, 1) : "—"}
-                </strong>
-                {bant.tasfiye_tarihi && (
-                  <>
-                    {" "}
-                    · SPK {kisaTarih(bant.tasfiye_tarihi)} tarihinde{" "}
-                    {bant.tasfiye_sirket_sayisi} portföy şirketinin fonlarını
-                    tasfiyeye aldı.
-                  </>
-                )}
-              </span>
-            </div>
-          </div>
-        )}
-        {children}
+        </footer>
       </body>
     </html>
   );

@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -38,24 +37,6 @@ export default async function Metodoloji() {
 
   return (
     <>
-      <header className="bas">
-        <div className="bas-ic">
-          <Link href="/" className="logo">
-            <span className="logo-ad mono">
-              KAP<i>·</i>RADAR
-            </span>
-            <span className="logo-alt mono">ARAŞTIRMA NOTU</span>
-          </Link>
-          <div className="bas-bos" />
-          <Link href="/proje-hakkinda" className="bag">
-            Proje hakkında
-          </Link>
-          <Link href="/" className="bag bag-koyu">
-            Akışa dön
-          </Link>
-        </div>
-      </header>
-
       <style dangerouslySetInnerHTML={{ __html: stil }} />
       <div className="mn">
         <main className="govde" dangerouslySetInnerHTML={{ __html: govde }} />

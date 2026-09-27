@@ -81,27 +81,9 @@ export default async function HisseSayfasi({
 
   return (
     <>
-      <header className="bas">
-        <div className="bas-ic">
-          <Link href="/" className="logo">
-            <span className="logo-ad mono">
-              KAP<i>·</i>RADAR
-            </span>
-            <span className="logo-alt mono">HİSSE</span>
-          </Link>
-          <div className="bas-bos" />
-          <Link href="/metodoloji" className="bag">
-            Metodoloji
-          </Link>
-          <Link href="/" className="bag bag-koyu">
-            Akışa dön
-          </Link>
-        </div>
-      </header>
-
       <main className="govde govde-dar">
         <nav className="iz mono" aria-label="Konum">
-          <Link href="/">Akış</Link>
+          <Link href="/akis">Akış</Link>
           <span aria-hidden="true">/</span>
           <span>{ticker}</span>
         </nav>

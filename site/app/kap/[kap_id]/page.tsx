@@ -50,27 +50,9 @@ export default async function KapSayfasi({
 
   return (
     <>
-      <header className="bas">
-        <div className="bas-ic">
-          <Link href="/" className="logo">
-            <span className="logo-ad mono">
-              KAP<i>·</i>RADAR
-            </span>
-            <span className="logo-alt mono">BİLDİRİM</span>
-          </Link>
-          <div className="bas-bos" />
-          <Link href={`/hisse/${b.ticker}`} className="bag">
-            {b.ticker} sayfası
-          </Link>
-          <Link href="/" className="bag bag-koyu">
-            Akışa dön
-          </Link>
-        </div>
-      </header>
-
       <main className="govde govde-dar">
         <nav className="iz mono" aria-label="Konum">
-          <Link href="/">Akış</Link>
+          <Link href="/akis">Akış</Link>
           <span aria-hidden="true">/</span>
           <Link href={`/hisse/${b.ticker}`}>{b.ticker}</Link>
           <span aria-hidden="true">/</span>

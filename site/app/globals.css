@@ -18,7 +18,6 @@
   --ken-4: #9b9480;
 
   --uyari-z: #f3f1e9;
-  --uyari-k: #e0dccb;
   --uyari-y: #5c563f;
   --uyari-r: #e6e1cd;
 
@@ -29,7 +28,6 @@
   --mavi-z: oklch(0.95 0.03 245);
 
   --yes: oklch(0.48 0.13 150);
-  --yes-canli: oklch(0.6 0.14 150);
   --yes-z: oklch(0.96 0.03 150);
   --kehribar: oklch(0.52 0.12 80);
   --kehribar-z: oklch(0.96 0.04 80);
@@ -40,6 +38,23 @@
   --r-ic: 8px;
   --r-dugme: 6px;
   --en: 1280px;
+
+  /* Site v3 (2026-09-27): veri serileri ve koyu "veri plakası". Seri
+     renkleri kâğıtta ve plakada ayrı ayrı doğrulandı (CVD ΔE ≥ 19,6,
+     kontrast ≥ 3:1). Kehribar, yeşil ve kırmızı seri rengi olmaz:
+     onlar durum renkleri. */
+  --seri-duyuru: #135298;
+  --seri-ciro: #9a5b2e;
+  --plaka: #1b1a16;
+  --plaka-2: #23211c;
+  --plaka-ken: #36332b;
+  --plaka-yazi: #efe9da;
+  --plaka-mut: #a59e8a;
+  --p-duyuru: #4a8fd6;
+  --p-ciro: #bd7b44;
+  --p-mega: #a6cbf1;
+  --p-onemli: #4a8fd6;
+  --p-rutin: #7a7466;
 }
 
 * {
@@ -88,22 +103,7 @@ a:hover {
 
 /* ---------------------------------------------------------- iskelet */
 
-.serit {
-  background: var(--uyari-z);
-  border-bottom: 1px solid var(--uyari-k);
-  color: var(--uyari-y);
-}
-.serit-ic {
-  max-width: var(--en);
-  margin: 0 auto;
-  padding: 10px 24px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  font-size: 12.5px;
-}
-/* Piyasa bandı — uyarı şeridinin altında, nötr tonda: olgu, alarm değil. */
+/* Piyasa bandı — /akis'in üstünde, nötr tonda: olgu, alarm değil. */
 .bant {
   background: var(--kart-2);
   border-bottom: 1px solid var(--ken);
@@ -124,7 +124,6 @@ a:hover {
   font-weight: 600;
 }
 @media (max-width: 640px) {
-  .serit-ic,
   .bant-ic {
     padding: 8px 16px;
   }
@@ -138,6 +137,8 @@ a:hover {
   flex: none;
 }
 
+/* Başlık: logo · hisse arama · menü. Yükseklik masaüstünde 62 px sabit;
+   akışın süzgeç çubuğu `top: 62px` ile bunun altına yapışıyor. */
 .bas {
   position: sticky;
   top: 0;
@@ -153,17 +154,23 @@ a:hover {
   height: 62px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 }
 .logo {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--ink);
+  white-space: nowrap;
+  flex: none;
 }
 .logo:hover {
   text-decoration: none;
   color: var(--ink);
+}
+.logo svg {
+  width: 22px;
+  height: 22px;
 }
 .logo-ad {
   font-weight: 700;
@@ -174,34 +181,262 @@ a:hover {
   font-style: normal;
   color: var(--mavi);
 }
-.logo-alt {
-  font-size: 10px;
-  color: var(--mut-2);
-  letter-spacing: 0.1em;
+
+/* Hisse arama (başlıkta ve ana sayfada büyük hâli). */
+.arama {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 420px;
 }
-.canli {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 10px;
+.arama input {
+  width: 100%;
+  font: 14px var(--yazi-sans), system-ui, sans-serif;
+  color: var(--ink);
   background: var(--kart);
   border: 1px solid var(--ken);
-  border-radius: 999px;
-  font-size: 10px;
+  border-radius: 9px;
+  padding: 8px 40px 8px 34px;
+}
+.arama input::placeholder {
+  color: var(--mut-3);
+}
+.arama input:focus {
+  border-color: var(--mavi);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(38 119 178 / 0.15);
+}
+/* Tarayıcının kendi temizleme düğmesi kbd ipucunun üstüne biniyor. */
+.arama input::-webkit-search-cancel-button {
+  display: none;
+}
+.arama .buyutec {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--mut-3);
+  pointer-events: none;
+}
+.arama kbd {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font: 11px var(--yazi-mono), ui-monospace, monospace;
   color: var(--mut);
-  letter-spacing: 0.07em;
+  border: 1px solid var(--ken);
+  border-radius: 5px;
+  padding: 1px 6px;
+  background: var(--kart-2);
+  pointer-events: none;
 }
-/* Nabız yok: yanıp sönen nokta "şu an akıyor" der, oysa arşiv toplu
-   yükleniyor. Canlı poller devreye girince animasyon geri gelebilir. */
-.canli-nokta {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--yes-canli);
-  flex: none;
+.arama-buyuk {
+  max-width: 560px;
 }
-.bas-bos {
-  flex: 1;
+.arama-buyuk input {
+  font-size: 16px;
+  padding: 13px 64px 13px 40px;
+  border-radius: 11px;
+}
+.arama-buyuk .buyutec {
+  left: 14px;
+}
+.oneriler {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 45;
+  background: var(--kart);
+  border: 1px solid var(--ken);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -18px rgb(22 21 15 / 0.35);
+  padding: 6px;
+  list-style: none;
+  margin: 0;
+}
+.oneriler li {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.oneriler li[aria-selected="true"] {
+  background: var(--mavi-z);
+}
+.oneri-t {
+  font-weight: 600;
+  font-size: 13px;
+}
+.oneri-s {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oneri-n {
+  font-size: 11px;
+  color: var(--mut-3);
+}
+.oneriler li.oneri-yok {
+  display: block;
+  cursor: default;
+  font-size: 13px;
+  color: var(--mut);
+}
+
+/* Site menüsü; telefonda düğmeyle açılır. */
+.site-nav {
+  display: flex;
+  gap: 22px;
+  margin-left: auto;
+  font-size: 14px;
+}
+.site-nav a {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.site-nav a:hover {
+  color: var(--mavi-kk);
+}
+.site-nav a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 600;
+}
+.menu-dugme {
+  display: none;
+}
+
+/* Site v3 ortak parçaları. */
+.etiket {
+  font: 500 11px var(--yazi-mono), ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+/* KAP unvanları büyük harf kalıyor: başlık düzenine çevirmek "SDT" gibi
+   kısaltmaları bozuyordu ("Sdt"). Küçültüp aralık açmak okunur kılıyor. */
+.unvan {
+  font-size: 0.86em;
+  letter-spacing: 0.035em;
+}
+/* Veri plakası: ana görseller koyu mürekkep zeminde. */
+.plaka {
+  background: var(--plaka);
+  color: var(--plaka-yazi);
+  border-radius: 12px;
+  padding: 20px 22px 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.04) inset,
+    0 24px 48px -28px rgb(22 21 15 / 0.6);
+}
+.plaka .etiket {
+  color: var(--plaka-mut);
+}
+.plaka h2,
+.plaka h3 {
+  color: #fbf7ec;
+}
+
+/* Ibare: bugünkü iki bandın (UYARI + PİYASA) yerine tek satır. */
+.ibare {
+  font-size: 12px;
+  color: var(--mut);
+  border-bottom: 1px solid var(--ken-2);
+}
+.ibare-ic {
+  max-width: var(--en);
+  margin: 0 auto;
+  padding: 6px 24px;
+}
+.ibare-dar {
+  display: none;
+}
+
+.altbilgi {
+  border-top: 1px solid var(--ken);
+  margin-top: 40px;
+  font-size: 12px;
+  color: var(--mut);
+}
+.altbilgi-ic {
+  max-width: var(--en);
+  margin: 0 auto;
+  padding: 18px 24px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+
+/* 720 px: akışın süzgeç çubuğu sticky'lığı burada bırakıyor. Başlık da
+   aynı eşikte sarılıyor; farklı olsaydı arada sarılmış başlığın altına
+   62 px'e yapışan çubuk binerdi. */
+@media (max-width: 720px) {
+  .bas-ic {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 16px;
+    gap: 10px 12px;
+  }
+  .arama {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .arama kbd {
+    display: none;
+  }
+  .arama input {
+    padding-right: 12px;
+    /* 16 px altı iOS'ta odakta sayfayı yakınlaştırıyor. */
+    font-size: 16px;
+  }
+  .site-nav {
+    display: none;
+  }
+  .site-nav.acik {
+    display: flex;
+    order: 4;
+    flex-basis: 100%;
+    gap: 18px;
+    padding: 4px 0 2px;
+  }
+  .menu-dugme {
+    display: inline-block;
+    margin-left: auto;
+    font: 13px var(--yazi-sans), system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--kart);
+    border: 1px solid var(--ken);
+    border-radius: 7px;
+    padding: 5px 12px;
+    cursor: pointer;
+  }
+  .menu-dugme[aria-expanded="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  .ibare-ic,
+  .altbilgi-ic {
+    padding-inline: 16px;
+  }
+  .ibare-genis {
+    display: none;
+  }
+  .ibare-dar {
+    display: inline;
+  }
 }
 .bag {
   padding: 8px 14px;
@@ -315,7 +550,7 @@ a:hover {
   border-radius: var(--r-kart);
   margin-bottom: 12px;
 }
-.arama {
+.akis-arama {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -326,11 +561,11 @@ a:hover {
   flex: 0 1 250px;
   min-width: 180px;
 }
-.arama span {
+.akis-arama span {
   font-size: 12px;
   color: var(--mut-3);
 }
-.arama input {
+.akis-arama input {
   background: transparent;
   border: none;
   outline: none;
@@ -726,7 +961,7 @@ a:hover {
 /* Dokunmatik cihazda klavye yok: ipucu da yok. */
 @media (hover: none) {
   .tus-yardim,
-  .arama .tus {
+  .akis-arama .tus {
     display: none;
   }
 }
@@ -1293,17 +1528,8 @@ a:hover {
   .govde {
     padding: 20px 16px 60px;
   }
-  /* Başlıkta artık dört öğe var (logo + üç bağlantı); sabit 62 px
-     yükseklikte bunlar dar ekranda sıkışıyordu. Sarma serbest,
-     yükseklik içeriğe göre. Filtre çubuğu mobilde sticky olmadığı
-     için 62 px'e bağlı bir hizalama kalmıyor. */
-  .bas-ic {
-    flex-wrap: wrap;
-    height: auto;
-    min-height: 62px;
-    padding: 11px 16px;
-    gap: 10px;
-  }
+  /* Başlık bu eşikte sarılıyor (bkz. başlık bölümü); süzgeç çubuğu da
+     62 px'e bağlı kalmasın diye sticky'lığı bırakıyor. */
   .filtre-cubugu {
     position: static;
   }

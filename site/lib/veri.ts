@@ -1,3 +1,4 @@
+import type { HisseSecenek } from "./arama";
 import { supabase } from "./supabase";
 import {
   buyuklukBul,
@@ -477,6 +478,26 @@ export async function hisseleriGetir(): Promise<HisseOzeti[]> {
         : null,
     }))
     .sort((a, b) => b.adet - a.adet || a.ticker.localeCompare(b.ticker, "tr"));
+}
+
+/**
+ * Başlıktaki arama listesi. Layout her statik sayfada koşuyor (1.400+
+ * sayfa), bu yüzden `panelGirdileriGetir` gibi süreç düzeyinde ve aynı
+ * TTL ile önbellekte.
+ */
+let aramaBellek: { zaman: number; veri: HisseSecenek[] } | null = null;
+
+export async function hisseSecenekleriGetir(): Promise<HisseSecenek[]> {
+  if (aramaBellek && Date.now() - aramaBellek.zaman < PANEL_TTL_MS) {
+    return aramaBellek.veri;
+  }
+  const veri = (await hisseleriGetir()).map((h) => ({
+    t: h.ticker,
+    s: h.sirket,
+    n: h.adet,
+  }));
+  aramaBellek = { zaman: Date.now(), veri };
+  return veri;
 }
 
 /** `/kap/[kap_id]` için statik parametreler. */
