@@ -8,11 +8,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  cirosununKati,
   gunAy,
   kat,
   isaretliYuzde,
   istanbulGunu,
   tahtaGorunumu,
+  uzunTl,
   yilda,
   yuzdeIyelik,
 } from "./bicim.ts";
@@ -84,4 +86,15 @@ test("yilda: bulunma eki yılın okunuşundaki son sözcüğe uyar", () => {
   assert.equal(yilda(2030), "2030'da"); // otuz
   assert.equal(yilda(2040), "2040'ta"); // kırk
   assert.equal(yilda(2000), "2000'de"); // bin
+});
+
+test("uzunTl: tez cümlesinin tutarı", () => {
+  assert.equal(uzunTl(375_512_345_678), "375,5 milyar TL");
+  assert.equal(uzunTl(92_400_000), "92,4 milyon TL");
+  assert.equal(uzunTl(45_000), "45.000 TL");
+});
+
+test("cirosununKati: bir ve üstü kat, altı yüzde", () => {
+  assert.equal(cirosununKati(1.67), "1,7 katı");
+  assert.equal(cirosununKati(0.123), "%12,3'ü");
 });

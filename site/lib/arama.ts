@@ -36,3 +36,9 @@ export function hisseEsle(
     b.n - a.n || a.t.localeCompare(b.t, "tr");
   return [...onek.sort(sira), ...icinde.sort(sira)].slice(0, sinir);
 }
+
+/** Tek hisse sorguya uyuyor mu (dizin süzgeci). Boş sorgu her şeye uyar. */
+export function eslesir(h: Pick<HisseSecenek, "t" | "s">, sorgu: string): boolean {
+  const q = buyut(sorgu.trim());
+  return !q || h.t.startsWith(q) || buyut(h.s).includes(q);
+}

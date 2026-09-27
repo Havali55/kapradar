@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { ARAMA_SINIRI, hisseEsle, type HisseSecenek } from "./arama.ts";
+import { ARAMA_SINIRI, eslesir, hisseEsle, type HisseSecenek } from "./arama.ts";
 
 const LISTE: HisseSecenek[] = [
   { t: "SASA", s: "SASA POLYESTER SANAYİ A.Ş.", n: 3 },
@@ -34,4 +34,12 @@ test("en çok ARAMA_SINIRI sonuç", () => {
   const sonuc = hisseEsle(cok, "ab");
   assert.equal(sonuc.length, ARAMA_SINIRI);
   assert.equal(sonuc[0].t, "AB9");
+});
+
+test("eslesir: ticker öneki ya da unvan içi; boş sorgu her şeye uyar", () => {
+  const h = { t: "ASELS", s: "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş." };
+  assert.equal(eslesir(h, ""), true);
+  assert.equal(eslesir(h, "ase"), true);
+  assert.equal(eslesir(h, "elektronik"), true);
+  assert.equal(eslesir(h, "roket"), false);
 });

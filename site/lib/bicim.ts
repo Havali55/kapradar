@@ -311,3 +311,15 @@ export function yilda(yil: number): string {
   if (onlar) return `${yil}${ONLAR_DE[onlar]}`;
   return `${yil}'de`;
 }
+
+/** Tez cümlesinde tutar: "375,5 milyar TL", "92,4 milyon TL". */
+export function uzunTl(tl: number): string {
+  if (tl >= 1e9) return `${sayi(tl / 1e9, 1)} milyar TL`;
+  if (tl >= 1e6) return `${sayi(tl / 1e6, 1)} milyon TL`;
+  return `${sayi(tl, 0)} TL`;
+}
+
+/** "yıllık cirosunun …": 1 ve üstünde "1,7 katı", altında "%12,3'ü". */
+export function cirosununKati(oran: number): string {
+  return oran >= 1 ? `${sayi(oran, 1)} katı` : yuzdeIyelik(oran, 1);
+}
