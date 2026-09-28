@@ -55,6 +55,13 @@
   --p-mega: #a6cbf1;
   --p-onemli: #4a8fd6;
   --p-rutin: #7a7466;
+
+  /* Marka şeması (2026-09-28): logo ve üst bant. Marka mavisi yalnız
+     radar işareti ve aktif sayfa noktasında. */
+  --marka: #2952cc;
+  --bant-pasif: #4a4638;
+  --serit-nokta: #d6cfb8;
+  --serit-yazi: #6b6555;
 }
 
 * {
@@ -112,8 +119,9 @@ a:hover {
   flex: none;
 }
 
-/* Başlık: logo · hisse arama · menü. Yükseklik masaüstünde 62 px sabit;
-   akışın süzgeç çubuğu `top: 62px` ile bunun altına yapışıyor. */
+/* Üst bant (marka şeması "00 · Üst bant"): solda logo, sağda gezinme,
+   arama yok. Yükseklik masaüstünde 68 px sabit; akışın süzgeç çubuğu
+   `top: 68px` ile bunun altına yapışıyor. */
 .bas {
   position: sticky;
   top: 0;
@@ -126,15 +134,16 @@ a:hover {
   max-width: var(--en);
   margin: 0 auto;
   padding: 0 24px;
-  height: 62px;
+  height: 68px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 24px;
 }
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--ink);
   white-space: nowrap;
   flex: none;
@@ -144,25 +153,27 @@ a:hover {
   color: var(--ink);
 }
 .logo svg {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  color: var(--marka);
 }
 .logo-ad {
   font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.03em;
+  font-size: 19px;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 .logo-ad i {
   font-style: normal;
-  color: var(--mavi);
+  color: var(--marka);
+  padding: 0 0.12em;
 }
 
-/* Hisse arama (başlıkta ve ana sayfada büyük hâli). */
+/* Hisse arama (ana sayfa). */
 .arama {
   position: relative;
-  flex: 1 1 auto;
   min-width: 0;
-  max-width: 420px;
 }
 .arama input {
   width: 100%;
@@ -267,23 +278,39 @@ a:hover {
   color: var(--mut);
 }
 
-/* Site menüsü; telefonda düğmeyle açılır. */
+/* Site menüsü; telefonda düğmeyle açılır. Aktif sayfa logodaki radar
+   noktasının küçük tekrarıyla işaretli; pasiflerde nokta yeri boş
+   durur, yazılar kaymaz. */
 .site-nav {
   display: flex;
-  gap: 22px;
-  margin-left: auto;
-  font-size: 14px;
+  align-items: center;
+  gap: 30px;
+  font-size: 16px;
 }
 .site-nav a {
-  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--bant-pasif);
   white-space: nowrap;
 }
+.site-nav a::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
 .site-nav a:hover {
-  color: var(--mavi-kk);
+  color: var(--ink);
+  text-decoration: none;
 }
 .site-nav a[aria-current="page"] {
   color: var(--ink);
   font-weight: 600;
+}
+.site-nav a[aria-current="page"]::before {
+  background: var(--marka);
 }
 .menu-dugme {
   display: none;
@@ -323,16 +350,27 @@ a:hover {
   color: #fbf7ec;
 }
 
-/* Ibare: bugünkü iki bandın (UYARI + PİYASA) yerine tek satır. */
+/* Ibare: bandın altında noktalı şerit, tek satır. Yazının arkası zemin
+   rengi, noktalar yalnız boşlukta. */
 .ibare {
-  font-size: 12px;
-  color: var(--mut);
+  font-size: 13px;
+  color: var(--serit-yazi);
+  background-color: var(--zem);
+  background-image: radial-gradient(var(--serit-nokta) 1px, transparent 1px);
+  background-size: 14px 14px;
   border-bottom: 1px solid var(--ken-2);
 }
 .ibare-ic {
   max-width: var(--en);
   margin: 0 auto;
-  padding: 6px 24px;
+  padding: 0 24px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+.ibare-ic span {
+  background: var(--zem);
+  padding-right: 6px;
 }
 .ibare-dar {
   display: none;
@@ -354,20 +392,23 @@ a:hover {
   gap: 8px 24px;
 }
 
-/* 720 px: akışın süzgeç çubuğu sticky'lığı burada bırakıyor. Başlık da
-   aynı eşikte sarılıyor; farklı olsaydı arada sarılmış başlığın altına
-   62 px'e yapışan çubuk binerdi. */
+/* 720 px: akışın süzgeç çubuğu sticky'lığı burada bırakıyor. Menü de
+   aynı eşikte düğmeye iniyor; farklı olsaydı arada açılmış menünün altına
+   68 px'e yapışan çubuk binerdi. */
 @media (max-width: 720px) {
   .bas-ic {
     flex-wrap: wrap;
     height: auto;
-    padding: 10px 16px;
-    gap: 10px 12px;
+    min-height: 60px;
+    padding: 0 16px;
+    gap: 0 12px;
   }
-  .arama {
-    order: 3;
-    flex-basis: 100%;
-    max-width: none;
+  .logo svg {
+    width: 28px;
+    height: 28px;
+  }
+  .logo-ad {
+    font-size: 17px;
   }
   .arama kbd {
     display: none;
@@ -382,26 +423,35 @@ a:hover {
   }
   .site-nav.acik {
     display: flex;
-    order: 4;
+    flex-wrap: wrap;
     flex-basis: 100%;
-    gap: 18px;
-    padding: 4px 0 2px;
+    gap: 10px 22px;
+    padding: 2px 0 14px;
   }
   .menu-dugme {
-    display: inline-block;
-    margin-left: auto;
-    font: 13px var(--yazi-sans), system-ui, sans-serif;
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 4px;
+    font: 12px var(--yazi-mono), ui-monospace, monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--ink);
-    background: var(--kart);
-    border: 1px solid var(--ken);
-    border-radius: 7px;
-    padding: 5px 12px;
+    background: none;
+    border: 0;
     cursor: pointer;
   }
   .menu-dugme[aria-expanded="true"] {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: #fff;
+    color: var(--marka);
+  }
+  /* Telefonda şerit noktasız, yazı kısa. */
+  .ibare {
+    font-size: 12px;
+    background-image: none;
+  }
+  .ibare-ic {
+    height: auto;
+    padding-block: 9px;
   }
   .ibare-ic,
   .altbilgi-ic {
@@ -675,7 +725,7 @@ a:hover {
 /* Süzgeç: kutusuz, zemine yapışık; v3'ün hap süzgeçleri. */
 .akis-suzgec {
   position: sticky;
-  top: 62px;
+  top: 68px;
   z-index: 30;
   background: var(--zem);
   border-bottom: 1px solid var(--ken);
