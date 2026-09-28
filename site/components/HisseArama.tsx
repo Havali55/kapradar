@@ -19,9 +19,9 @@ type Props = {
 };
 
 /**
- * Hisse arama kutusu: WAI-ARIA combobox + listbox. Seçim hisse sayfasına
- * gider. Liste derleme anında sayfaya gömülü (`hisseSecenekleriGetir`),
- * ağ isteği yok.
+ * Hisse arama kutusu (ana sayfa): WAI-ARIA combobox + listbox. Seçim hisse
+ * sayfasına gider. Liste derleme anında sayfaya gömülü
+ * (`hisseSecenekleriGetir`), ağ isteği yok.
  */
 export default function HisseArama({ hisseler, buyuk = false, kisayol = false }: Props) {
   const router = useRouter();
@@ -33,9 +33,8 @@ export default function HisseArama({ hisseler, buyuk = false, kisayol = false }:
   const sonuc = hisseEsle(hisseler, sorgu);
   const gorunur = acik && sorgu.trim() !== "";
 
-  // "/" her sayfada bu kutuya odaklanır. Sayfanın kendi araması varsa
-  // (akış süzgeci) onun dinleyicisi yakalama aşamasında önce çalışıp
-  // olayı işaretler; burada geri çekiliriz.
+  // "/" bu kutuya odaklanır (ana sayfa). Aynı sayfada başka bir arama
+  // dinleyicisi olayı önce işaretlediyse geri çekiliriz.
   useEffect(() => {
     if (!kisayol) return;
     const tus = (e: KeyboardEvent) => {

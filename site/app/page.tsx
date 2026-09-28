@@ -61,7 +61,7 @@ export default async function AnaSayfa() {
             aylık cirosuna bölüyoruz. Tahmin yok; her sayının yanında bildirimin kendi
             cümlesi var.
           </p>
-          <HisseArama hisseler={hisseler} buyuk />
+          <HisseArama hisseler={hisseler} buyuk kisayol />
           <div className="hizli">
             <span>En çok iş duyuranlar:</span>
             {hisseler.slice(0, 5).map((h) => (

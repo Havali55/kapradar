@@ -3,7 +3,6 @@ import { IBM_Plex_Sans, IBM_Plex_Serif, JetBrains_Mono } from "next/font/google"
 import Link from "next/link";
 import "./globals.css";
 import Baslik from "@/components/Baslik";
-import { hisseSecenekleriGetir } from "@/lib/veri";
 
 // Yazı tipleri build anında indirilip kendi sunucumuzdan veriliyor:
 // CDN çağrısı yok, layout kayması yok.
@@ -40,21 +39,15 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// Başlıktaki arama listesi veritabanından geliyor; statik sayfalarda da
-// (film, metodoloji) saatlik tazelensin, yoksa yeni hisse bir sonraki
-// yayına kadar aranamaz.
-export const revalidate = 3600;
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const hisseler = await hisseSecenekleriGetir();
   return (
     <html lang="tr" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
       <body>
-        <Baslik hisseler={hisseler} />
+        <Baslik />
         {children}
         <footer className="altbilgi">
           <div className="altbilgi-ic">
