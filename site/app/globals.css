@@ -2235,15 +2235,6 @@ a:hover {
   border: 0;
   border-radius: 2px;
 }
-.lejant i.halka-lejant {
-  width: 9px;
-  height: 9px;
-  border: 2px solid;
-  border-radius: 50%;
-}
-.grafik a:focus-visible .cikis {
-  stroke-width: 3.5px;
-}
 /* Dikey ölçek seçimi: ciro işleri ezdiğinde. Koyu plakanın üstünde. */
 .olcek-sec {
   display: flex;
@@ -2275,16 +2266,6 @@ a:hover {
 }
 .grafik .sag-ust {
   fill: var(--plaka-yazi);
-}
-.grafik .uc-oran {
-  fill: var(--plaka-yazi);
-  font-weight: 600;
-  font-size: 12px;
-}
-.grafik .oran-ayrac {
-  fill: none;
-  stroke: var(--plaka-mut);
-  stroke-width: 1;
 }
 .grafik .uc-etiket {
   font-weight: 600;

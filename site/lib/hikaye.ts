@@ -133,22 +133,6 @@ export function gunDegisimi<T extends { t: number }>(
   };
 }
 
-/**
- * Serinin 12 ayı dolup hesaptan çıkan işleri, çıktıkları günün sırasıyla:
- * mavi çizginin her inişinin sebebi. Aynı gün birden çok iş çıkabilir.
- */
-export function cikisNoktalari<T extends { t: number }>(
-  seri: readonly SeriNoktasi[],
-  isler: readonly T[],
-): { i: number; cikan: T[] }[] {
-  const sonuc: { i: number; cikan: T[] }[] = [];
-  for (let i = 1; i < seri.length; i++) {
-    const { cikan } = gunDegisimi(seri, i, isler);
-    if (cikan.length) sonuc.push({ i, cikan });
-  }
-  return sonuc;
-}
-
 export type SeriIliskisi = "ustte" | "altta" | "karisik" | "ciro-yok";
 
 /**
