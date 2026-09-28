@@ -31,6 +31,15 @@ kaynaklarıyla listeleniyor. Metinde bunlar veriden ayrı tutuldu.
 
   Sakin ve spekülatif aylarda, fonların yoğun tuttuğu ve tutmadığı
   hisselerde, iki yılın ikisinde de görünüyor.
+
+  **Düzeltme (2026-09-28, K1):** "aynı pencerede yapılan başka
+  açıklamalar" arındırması ortalama CAR3 için bu notta koşulmamıştı (§4
+  tablosunda hücre "—"). Cümle yalnız hacim için doğruydu. K1'de koşuldu:
+  C'de (bu notun örneklemi) sıkı temiz alt kümede CAR3 +0,43 puan, t 1,70,
+  yani sonuçsuz. 2020–2026 birlikte +0,71 puan, t 3,77. Küçülmenin çoğu,
+  aynı şirketin birkaç gün arayla yaptığı ikinci yeni iş duyurusunun
+  tepkisinin aynı pencereye düşmesinden geliyor. Bkz.
+  `2026-09-28-k1-rejim-sinamasi.md` §4 H5 ve §7.
 - **Zayıfladı.** Bulgu 2'nin "bilgi resmî açıklamadan önce sızıyor"
   yorumu. Ön-hacmin yarıdan fazlası şirketin önceki günlerdeki kendi KAP
   açıklamalarıyla örtüşüyor, kalanı anlamlı değil.
@@ -320,6 +329,11 @@ duruyor.
 "büyük haber daha çok hacim yaratıyor mu" ya da "tahta türü ilişkiyi
 değiştiriyor mu" olduğunda örneklemin gücü yetmiyor. Bulgu 12, bu dönemin
 fon ve manipülasyon dinamiğine bağlı görünüyor.
+
+**Güncelleme (2026-09-28):** Bu paragrafın boşluğu K1 ile dolduruldu.
+Hacim artışı ve pozitif ortalama tepki 2020–2024'ün iki rejiminde de
+ölçüldü; ayrıntı `2026-09-28-k1-rejim-sinamasi.md`. Aşağıdaki metin 27.09
+bilgisiyle yazıldı.
 
 **Başka bir rejime genelleme için hayır.** Seçim öncesi negatif reel faiz
 ve bireysel yatırımcı akını döneminden tek gözlem yok. O dönemde

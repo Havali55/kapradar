@@ -154,6 +154,38 @@
            pointer-events:none; transition:opacity .12s; z-index:5; }
   .gr-c:hover .ipucu, .gr-c:focus-visible .ipucu { opacity:1; }
 
+  /* Rejim grafiği (28.09.2026): nokta + %95 aralığı, tek seri, tek renk
+     (--mavi, yukarıdaki doğrulanmış renk). İki panel iki ayrı birim; tek
+     eksende birleştirilmiyor. */
+  .rj { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:26px 32px; }
+  .rj-bas { font-size:13px; font-weight:600; margin-bottom:12px; }
+  .rj-bas span { font-weight:400; color:var(--mut-2); margin-left:4px; }
+  .rj-gr { display:grid; grid-template-columns:30px 1fr; gap:0 8px; }
+  .rj-y { position:relative; height:180px; font-family:var(--mono); font-size:10px; color:var(--mut-3);
+          font-variant-numeric:tabular-nums; }
+  .rj-y span { position:absolute; right:0; transform:translateY(50%); }
+  .rj-alan { position:relative; height:180px; }
+  .rj-kil { position:absolute; left:0; right:0; border-top:1px dashed var(--ken); }
+  .rj-sifir { border-top:1px solid var(--ken-3); }
+  .rj-sutlar { position:absolute; inset:0; display:grid; grid-template-columns:repeat(4, 1fr); }
+  .rj-sut { position:relative; cursor:default; }
+  .rj-ara { position:absolute; left:50%; width:2px; transform:translateX(-50%); background:var(--mavi); border-radius:1px; }
+  .rj-ara::before, .rj-ara::after { content:""; position:absolute; left:50%; width:10px; height:2px;
+                                     transform:translateX(-50%); background:var(--mavi); border-radius:1px; }
+  .rj-ara::before { top:0; } .rj-ara::after { bottom:0; }
+  .rj-nok { position:absolute; left:50%; width:11px; height:11px; border-radius:50%; background:var(--mavi);
+            transform:translate(-50%, 50%); box-shadow:0 0 0 2px var(--kart); transition:transform .12s; }
+  .rj-sut:hover .rj-nok, .rj-sut:focus-visible .rj-nok { transform:translate(-50%, 50%) scale(1.25); }
+  /* Gizli ipucu yer kaplamasın: opacity ile saklanan tek satırlık ipucu
+     dar ekranda figürü yatay taşırıyordu. */
+  .rj-sut .ipucu { display:none; bottom:auto; top:-8px; transform:translate(-50%, -100%); }
+  .rj-sut:hover .ipucu, .rj-sut:focus-visible .ipucu { display:block; opacity:1; }
+  .rj-sut:first-child .ipucu { left:0; transform:translate(0, -100%); }
+  .rj-sut:last-child .ipucu { left:auto; right:0; transform:translate(0, -100%); }
+  .rj-x { display:grid; grid-template-columns:repeat(4, 1fr); margin:8px 0 0 38px; font-family:var(--mono);
+          font-size:11px; font-weight:600; color:var(--ink); text-align:center; }
+  .rj-x i { display:block; font-style:normal; font-weight:400; font-size:10px; color:var(--mut-3); margin-top:2px; }
+
   .not { border-left:3px solid var(--mavi); background:var(--mavi-z); border-radius:0 8px 8px 0; padding:15px 18px; }
   .not p { color:var(--mavi-kk); max-width:66ch; }
   .not .et { color:var(--mavi-kk); opacity:0.75; }
@@ -223,7 +255,7 @@
 
   <main class="govde">
 
-    <div class="ust-et">ARAŞTIRMA NOTU · SÜRÜM 2.3 · 27 EYLÜL 2026</div>
+    <div class="ust-et">ARAŞTIRMA NOTU · SÜRÜM 2.4 · 28 EYLÜL 2026</div>
     <h1>Bir KAP bildirimi ne kadar büyük? Skorun kurulması ve sınanması</h1>
 
     <div class="yazarlar">
@@ -239,15 +271,15 @@
       <h4>Özet bulgular</h4>
       <ol>
         <li><strong>Bildirimler gerçekten materyal olay.</strong> Bildirim günü işlem hacmi normalin <strong>%47,3 üzerine</strong> çıkıyor (t = +10,10) ve etki beş günde sönüyor. <em>27.09.2026:</em> piyasanın genel hacmine göre düzeltildiğinde, aynı pencerede başka KAP açıklaması olan olaylar çıkarıldığında ve hisse + hafta kümelendiğinde de ayakta (+%30, t = 6,9; iki yılın beş yarıyılının beşinde).</li>
-        <li><strong>Hacim bildirimden önce yükseliyor, ama bunun çoğu şirketin kendi önceki açıklamaları.</strong> t₀−4 ile t₀−1 arasında hacim %10–14 fazla. <em>27.09.2026:</em> şirketin önceki beş günde başka KAP açıklaması olmayan olaylarda fark +%3,6'ya iniyor ve anlamlı değil (t = 1,1). “Bilgi resmî açıklamadan önce sızıyor” yorumu bu veriyle desteklenmiyor.</li>
+        <li><strong>Hacim bildirimden önce yükseliyor, ama bunun çoğu şirketin kendi önceki açıklamaları.</strong> t₀−4 ile t₀−1 arasında hacim %10–14 fazla. <em>27.09.2026:</em> şirketin önceki beş günde başka KAP açıklaması olmayan olaylarda fark +%3,6'ya iniyor ve anlamlı değil (t = 1,1). “Bilgi resmî açıklamadan önce sızıyor” yorumu bu veriyle desteklenmiyor. <em>28.09.2026:</em> 2020–2024'ün iki para rejiminde ön hacim artışı hiç yok; yedi yılın temiz olaylarında −%0,8 (t = −0,3).</li>
         <li><strong>Skor bir getiri tahmini değil — ve gerçekten de değil.</strong> S ile işaretli anormal getiri arasında hiçbir ilişki yok (güncel ölçüyle kümelenmiş t = +0,57, p = 0,57). İddia ile veri burada tam örtüşüyor.</li>
         <li><strong>Skorun hacimle ilişkisi, yalnızca temiz tahtalarda var.</strong> Havuzlanmış örneklemde eşiği geçmiyor (t = +1,05); ama spekülatif tahtalar ayrıştırılınca S'nin etkisi anlamlı hâle geliyor (<strong>t = +2,35</strong>). Katsayı temiz tahtada +0,083, spekülatif tahtada −0,039 — <strong>ölçü, oynatılan tahtalarda kırılıyor.</strong></li>
         <li><strong>Büyük haber, küçük haberden ölçülebilir biçimde daha çok fiyatlanmıyor.</strong> S ≥ 3 olanların 3 günlük tepkisi +%1,03, S &lt; 1 olanlarınki +%1,69 ve ikisi de sıfırdan ayrılamıyor (kümelenmiş t = 1,60 ve 1,50).</li>
-        <li><strong>Tedbirli tahtada tepki hem büyük hem aşağı yönlü — bu bulgu güncellemeyle değişti.</strong> Gerçek devre kesici kayıtlarıyla her ek devre kesici günü mutlak hareketi büyütüyor (t = +2,92) ve ortalama tepkiyi aşağı çekiyor (t = −2,59). İlk sürüm, vekil ölçüyle “yön rastgele” diyordu; kriz dışlandığında ve skor kontrol edildiğinde de yeni sonuç ayakta. Mekanizma bilinmiyor. <em>27.09.2026:</em> etki, sonradan tasfiye edilen fonların yoğun tuttuğu hisselerde toplanıyor (10 hisse); oynak tahtaların genel bir özelliği olarak okunmamalı.</li>
+        <li><strong>Tedbirli tahtada tepki hem büyük hem aşağı yönlü — bu bulgu güncellemeyle değişti.</strong> Gerçek devre kesici kayıtlarıyla her ek devre kesici günü mutlak hareketi büyütüyor (t = +2,92) ve ortalama tepkiyi aşağı çekiyor (t = −2,59). İlk sürüm, vekil ölçüyle “yön rastgele” diyordu; kriz dışlandığında ve skor kontrol edildiğinde de yeni sonuç ayakta. Mekanizma bilinmiyor. <em>27.09.2026:</em> etki, sonradan tasfiye edilen fonların yoğun tuttuğu hisselerde toplanıyor (10 hisse). <em>28.09.2026:</em> yedi yıllık veriyle ikiye ayrıldı. Oynak tahtada tepkinin <strong>daha zayıf</strong> olması genel: 2020–2023'ün gevşek para döneminde de var ve anlamlı. Tepkinin <strong>eksiye dönmesi</strong> ise yalnız 2024–26'ya ait ve fon yoğunluğuyla büyüyor.</li>
         <li><strong>%1 tabanı veriyle çelişiyordu — düzeltildi.</strong> Formül r &lt; %1 olan 61 bildirime 0,00 veriyordu; oysa bu bildirimlerde hacim yine <strong>%33,4 artıyor</strong> (t = +3,39) ve taban üstündekilerden ayırt edilemiyor (p = 0,51). Taban 22.09.2026'da <strong>%0,25</strong>'e indirildi, kademe eşikleri de ölçek kaymasını telafi edecek biçimde 3,5/2,5'e taşındı.</li>
         <li><strong>İlk yılın en sağlam bulgusu, bildirim yorgunluğu, örneklem dışında tekrarlanmadı.</strong> İlk yılda sık bildirim yapan şirketlerde tepki sönüyordu (kümelenmiş t = −2,29); önceki 12 ayda aynı ölçü t = −0,41. Arayüzdeki sıklık etiketi yalnız olguyu söylüyor, tepki hakkında iddia taşımıyor.</li>
         <li><strong>Çok iş duyuranların üst üçte biri sonra gerçekten büyüdü; ilişki zayıf.</strong> 2025'te cirosuna oranla en çok iş duyuran üçte birin 2026 ilk yarı reel ciro büyümesinin medyanı +%20,8; alttaki iki grup +%4,3 ve −%5,4. Sıra korelasyonu 0,24 (t = 1,91) ve %5'te anlamlılığı tanım seçimine duyarlı. Bkz. V · Söz ve gerçek.</li>
-        <li><strong>Bütün bulgular tek bir para rejimine ait.</strong> Örneklem Eylül 2024 – Eylül 2026: politika faizi %50'den %37'ye, borsa dolar bazında −%11, bireysel pay yatırımcısı 8,6 milyondan 6,5 milyona. Negatif reel faizli seçim öncesi dönemden (2020 – Mayıs 2023) tek gözlem yok; bulgular oraya taşınamaz. Bkz. “Arındırma sınavları” ve Sınırlar.</li>
+        <li><strong>Ana bulgular dönemin ürünü değil (28.09.2026).</strong> Aynı tanımlar ve aynı kod, Borsa İstanbul'un resmî günlük bültenleriyle 2020–2026'nın üç para rejimine uygulandı (3.091 olay). Bildirim günü hacim artışı her rejimde var: gevşek para +%28,9, sıkılaştırma +%22,0, 2024–26 +%38,8. Ortalama 3 günlük tepki de pozitif, ama büyüklüğü rejime bağlı: seçim öncesi gevşek parada 2024–26'nın iki katından fazla. Fonlarla yükseltilen niş kağıtlar çıkarıldığında 2024–26 bulguları duruyor. Bkz. <a href="#rejim">Yedi yıl, üç para rejimi</a>.</li>
       </ol>
     </div>
 
@@ -481,7 +513,7 @@
           </table>
         </div>
         <p><strong>İki başlık bulgu çöktü: bildirim yorgunluğu (Bulgu 7) ve tahtaya göre ayrışma (Bulgu 10).</strong> İkisi de ilk yılın içinde birden çok tanım ve eşik denenerek kurulmuştu; sınırlar bölümü bunu zaten itiraf ediyordu, örneklem dışı sınama bedelini gösterdi. Sitede ikisine dayanan iddialar kaldırıldı: sıklık etiketi artık yalnız olguyu söylüyor, tedbirli tahta uyarısı yalnız iki yılda da tekrarlanan aşağı yönlü tepkiye dayanıyor.</p>
-        <p style="margin-bottom:0;"><strong>Tekrarlananlar ürünün asıl iddiaları:</strong> bildirimler materyal, bilgi resmî açıklamadan önce hareket ediyor, büyüklük skoru bir getiri tahmini değil, tedbirli tahtada ortalama tepki aşağı yönlü. Bir istisna not edilmeli: örneklem dışı yılda S ile <em>1 günlük</em> tepki arasında zayıf pozitif bir ilişki var (r = +0,146, t = +3,20); ilk yılda yoktu (t = +1,44) ve iki yılda da üçüncü günde kayboluyor.</p>
+        <p style="margin-bottom:0;"><strong>Tekrarlananlar ürünün asıl iddiaları:</strong> bildirimler materyal, büyüklük skoru bir getiri tahmini değil, tedbirli tahtada ortalama tepki aşağı yönlü. <em>(28.09.2026 düzeltmesi: bu cümlenin ilk hâli “bilgi resmî açıklamadan önce hareket ediyor” da diyordu. Bulgu 2'nin 27.09 düzeltmesinden sonra kalmıştı ve 2020–2024 verisiyle çelişiyor; çıkarıldı.)</em> Bir istisna not edilmeli: örneklem dışı yılda S ile <em>1 günlük</em> tepki arasında zayıf pozitif bir ilişki var (r = +0,146, t = +3,20); ilk yılda yoktu (t = +1,44) ve iki yılda da üçüncü günde kayboluyor.</p>
         <p style="margin:12px 0 0;"><strong>Sınırı (27.09.2026):</strong> iki yıl da aynı sıkı para dönemine ait. Bu sınama “bir yıl sonra da tutuyor mu”yu ölçtü, “başka bir piyasa rejiminde tutuyor mu”yu ölçmedi. Bkz. “Arındırma sınavları ve piyasa rejimi”.</p>
       </div>
 
@@ -734,7 +766,98 @@
       </div>
       <p>Temiz çıkanlar da not edilmeli: ±%10 fiyat marjını aşan kapanıştan kapanışa hareket (bedelsiz, bölünme) 89.061 hisse-gününde 46 kez görülüyor ve CAR pencerelerinden yalnız birine giriyor; tavan serisi tepkiyi 3 günden taşırmıyor (tavan gören 102 olayda t₀+3…+5 arasında devam yok, −%0,98, t = −1,0); aynı haftaya yığılan olaylar (Mart 2025 ve Eylül 2026 şokları dahil) sonuçları üretmiyor.</p>
       <p><strong>Fon kaynaklı hacim.</strong> Hacmin ilgiyi ölçtüğü varsayımı, fonların kendi alımlarıyla hacim yarattığı tahtalarda zayıflar. Örneklemde iki sık bildirimci bu türden: OZATD (29 yeni iş bildirimi; tasfiye fonlarındaki pozisyonu 27 günlük işlem hacmi) ve ODINE (24 bildirim; 10 günlük hacim). Fonların yoğun tuttuğu hisselerde bildirim günü hacim artışı daha düşük (+%24, diğerlerinde +%32–34) ama yine anlamlı; Bulgu 1 bu hisseler çıkarıldığında da duruyor. Bu hisselerde bir yeni iş duyurusunun “Mega iş” kademesi alması, işin büyüklüğü hakkında doğru bir ölçü; tahtanın sağlığı hakkında bir şey söylemez.</p>
-      <p><strong>Piyasa rejimi.</strong> Örneklem (Eylül 2024 → Eylül 2026), TCMB politika faizinin %50'den %37'ye indiği yüksek reel faiz döneminde. XU100 TL bazında +%27,5, dolar bazında −%11,3; yıllık TÜFE %44'ten %32'ye. MKK'ya göre pay senedi bakiyeli yatırımcı sayısı 2023'teki 8,6 milyonluk zirveden 2025 sonunda 6,5 milyona indi. Seçim sonrası sıkılaştırmanın ilk yılında (Haziran 2023 – Haziran 2024) borsa dolar bazında hâlâ güçlü yükseliyordu; durgunluk faiz %50'ye çıktıktan sonra başladı ve örneklem tam bu döneme denk geliyor. Borsa İstanbul'un günlük pay piyasası bültenlerine göre (2020 → 2026, 1.690 gün) reel işlem hacmi seçimden hemen sonra zirve yaptı (2023 ikinci yarısı, bugünün fiyatlarıyla günde ~419 milyar TL), dibi faiz %50'ye çıktıktan sonraki bir yılda gördü (2024 ortası – 2025 ortası, ~200 milyar TL) ve 2026'da toparlandı. Piyasa hacmi yarıyıllar arasında ~1,5 kat oynarken bildirim günü hacim artışı bu dalgayı izlemiyor. Borsa İstanbul'un kendi kayıtlarıyla analiz yılı (2025-09 → 2026-09) sınama yılından daha spekülatif (seans başına pay bazında devre kesici 54 / 39), ama seçim sonrası ralli yılından (68) daha az. Aynı ölçülerle ana bulgular sakin ve spekülatif aylarda değişmiyor. <strong>Negatif reel faizli, bireysel yatırımcı akınlı seçim öncesi dönemden (2020 – Mayıs 2023) örneklemde tek gözlem yok; bulguların oraya taşınıp taşınmayacağı bilinmiyor.</strong> O dönemin arşivi ücretsiz katmanda hazırlanıyor (<code>scripts/rejim_arsivi.py</code>).</p>
+      <p><strong>Piyasa rejimi.</strong> Örneklem (Eylül 2024 → Eylül 2026), TCMB politika faizinin %50'den %37'ye indiği yüksek reel faiz döneminde. XU100 TL bazında +%27,5, dolar bazında −%11,3; yıllık TÜFE %44'ten %32'ye. MKK'ya göre pay senedi bakiyeli yatırımcı sayısı 2023'teki 8,6 milyonluk zirveden 2025 sonunda 6,5 milyona indi. Seçim sonrası sıkılaştırmanın ilk yılında (Haziran 2023 – Haziran 2024) borsa dolar bazında hâlâ güçlü yükseliyordu; durgunluk faiz %50'ye çıktıktan sonra başladı ve örneklem tam bu döneme denk geliyor. Borsa İstanbul'un günlük pay piyasası bültenlerine göre (2020 → 2026, 1.690 gün) reel işlem hacmi seçimden hemen sonra zirve yaptı (2023 ikinci yarısı, bugünün fiyatlarıyla günde ~419 milyar TL), dibi faiz %50'ye çıktıktan sonraki bir yılda gördü (2024 ortası – 2025 ortası, ~200 milyar TL) ve 2026'da toparlandı. Piyasa hacmi yarıyıllar arasında ~1,5 kat oynarken bildirim günü hacim artışı bu dalgayı izlemiyor. Borsa İstanbul'un kendi kayıtlarıyla analiz yılı (2025-09 → 2026-09) sınama yılından daha spekülatif (seans başına pay bazında devre kesici 54 / 39), ama seçim sonrası ralli yılından (68) daha az. Aynı ölçülerle ana bulgular sakin ve spekülatif aylarda değişmiyor. <em>27.09'daki bu paragraf, seçim öncesi dönemden tek gözlem olmadığını yazıyordu; o boşluk bir gün sonra aşağıdaki sınamayla dolduruldu.</em></p>
+
+      <h4 id="rejim">Yedi yıl, üç para rejimi <span class="cip cip-m" style="margin-left:6px;">28.09.2026</span> <span class="cip cip-y" style="margin-left:4px;">ANA BULGULAR TEKRARLANDI</span></h4>
+      <p>Buraya kadarki bütün sınavlar Eylül 2024 – Eylül 2026'ya aitti: yüksek reel faiz, bireysel katılımın geri çekildiği, fonların düşük dolaşımlı kağıtları yükselttiği bir dönem. Soru, bulguların bu dönemin ürünü olup olmadığı. Sınav, <strong>sonuçlara bakılmadan önce</strong> hipotezleri, tanımları ve karar kurallarıyla birlikte commit'lenen bir ön kayda göre yapıldı (<code>docs/arastirma/2026-09-28-k1-on-kayit.md</code>). Veriyi incelerken bulunan iki kusur da sonuçlar hesaplanmadan önce ön kayda sapma olarak yazıldı: bülten işlem görmeyen günde kapanışı 0 yazıyor, günlük fiyat marjı da 13 Mart 2020'ye kadar ±%20'ydi.</p>
+      <ul>
+        <li><strong>Veri:</strong> Borsa İstanbul'un günlük pay piyasası bültenleri, 2020-01 → 2026-09, 1.690 işlem günü, 698 pay. Borsadan sonradan çıkmış paylar dahil, yani hayatta kalan yanlılığı yok. KAP'ta konusu “Yeni İş İlişkisi” olan 3.091 tekil olay, 210 pay.</li>
+        <li><strong>Tanımlar:</strong> Değişmedi, üretim kodundan içe aktarılıyor: t₀, piyasa modeli, beta küçültmesi ve hacim penceresi. Hacim pay adediyle ölçüldü, TL ile değil. 2022'nin aylık %6'yı aşan enflasyonunda TL tabanı anormal hacmi yalnız enflasyon yüzünden ~0,10 büyütürdü.</li>
+        <li><strong>Kaynak doğrulaması:</strong> 2024–26 hem bu bültenle hem sitenin kullandığı hatla ölçüldü. Olay bazında tepki korelasyonu <strong>0,996</strong>, ortalama tepki +0,72 / +0,73 puan, hacim +%38,8 / +%38,1. Sitenin yayınladığı sayılar bağımsız bir kaynakla teyit edildi.</li>
+      </ul>
+      <figure>
+        <div class="gr-bas">Dört dönem, aynı ölçü: bildirimin hacim ve fiyat etkisi</div>
+        <div class="gr-alt">Nokta dönem ortalaması, dikey çizgi %95 güven aralığı (pay ve hafta düzeyinde iki yönlü kümelenmiş standart hata). A1 pandemi ve bireysel akın (2020–21) · A2 seçim öncesi ralli (2022 – Mayıs 2023) · B sıkılaştırma (Haziran 2023 – Ağustos 2024) · C bu notun önceki bütün bulgularının dönemi (Eylül 2024 – Eylül 2026). Penceresine sermaye işlemi giren olaylar hariç.</div>
+        <div class="rj">
+          <div>
+            <div class="rj-bas">Bildirim günü hacmi <span>normal seviyeden sapma</span></div>
+            <div class="rj-gr">
+              <div class="rj-y"><span style="bottom:100%;">%50</span><span style="bottom:50%;">%25</span><span style="bottom:0;">%0</span></div>
+              <div class="rj-alan">
+                <div class="rj-kil" style="bottom:100%;"></div>
+                <div class="rj-kil" style="bottom:50%;"></div>
+                <div class="rj-kil rj-sifir" style="bottom:0;"></div>
+                <div class="rj-sutlar">
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">A1 · +%29,1 · %95: +12,5 … +48,2 · n 271</span><span class="rj-ara" style="bottom:25.0%; height:71.4%;"></span><span class="rj-nok" style="bottom:58.2%;"></span></div>
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">A2 · +%28,7 · %95: +17,2 … +41,4 · n 535</span><span class="rj-ara" style="bottom:34.4%; height:48.4%;"></span><span class="rj-nok" style="bottom:57.4%;"></span></div>
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">B · +%22,0 · %95: +8,3 … +37,5 · n 755</span><span class="rj-ara" style="bottom:16.6%; height:58.4%;"></span><span class="rj-nok" style="bottom:44.0%;"></span></div>
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">C · +%38,8 · %95: +29,6 … +48,6 · n 1.119</span><span class="rj-ara" style="bottom:59.2%; height:38.0%;"></span><span class="rj-nok" style="bottom:77.6%;"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="rj-x"><span>A1<i>2020–21</i></span><span>A2<i>2022–23</i></span><span>B<i>2023–24</i></span><span>C<i>2024–26</i></span></div>
+          </div>
+          <div>
+            <div class="rj-bas">Ortalama 3 günlük tepki <span>piyasaya göre, puan</span></div>
+            <div class="rj-gr">
+              <div class="rj-y"><span style="bottom:100%;">+3</span><span style="bottom:71.43%;">+2</span><span style="bottom:42.86%;">+1</span><span style="bottom:14.29%;">0</span></div>
+              <div class="rj-alan">
+                <div class="rj-kil" style="bottom:100%;"></div>
+                <div class="rj-kil" style="bottom:71.43%;"></div>
+                <div class="rj-kil" style="bottom:42.86%;"></div>
+                <div class="rj-kil rj-sifir" style="bottom:14.29%;"></div>
+                <div class="rj-sutlar">
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">A1 · +1,27 puan · %95: +0,44 … +2,11 · n 345</span><span class="rj-ara" style="bottom:26.86%; height:47.71%;"></span><span class="rj-nok" style="bottom:50.57%;"></span></div>
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">A2 · +1,88 puan · %95: +1,02 … +2,74 · n 619</span><span class="rj-ara" style="bottom:43.43%; height:49.14%;"></span><span class="rj-nok" style="bottom:68.0%;"></span></div>
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">B · +0,85 puan · %95: −0,11 … +1,80 · n 843</span><span class="rj-ara" style="bottom:11.14%; height:54.29%;"></span><span class="rj-nok" style="bottom:38.57%;"></span></div>
+                  <div class="rj-sut" tabindex="0"><span class="ipucu">C · +0,72 puan · %95: +0,29 … +1,14 · n 1.220</span><span class="rj-ara" style="bottom:22.57%; height:24.29%;"></span><span class="rj-nok" style="bottom:34.86%;"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="rj-x"><span>A1<i>2020–21</i></span><span>A2<i>2022–23</i></span><span>B<i>2023–24</i></span><span>C<i>2024–26</i></span></div>
+          </div>
+        </div>
+      </figure>
+      <div class="tablo-sar" style="margin-bottom:16px;">
+        <table>
+          <thead><tr><th>HİPOTEZ (C'DEKİ BULGU)</th><th>A · GEVŞEK PARA 2020 – MAYIS 2023</th><th>B · SIKILAŞTIRMA</th><th>C · 2024–26</th></tr></thead>
+          <tbody>
+            <tr><td>H1 · Bildirim günü hacmi (Bulgu 1)</td><td class="s">+%28,9 · t = 6,43</td><td class="s">+%22,0 · t = 3,28</td><td class="s">+%38,8 · t = 9,39</td></tr>
+            <tr><td>H2 · Ön hacim, önceki 5 günde başka açıklama yok (Bulgu 2)</td><td class="s">−%2,5 · t = −0,51</td><td class="s">−%4,4 · t = −0,78</td><td class="s">+%2,7 · t = 0,81</td></tr>
+            <tr><td>H3 · Ortalama 3 günlük tepki</td><td class="s">+1,66 puan · t = 4,86</td><td class="s">+0,85 · t = 1,74</td><td class="s">+0,72 · t = 3,32</td></tr>
+            <tr><td>H4 · Oynak tahta, bir standart sapmalık etki (Bulgu 12)</td><td class="s">−0,70 puan · t = −2,64</td><td class="s">−0,40 · t = −1,43</td><td class="s">−0,85 · t = −3,29</td></tr>
+            <tr><td>H5 · Olay penceresinde başka açıklama yok: tepki</td><td class="s">+1,12 · t = 3,45</td><td class="s">+0,69 · t = 1,45</td><td class="s">+0,43 · t = 1,70</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Okuma.</strong></p>
+      <ul>
+        <li><strong>Hacim artışı rejimden bağımsız.</strong> Pandemi, seçim öncesi ralli, sıkılaştırma ve fon dönemi dahil yedi takvim yılının yedisinde pozitif.</li>
+        <li><strong>Fiyat tepkisi pozitif, büyüklüğü rejime bağlı.</strong> Seçim öncesi rallide +1,88 puan, 2024–26'nın 2,6 katı. A ile C arasındaki fark anlamlı (z = −2,34). Sıkılaştırma döneminde yön aynı ama sonuç belirsiz: aralık sıfırı içeriyor, güç yetmiyor.</li>
+        <li><strong>“Bilgi sızıyor” yorumu hiçbir dönemde desteklenmiyor.</strong> 2024–26'daki ön hacim artışı şirketin kendi önceki açıklamalarından geliyordu. 2020–24'te o artış bile yok.</li>
+        <li><strong>Oynak tahtada tepki her dönemde daha zayıf.</strong> Oynaklıkta bir standart sapmalık artışın etkisi gevşek parada −0,70, 2024–26'da −0,85 puan, yani benzer. Oynak tahtada ortalamanın eksiye dönmesi (−0,75 puan) ise yalnız 2024–26'da var. Önceki rejimlerde oynak tahtanın ortalaması da pozitifti (+0,47 … +0,49).</li>
+      </ul>
+      <p><strong>Fonların yoğun tuttuğu paylar.</strong> 2024–26'da sonradan tasfiye edilen fonların, pozisyonu yarım günlük işlem hacmini aşan 10 kağıdı var.</p>
+      <ul>
+        <li><strong>Bu kağıtlarda hacim ilginin temiz bir ölçüsü değil.</strong> Bildirimin hacim etkisi +%20,2, diğer paylarda +%41.</li>
+        <li><strong>Bulgular bu kağıtlardan gelmiyor.</strong> Çıkarıldıklarında dönemin üç bulgusu da duruyor: hacim +%41,2 (t = 9,2), tepki +0,69 puan (t = 3,0), oynak tahta eğimi t = −2,6.</li>
+        <li><strong>Oynak tahta etkisi fon yoğunluğuyla büyüyor</strong> ama fonsuz paylarda da işareti aynı.</li>
+      </ul>
+      <p><strong>Piyasanın genel havası.</strong> 81 ay, piyasadaki limite yakın gün yoğunluğuna göre üçe bölündü. Sakin, orta ve hareketli aylarda hacim artışı (+%27, +%37, +%27) ve tepki (+1,07, +0,97, +1,16 puan) aynı. Sürekli ölçüyle eğim sıfır (t = −0,1). Etkiyi piyasanın havası değil, hissenin kendi tahtası değiştiriyor.</p>
+      <p><strong>Öz-denetim.</strong> Bu sınama önceki metinlerde dört fazla ya da eskimiş iddia ortaya çıkardı. Dördü de sayı hatası değil, cümlenin tablodan önde gitmesi. Hepsi yerinde, tarihiyle düzeltildi.</p>
+      <ul>
+        <li><strong>27.09 geçerlilik notu:</strong> Ortalama tepkinin “aynı penceredeki başka açıklamalardan arındırıldıktan sonra da ayakta” olduğunu yazıyordu. Oysa bu sınav tepki için hiç koşulmamıştı. Koşulunca 2024–26'da +0,43 puan (t = 1,70), yani sonuçsuz. Yedi yıl birlikte ayakta: +0,71, t = 3,77. Küçülmenin çoğu mekanik: aynı şirketin birkaç gün arayla yaptığı ikinci duyurunun tepkisi aynı pencereye düşüyor.</li>
+        <li><strong>IV'teki tekrarlanma cümlesi:</strong> Bulgu 2'nin düzeltmesinden sonra da “bilgi resmî açıklamadan önce hareket ediyor” diyordu.</li>
+        <li><strong>Bulgu 12'nin 27.09 özeti:</strong> “Oynak tahtaların genel bir özelliği değil” diyordu. Bu ters yönde fazlaydı.</li>
+        <li><strong>VIII'deki veri sayıları:</strong> İlk sürümden kalmıştı.</li>
+      </ul>
+      <p><strong>Sınırları.</strong></p>
+      <ul>
+        <li><strong>Olay seçimi yalnız şablonla.</strong> 2020'de ayda 12, 2024'te 58 şablonlu bildirim var. Eski yıllarda yeni işlerin bir kısmı genel özel durum açıklamasıyla duyuruldu. Üç dönemin üçünde de olayı olan 57 şirketle bileşim sabit tutulduğunda desen değişmedi.</li>
+        <li><strong>Büyüklüğe dayanan sınavlar bu turda yok.</strong> 2020–24 bildirimlerinden tutar çıkarılmadı. “Büyük haber daha çok fiyatlanıyor mu” (Bulgu 3, 5, 11) hâlâ tek rejimli.</li>
+        <li><strong>Oynaklık vekille ölçüldü.</strong> Bütün dönemlerde aynı vekil kullanıldı: önceki 90 günde limite yakın gün sayısı.</li>
+      </ul>
+      <p>Ayrıntı: <code>docs/arastirma/2026-09-28-k1-rejim-sinamasi.md</code>.</p>
     </section>
 
     <!-- ============================ V ============================ -->
@@ -820,7 +943,7 @@
       <h2>VII · SINIRLAR</h2>
       <h3>Bu notun kendi zayıf noktaları</h3>
       <ul>
-        <li><strong>Bulgular tek bir para rejimine ait; genellenemez.</strong> Arşiv 2024-09'a uzatıldıktan sonra da örneklem (1.263 olay, 144 hisse) tek bir yüksek reel faiz döneminde: politika faizi %50 → %37, borsa dolar bazında −%11, bireysel katılım geri çekilmiş, iki siyasi şok (Mart 2025, Mayıs 2026) ve bir fon krizi (Eylül 2026) içeriyor. Bu dönemin içinde ortalama etkiler (hacim artışı, pozitif ortalama tepki) arındırma sınavlarından geçiyor. Kesit ilişkileri ve alt gruplar (Bulgu 4, 7, 10) örneklemin gücünü aşıyor: CAR3 ~ S eğiminde yakalanabilen en küçük etki ~0,6 puan/S, hacim ~ S'de ~0,07/S. Negatif reel faizli seçim öncesi dönemden gözlem yok; bulguların o döneme taşınıp taşınmadığı bilinmiyor.</li>
+        <li><strong>Skora dayanan bulgular hâlâ tek bir para rejimine ait.</strong> Skorun kendisi, yani Bulgu 3, 4, 5 ve 11, yalnız Eylül 2024 – Eylül 2026'da sınandı. Bu dönem tek bir yüksek reel faiz dönemi: politika faizi %50 → %37, borsa dolar bazında −%11, bireysel katılım geri çekilmiş, iki siyasi şok (Mart 2025, Mayıs 2026) ve bir fon krizi (Eylül 2026) var. 2020–24 bildirimlerinden henüz tutar çıkarılmadı. Skordan bağımsız bulgular ise (hacim artışı, ortalama tepki, oynak tahta, ön hacim) 28.09.2026'da 2020–2026'nın üç rejiminde sınandı. Bkz. <a href="#rejim">Yedi yıl, üç para rejimi</a>. Oradaki bir düzeltme: ortalama tepki, olay penceresinde başka açıklama olmayan olaylarda 2024–26 içinde sonuçsuz (t = 1,70), yedi yıl birlikte anlamlı. Kesit ilişkileri ve alt gruplar (Bulgu 4, 7, 10) örneklemin gücünü aşıyor: CAR3 ~ S eğiminde yakalanabilen en küçük etki ~0,6 puan/S, hacim ~ S'de ~0,07/S.</li>
         <li><strong>Hacim ölçüsü tek bir tanıma dayanıyor.</strong> AV'nin taban penceresi, logaritmik dönüşümü ve olay penceresi makul ama seçilmiş kararlar. Piyasa hacmiyle düzeltilmiş hacim 27.09.2026'da denendi ve sonucu değiştirmedi (+%38,1 → +%37,8); dolaşımdaki paya oranlanmış hacim (turnover) denenmedi.</li>
         <li><strong>Hacim, fonların kendi alımlarını da ölçebilir.</strong> Tasfiye edilen fonların yoğun tuttuğu tahtalarda (OZATD, ODINE) işlem hacminin bir kısmı fon akışı olabilir; orada hacim ilginin dürüst bir göstergesi değil. Bu hisseler çıkarıldığında Bulgu 1 duruyor, Bulgu 12 zayıflıyor.</li>
         <li><strong>Payda, duyuru ile dönem sonu arasındaki enflasyonu taşımıyor.</strong> Tutar duyuru gününün TL'si, TTM son dönem sonunun TL'si. Aradaki 0–5 ayın enflasyonu (%0–12) oranı her zaman biraz büyütüyor; logaritmik skorda en fazla ~0,1 puan.</li>
@@ -845,11 +968,11 @@
       <h3>Betikler repoda, açık veri kopyası henüz yok</h3>
       <p>Bu nottaki istatistikler beş betikten çıkıyor; hiçbiri veritabanına yazmıyor ve hiçbiri ücretli çağrı yapmıyor:</p>
       <div class="formul" style="text-align:left; margin-bottom:18px;">
-        <div class="formul-ana" style="font-size:14px; font-weight:500;">python scripts/skor_gecerlilik.py · python scripts/analiz_baglam.py · python scripts/bulgu_11_12.py · python scripts/analiz_gecerlilik.py · python scripts/analiz_piyasa_rejimi.py</div>
+        <div class="formul-ana" style="font-size:14px; font-weight:500;">python scripts/skor_gecerlilik.py · python scripts/analiz_baglam.py · python scripts/bulgu_11_12.py · python scripts/analiz_gecerlilik.py · python scripts/analiz_piyasa_rejimi.py · python scripts/analiz_k1_rejim.py --kaynak</div>
       </div>
       <p>Dürüst sınır: betikler şu an projenin veritabanına bağlanıyor. Türetilmiş tabloların (ham KAP metni hariç) açık bir kopyası yayımlanana kadar bu sayıları dışarıdan yeniden üretmek mümkün değil.</p>
       <p>Skorun kendisi <code>src/kap_radar/skor.py</code> içinde saf fonksiyon olarak duruyor: aynı girdi her koşuda aynı çıktıyı verir, LLM kanaati içermez. Her skorun yanında çıkarımın yapıldığı ham cümle alıntısıyla saklanır ve arayüzde gösterilir; tek tıkla KAP'taki orijinal bildirime gidilip sayı doğrulanabilir.</p>
-      <p>Veri hattının kaynakları: KAP bildirim API'si (613 bildirim, 935 finansal rapor), TCMB günlük kur arşivi (5.610 satır), yfinance günlük kapanış ve hacim (27.607 satır, 111 hisse + XU100). 27.09.2026'dan beri: resmî TÜİK TÜFE (TCMB'nin yayımladığı aylık tablo, <code>src/kap_radar/tufe_aylik.csv</code>; aylık değişimlerin zinciri yayımlanan yıllık oranları 0,02 puan içinde veriyor), tasfiye edilen fonların KAP'taki portföy dağılım raporları ve piyasa rejimi için yfinance XU100 ve USD/TRY (2019 →).</p>
+      <p>Veri hattının kaynakları: KAP bildirim API'si, TCMB günlük kur arşivi ve yfinance günlük kapanış ve hacim. İlk sürüm 613 bildirim ve 111 hisseyle kuruldu; bugün 2024-09'dan beri 1.315 bildirim ve 144 hisse var. 28.09.2026'dan beri Borsa İstanbul'un günlük pay piyasası bültenleri de kullanılıyor: 2020-01 → 2026-09, 1.690 gün, borsadan çıkmış paylar dahil. KAP liste arşivi 2020-01'e uzatıldı. 27.09.2026'dan beri: resmî TÜİK TÜFE (TCMB'nin yayımladığı aylık tablo, <code>src/kap_radar/tufe_aylik.csv</code>; aylık değişimlerin zinciri yayımlanan yıllık oranları 0,02 puan içinde veriyor), tasfiye edilen fonların KAP'taki portföy dağılım raporları ve piyasa rejimi için yfinance XU100 ve USD/TRY (2019 →).</p>
     </section>
 
     <hr class="ayr">
