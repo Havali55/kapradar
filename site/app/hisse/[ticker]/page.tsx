@@ -102,7 +102,7 @@ export default async function HisseSayfasi({
   });
   const grafikIsleri = sayilan.filter((b) => Date.parse(b.yayin_zamani) >= seri[0].t).map(grafikIsi);
   // Grafikten önceki yılın işleri: grafik boyunca 12 ayı dolup hesaptan
-  // çıkıyorlar, mavi çizginin inişleri bunlar.
+  // çıkıyorlar, mavi çizginin inişleri bunlar (gün ipucunda yazılı).
   const oncekiYil = sayilan
     .filter((b) => {
       const z = Date.parse(b.yayin_zamani);
@@ -211,7 +211,7 @@ export default async function HisseSayfasi({
                 Mavi çizgi geriye dönük bir toplam, tahmin değil: o güne kadarki 12
                 ayda duyurulan işlerin tutarı. Bir iş duyurulduğu gün çizgiyi
                 yükseltir, tam bir yıl sonra hesaptan çıkar ve çizgi o tutar kadar
-                iner{oncekiYil.length > 0 && " (boş halka)"}. Kesikli çizgi şirketin
+                iner. Kesikli çizgi şirketin
                 son 12 ayda gerçekten yaptığı satış, yani ciro; her finansal rapor
                 açıklandığında güncellenir. Çubuklar tek tek işler; ihale ve sözleşme
                 aşamasında iki kez duyurulan iş bir kez sayılır.
@@ -237,12 +237,6 @@ export default async function HisseSayfasi({
                   <i className="cubuk-lejant" style={{ background: "var(--p-rutin)" }} />
                   Rutin iş
                 </span>
-                {oncekiYil.length > 0 && (
-                  <span>
-                    <i className="halka-lejant" style={{ borderColor: "var(--p-duyuru)" }} />
-                    12 ayı dolup hesaptan çıkan iş
-                  </span>
-                )}
               </div>
               <DuyuruCiroGrafigi
                 seri={seri}

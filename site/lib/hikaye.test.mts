@@ -8,7 +8,6 @@ import {
   GUN_MS,
   aylaraBol,
   birimSec,
-  cikisNoktalari,
   ciroSicramalari,
   ciroAn,
   ciroBasamagi,
@@ -287,7 +286,7 @@ test("dizin sıralaması: ortalama harekete göre, boş sonda", () => {
   assert.deepEqual(dizinSirala(r, "hareket", false).map((x) => x.ticker), ["A", "C", "B"]);
 });
 
-test("çıkış noktaları: 12 ay önceki iş, çizginin indiği gün", () => {
+test("gün ipucunun çıkanları: 12 ay önceki iş, çizginin indiği gün", () => {
   const isler = [
     { t: SIMDI - 370 * GUN_MS, net_tutar_tl: 7, yayin_zamani: once(370) },
     { t: SIMDI - 390 * GUN_MS, net_tutar_tl: 3, yayin_zamani: once(390) },
@@ -295,17 +294,20 @@ test("çıkış noktaları: 12 ay önceki iş, çizginin indiği gün", () => {
     { t: SIMDI - 800 * GUN_MS, net_tutar_tl: 9, yayin_zamani: once(800) },
   ];
   const s = gunlukSeri(isler, [], SIMDI);
-  const c = cikisNoktalari(s, isler);
+  const cikislar = s
+    .map((_, i) => ({ i, cikan: gunDegisimi(s, i, isler).cikan }))
+    .filter((n) => n.cikan.length > 0);
   // Grafik boyunca yalnız bir önceki yılın işleri çıkar; 800 gün önceki
   // grafik başlamadan, 10 gün önceki grafik bittikten sonra çıkar.
   assert.deepEqual(
-    c.map((n) => [s[n.i].t, n.cikan.map((x) => x.net_tutar_tl)]),
+    cikislar.map((n) => [s[n.i].t, n.cikan.map((x) => x.net_tutar_tl)]),
     [
       [SIMDI - 25 * GUN_MS, [3]],
       [SIMDI - 5 * GUN_MS, [7]],
     ],
   );
-  for (const n of c) {
+  // İpucunun söylediği tutar, mavi çizginin o günkü inişinin tamamı.
+  for (const n of cikislar) {
     const inis = n.cikan.reduce((t, x) => t + x.net_tutar_tl, 0);
     assert.equal(s[n.i - 1].duyurulan - s[n.i].duyurulan, inis);
   }
