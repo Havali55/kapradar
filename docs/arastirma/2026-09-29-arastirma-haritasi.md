@@ -1,7 +1,12 @@
 # Araştırma haritası: ne sınandı, ne sınanmadı, sıradaki dalgalar (2026-09-29)
 
-**Durum: DALGA 1 BAŞLADI (2026-09-29, Hüseyin: "haritayı yaz, sonra
-dalga 1'i başlat").** Bu belge iki işe yarıyor. Birincisi 19–28 Eylül
+**Durum: DALGA 1 TAMAMLANDI (2026-09-29 akşamı).** Dört notun
+çıktısı ve yarın için bekleyen kararlar §8'de. D1-P ve D1-K'nın
+rakamları betikler bağımsız olarak yeniden koşularak doğrulandı. Dalga 2,
+§8'deki kararlardan sonra başlayacak.
+
+*(İlk durum satırı: DALGA 1 BAŞLADI, 2026-09-29, Hüseyin: "haritayı yaz,
+sonra dalga 1'i başlat".)* Bu belge iki işe yarıyor. Birincisi 19–28 Eylül
 arasındaki araştırmanın envanteri. İkincisi Dalga 1 ajanlarının brifingi.
 §6'daki tanımlar ve karar kuralları, sonuçlara bakılmadan önce yazıldı ve
 commit'lendi.
@@ -69,6 +74,15 @@ K skorda aynen duruyor. K'nın 19.09'daki asıl gerekçesi (gizli karşı
 tarafta tepkinin üçüncü günde sıfırlanması) öbür yılda raporlanmadı.
 → Dalga 1, D1-K.
 
+**Sonuç (D1-K, 29.09):** Örneklem dışı yılda dört iddianın hiçbiri
+tekrarlanmadı. Dördü de sonuçsuz, üçünde nokta tahmini ters. Asıl
+gerekçe (açık + ilk > gizli + ilk, CAR3) −0,16 puan (t −0,29). İlk yıl
++1,21'di. Ayrıca 25.09'daki karşı taraf düzeltmesi (`bbac018`) ilk yılın
+123 bildiriminin sınıfını değiştirdi. K = 0,50'nin tek dayanağı olan
+−5,18 (n 6) kayboldu. Makalenin "birebir uyumlu" cümlesi bugünkü veriyle
+ilk yılda bile doğru değil. Ayrıntı:
+`2026-09-29-k-carpani-sinamasi.md`.
+
 **AS2 · Hacim ölçüsünün sıfır noktası ölçülmedi.** AV = ln(ort. adet
 [t0, t0+2]) − ln(medyan adet [t0−60, t0−11])
 (`scripts/skor_gecerlilik.py:243`, kodda "kasıtlı asimetri"). Ortalamanın
@@ -79,6 +93,15 @@ bunu küçültür. Etkinin varlığını bozmaz: gün gün ölçülen profil (lo
 ortalaması, sapmasız) t0'da sıçrıyor, temiz ön hacim sıfır. Büyüklüğü ve
 rejim karşılaştırmasını etkileyebilir, çünkü sapma hacmin oynaklığına
 bağlı. **Tahmin, ölçülmedi.** → Dalga 1, D1-P.
+
+**Sonuç (D1-P, 29.09): Tahmin büyük ölçüde yanlış çıktı.** Ortalamanın
+logu kaynaklı sapma gerçekten var: +0,05 … +0,08 log. Ama günlük log hacim
+sola çarpık, yani ortalaması medyanın altında. İki sapma birbirini
+götürüyor. Olay yokken AV yedi yılda +%2,2 (t 1,03). Yalnız A1'de
+(2020–21) anlamlı: +%11,3. Net etkiler: A +%27,4, B +%20,8, C +%33,9.
+Hükümlerin hiçbiri değişmedi. Bunun yerine başka bir sıfır noktası
+sorunu çıktı: günlük log ölçülerin (ön hacim) olaysız günde değeri
+−%3 … −%5. Ayrıntı: `2026-09-29-plasebo-ve-sira-sinavlari.md`.
 
 ## 4. Sınanmayanlar
 
@@ -289,3 +312,85 @@ Dalga 2 için sıralama önerisiyle biter: bedava ve hazır olan önce.
   yeniden üretim komutu, ondalık virgül.
 - Commit atma. Bitince özet, dosya yolları, sapmalar ve şüpheli gördüğün
   her şeyi raporla.
+
+## 8. Dalga 1 sonuçları ve bekleyen kararlar (2026-09-29 akşamı)
+
+### Çıktılar
+
+| İş | Not | Betik | Doğrulama |
+|---|---|---|---|
+| D1-L | `2026-09-29-literatur-taramasi.md` | — | Kore çalışmasının rakamları kaynak metinle karşılaştırıldı |
+| D1-P | `2026-09-29-plasebo-ve-sira-sinavlari.md` | `scripts/analiz_plasebo.py` | Yeniden koşuldu, rakamlar birebir |
+| D1-K | `2026-09-29-k-carpani-sinamasi.md` | `scripts/analiz_k_carpani.py` | Yeniden koşuldu, birebir. Mutabakat adımı 19.09 tablosunu sıfır farkla üretiyor |
+| D1-E | `2026-09-29-veri-envanteri.md` | — | WAF kotası ve sektör alanı yerinde kontrol edildi |
+
+Üç ajan oturum limiti yüzünden yarıda kesildi ve kaldıkları yerden
+sürdü. Çıktılar bundan etkilenmedi.
+
+### Öne çıkanlar
+
+1. **Ana bulgular ölçüm aletinin ürünü değil.** Rastgele günlere göre
+   net hacim etkisi A +%27,4, B +%20,8, C +%33,9. Net CAR3 A +1,64,
+   C +0,68 puan. Gevşek paradaki iki kat fark nete göre de duruyor
+   (z −2,17).
+2. **K çarpanının örneklem dışında ampirik dayanağı yok** (§3 AS1).
+3. **"Sızıntı izi yok" okuması zayıfladı.**
+   - Temiz olaylarda ön hacim tabana göre sıfır. Ama olaysız günlerin
+     aynı ölçüsü tabanın %3–5 altında.
+   - Rastgele günlere göre fark yedi yılda +%4,9 (t 2,06), C'de +%10,5
+     (t 2,79). A ve B'de sıfır.
+   - Mekanik bir açıklaması olabilir: bir önceki duyurunun hacmi ön
+     pencereye taşıyor olabilir. Bu ölçülmedi.
+   - Literatür Kore, ABD, Avustralya ve BIST-30'da duyuru öncesi pozitif
+     getiri buluyor. Bizde getiri tabanlı ön-CAR sınavı yok (19.09'daki
+     betimleyici "öncesi sürüklenme" dışında).
+4. **Standardize ve sıra sınavları bu veride olay yokken de yukarı
+   yanlı.** C'de KP-BMP plaseboda +2,09. Verdikleri destek zayıf. Hiçbir
+   hükmü zayıflatmadılar.
+5. **Halka arz çapası (α = 0) 2020–24'te olay yokken +1,9 puan veriyor.**
+   C'de bu sapma yok (−0,12, t −0,23), yani sitedeki panel için acil
+   değil.
+6. **Etki büyüklüğümüz literatürde olağan** (Kore, duyuru günü +%0,69,
+   6.072 olay). "Büyük haber daha çok fiyatlanmıyor" literatürle
+   çelişiyor. Bizim gücümüz sınırlı (MDE ~0,6 puan/S).
+7. **Envanter.**
+   - 2020–24 için detay metni yok. S1 paketi ~4.400 KAP isteği (kota
+     hızıyla ~17 saat) ve ~1,43 USD.
+   - Devre kesici ve VBTS kayıtları 2020'den beri var.
+   - `sirket.sektor` boş.
+
+### Hüseyin'in kararını bekleyenler
+
+| # | Karar | Seçenekler | Öneri |
+|---|---|---|---|
+| Ka | K çarpanı | A: makaleye not · B: K = 1 · C: yalnız güncelleme ekseni · D: yedi yılda sına | Şimdi A, sonra D (S1 paketiyle). S1 onaylanmazsa B |
+| Kb | Makale düzeltmeleri | K bölümü; Bulgu 2 "sızıntı yok"; H1'e net rakamlar; sıra sınavlarının boyutu Sınırlar'a | Hepsi tarihli notla. K ve Bulgu 2 önce, çünkü biri yanlış, öteki fazla iddia |
+| Kc | S1 paketi | ~4.400 KAP isteği, ~1,43 USD, çekim hızı (kota ~17 saat / güvenli ~55 saat) | Onay. K'yı, skor sınavlarını ve Y3/Y4'ü yedi yıla taşıyor |
+| Kd | Dalga 2 soruları | Aşağıdaki liste | — |
+| Ke | `arastirma/dalga-1` dalının master'a alınması | — | Kararlardan sonra |
+
+### Dalga 2 adayları (öneri sırası)
+
+1. **S7 · Tasfiye baskısı doğal deneyi.** Sonuç her gün birikiyor. Ön
+   kayıt hemen yazılmalı.
+2. **H2-bis · Sızıntı sorusunu düzgün sınamak.** Bedava, yedi yıl.
+   - Eşleştirilmiş plasebo: gerçek temiz olaylar da [t0−10, t0−6]
+     duyurularından arındırılır.
+   - Getiri tabanlı ön-CAR [t0−4, t0−1].
+   - Seans içi / seans sonrası ayrımı.
+3. **Y5 + S5 · Uzun ufuk ve Bulgu 12'nin mekanizması.** t+3 … t+60.
+   Oynak tahtada fiyat geri dönüyor mu? 19.09'daki 20 günlük bakış ön
+   kayıtta beyan edilir.
+4. **S10 · Oynak tahta (H4) gerçek devre kesici ve VBTS kayıtlarıyla**,
+   V90 vekili yerine. Bedava.
+5. **Y6 · Zamanlama:** Cuma, aynı gün yığılması, seans sonrası. Şirket
+   sabit etkisiyle.
+6. **S6 · Söz ve gerçek, ikinci dönem.** Ön kayıt 9A2026 raporlarından
+   önce (~30 Ekim).
+7. **Y3, Y4 · 2024–26 kısmı.** n küçük. S1 paketi gelirse yedi yıla.
+8. **Y9 (yeni, D1-L önerisi) · Yatırımcı iyimserliği vekili.** Rejim
+   farkının mekanizması için.
+9. **Ücretli ya da çekimli olanlar:**
+   - S1 paketi
+   - S2, ÖDA Genel (~2,2–3,4 USD)
+   - S8, fon geçmişi (~21.400 istek)
