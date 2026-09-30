@@ -10,13 +10,16 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Proje hakkında",
   description:
-    "Vaka çalışması: KAP yeni iş bildirimlerini şirketin kendi cirosuna göre ölçen veri hattı, ölçülen doğruluğu, bir denetimin hikâyesi, ampirik sınamalar ve sınırları.",
+    "Vaka çalışması: KAP yeni iş bildirimlerini şirketin kendi cirosuna göre ölçen veri hattı; ölçülen doğruluğu, enflasyon muhasebesi tuzağı, bir denetimin hikâyesi, sınamalar ve bilerek yapılmayanlar.",
 };
 
 // Veritabanında olmayan sayılar, kaynağıyla. Hepsi repodaki notlarda:
 // doğruluk README ("Çıkarım doğruluğu"); denetim
 // docs/arastirma/2026-09-26-veri-denetimi.md; maliyet
 // scripts/rejim_arsivi.py (2024-09 geri doldurma faturası) ve README.
+// Metindeki sabit sayılar: TMS 29 (03) metodoloji II "Paydayı sessizce
+// bozan dört şey"; sınama (06) plasebo ve K notları
+// (docs/arastirma/2026-09-29-*); çekim maliyeti (09) veri envanteri.
 // Hiçbir cümle o notlardan güçlü olmamalı.
 const KURAL_SAYISI = 13;
 const ALTIN_KUME = { dogru: 47, toplam: 50, skorAyni: 49 };
@@ -134,7 +137,35 @@ export default async function ProjeHakkinda() {
       </section>
 
       <section>
-        <h2 className="mono">03 · ÖLÇÜLEN DOĞRULUK</h2>
+        <h2 className="mono">03 · PAYDA</h2>
+        <h3>Enflasyon muhasebesi oranı sessizce %7–25 büyütüyordu</h3>
+        <p>
+          Oranın paydası şirketin son 12 aylık cirosu ve tek bir ara dönem
+          raporundan kuruluyor: geçen yılın cirosu, artı bu yılın ilk aylarının
+          cirosu, eksi geçen yılın aynı aylarının cirosu. Yüksek enflasyon
+          muhasebesinden (TMS 29) beri her rapor geçen yılın rakamlarını
+          bugünün satın alma gücüyle yeniden yazıyor. DCTTR&apos;nin 2024
+          hasılatı ilk raporunda 2,51, bir yıl sonraki raporda 3,28 milyar TL.
+          Formülün iki terimi bugünün TL&apos;siyle, biri geçen yılın
+          TL&apos;siyle geliyordu. Payda küçük, oran %7–25 büyük çıkıyordu;
+          arşivdeki rapor çiftlerinin yaklaşık %91&apos;i yeniden ifade
+          edilmişti.
+        </p>
+        <p>
+          Düzeltme dış veri kullanmıyor. Eski terim, şirketin kendi
+          raporlarından okunan katsayıyla bugünün birimine taşınıyor: aynı
+          dönemin ilk yayını ile yeniden ifadesinin oranı. Bildirim anında
+          yayınlanmamış hiçbir rapor kullanılmıyor. TMS 29&apos;a geçiş yılında
+          bu katsayı enflasyonu değil muhasebe geçişini ölçtüğü için o dönemde
+          resmî TÜFE kullanılıyor. İki düzeltme önce 51, sonra 13 bildirimin
+          kademesini değiştirdi, hiçbir bildirimin yayın kararını değiştirmedi.
+          Aynı yeniden ifade, sitedeki ciro büyümesini dış veri olmadan reel
+          ölçmeyi de sağlıyor.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="mono">04 · ÖLÇÜLEN DOĞRULUK</h2>
         <h3>Elle etiketlenmiş 50 bildirimde 47 tam doğru</h3>
         <p>
           Çıkarım, elle etiketlenmiş {ALTIN_KUME.toplam} bildirimlik bir altın
@@ -146,7 +177,7 @@ export default async function ProjeHakkinda() {
       </section>
 
       <section>
-        <h2 className="mono">04 · BİR DENETİMİN HİKÂYESİ</h2>
+        <h2 className="mono">05 · BİR DENETİMİN HİKÂYESİ</h2>
         <h3>Kapı sayının metinde geçtiğini denetliyordu, neyin sayısı olduğunu değil</h3>
         <p>
           Eylül 2026&apos;da bir okur ARDYZ kartını sordu: iş &ldquo;cirosunun
@@ -175,38 +206,43 @@ export default async function ProjeHakkinda() {
       </section>
 
       <section>
-        <h2 className="mono">05 · AMPİRİK SINAMA</h2>
-        <h3>Bulgular görülmemiş bir yılda yeniden sınandı; ikisi çöktü</h3>
+        <h2 className="mono">06 · AMPİRİK SINAMA</h2>
+        <h3>Yedi yılda sınandı; ikisi çöktü, biri açık soru</h3>
         <p>
           Büyüklük &ldquo;bu iş şirketin ölçeğine göre büyük&rdquo; der,
-          &ldquo;hisse yükselecek&rdquo; demez. Bu yüzden sınavı getiri değil işlem
-          hacmi. Bulgular ilk yılda kuruldu, sonra arşiv bir yıl geriye uzatılıp
-          aynı betiklerle o hiç görülmemiş yılda yeniden koşuldu.
+          &ldquo;hisse yükselecek&rdquo; demez. Bu yüzden asıl sınavı getiri
+          değil işlem hacmi. Bulgular ilk yılda kuruldu, sonra hiç görülmemiş
+          bir yılda ve 2020&apos;den bu yana üç para rejiminde (3.091
+          bildirim) aynı kodla yeniden koşuldu. Ölçü aletinin kendisi de
+          sınandı: aynı hesap olay olmayan rastgele günlerde çalıştırıldı ve
+          orada sinyal üretmedi.
         </p>
         <ul>
           <li>
-            <strong>Tuttu.</strong> Bildirim günü işlem hacmi normalin %50–60
-            kadar üstüne çıkıyor; büyüklük bir getiri tahmini değil (ilişki
-            sıfıra yakın); %1&apos;in altındaki işlerde de ilgi var, bu yüzden
+            <strong>Tuttu.</strong> Bildirim günü işlem hacmi her rejimde
+            normalin üstüne çıkıyor; rastgele günlere göre net +%21 ile +%34
+            arası. Büyüklük bir getiri tahmini değil: iki yılda da ilişki
+            bulunamadı. %1&apos;in altındaki işlerde de ilgi var, bu yüzden
             ölçeğin tabanı %0,25&apos;e indirildi.
           </li>
           <li>
             <strong>Çöktü.</strong> &ldquo;Sık bildirimcide tepki sönük&rdquo; ve
-            &ldquo;tahtaya göre ayrışma&rdquo; örneklem dışında tekrarlanmadı; sitede
-            artık iddia edilmiyor.
+            &ldquo;tahtaya göre ayrışma&rdquo; örneklem dışında tekrarlanmadı;
+            sitede artık iddia edilmiyor.
           </li>
           <li>
-            <strong>Zayıfladı.</strong> Hacmin bildirimden önce yükselmesi bir
-            &ldquo;sızıntı&rdquo; gibi okunuyordu; ön-hacmin yarıdan fazlası şirketin
-            kendi önceki KAP açıklamalarıyla örtüşüyor, kalanı anlamlı değil. Oynak
-            tahtada bildirim sonrası aşağı yön ise sonradan tasfiye edilen
-            fonların yoğun tuttuğu hisselerde toplanıyor.
+            <strong>Açık kaldı.</strong> Hacmin bildirimden önce yükselmesi önce
+            bir &ldquo;sızıntı&rdquo; gibi okundu, sonra &ldquo;sızıntı
+            yok&rdquo;a döndü. İkisi de fazlaydı: bu ölçü o soruya cevap
+            verecek hassasiyette değil. Ürün bir sızıntı iddiası taşımıyor.
           </li>
           <li>
-            <strong>Sınır.</strong> İki yıl da aynı sıkı para dönemine ait.
-            &ldquo;Bir yıl sonra da tutuyor mu&rdquo; sınandı, &ldquo;başka bir
-            piyasa rejiminde tutuyor mu&rdquo; sınanmadı; 2020&apos;den bu yana
-            arşiv bunun için hazırlanıyor.
+            <strong>Yeniden konumlandı.</strong> Karşı tarafı gizli ya da
+            güncelleme olan duyuruyu aşağı çeken K çarpanının ilk yıldaki
+            &ldquo;sağlaması&rdquo; örneklem dışında tutmadı. K kalıyor, ama ne
+            olduğu düzeltildi: bir tepki tahmini değil, dışarıdan
+            doğrulanamayan bilgi için bir şeffaflık ayarı. Kartta görünen
+            büyüklüğü etkilemiyor.
           </li>
         </ul>
         <p>
@@ -217,7 +253,7 @@ export default async function ProjeHakkinda() {
 
       {soz && ozet && (
         <section>
-          <h2 className="mono">06 · SÖZ VE GERÇEK</h2>
+          <h2 className="mono">07 · SÖZ VE GERÇEK</h2>
           <h3>Çok iş duyuranlar gerçekten büyüdü mü?</h3>
           <p>
             Sitenin ölçtüğü şey bir söz: duyurulan iş. Burada ilk kez
@@ -238,7 +274,7 @@ export default async function ProjeHakkinda() {
       )}
 
       <section>
-        <h2 className="mono">07 · MALİYET</h2>
+        <h2 className="mono">08 · MALİYET</h2>
         <h3>Bir yıllık geçmişin çıkarımı yarım dolar</h3>
         <p>
           Dil modeli katmanlı çalışıyor: işlerin çoğu küçük modelde, şüpheli
@@ -251,7 +287,39 @@ export default async function ProjeHakkinda() {
       </section>
 
       <section>
-        <h2 className="mono">08 · NASIL ÇALIŞILDI</h2>
+        <h2 className="mono">09 · NEREDE DURDUK</h2>
+        <h3>Araştırmanın da bir kapsamı var</h3>
+        <p>
+          Ürünün iddiası dar: bir işin, şirketin kendi ölçeğine göre
+          büyüklüğü. Bu iddiayı sınamak için yedi yıllık veri, örneklem dışı
+          sınama ve rastgele gün kıyası yetti. Ötesindeki her soru ürünü
+          değiştirmeden bilgi eklerdi; araştırma bu yüzden 30 Eylül 2026&apos;da
+          kapandı. Bilerek yapılmayanlar:
+        </p>
+        <ul>
+          <li>
+            <strong>2020–24 bildirimlerinden tutar çıkarmak.</strong> Yaklaşık
+            4.400 KAP isteği, KAP&apos;ın izin verdiği hızla ~17 saatlik bir
+            çekim. Skora dayanan sınavları yedi yıla taşırdı; kartta görünen
+            hiçbir şeyi değiştirmezdi.
+          </li>
+          <li>
+            <strong>Yeni sınavlar.</strong> Sızıntının getiri tabanlı sınavı,
+            üç günden uzun ufuk, fonların tuttuğu payların sonraki seyri.
+            Araştırma notunda{" "}
+            <Link href="/metodoloji#acik-sorular">açık sorular</Link> olarak,
+            veri ve maliyet envanteriyle duruyor.
+          </li>
+          <li>
+            <strong>Tahmin.</strong> Site alım-satım sinyali üretmiyor. Bu bir
+            ihtiyat cümlesi değil, ölçümün sonucu: büyüklük 3 günlük tepkiyi
+            bu örneklemde öngörmüyor.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="mono">10 · NASIL ÇALIŞILDI</h2>
         <h3>Kararlar insanın, kod ortak</h3>
         <p>
           Proje Hüseyin Dinçer&apos;in; kod, analiz ve yazımda Claude ile birlikte
