@@ -178,7 +178,8 @@ export default function BildirimDetayi({
                 S, oranı logaritmik bir ölçeğe taşır (%0,25 → 0, %100 → 5) ve
                 bilginin netliğine göre ayarlar: müşterinin adı verilmemişse ya
                 da duyuru önceki bir işin güncellemesiyse K 1&apos;in altına
-                iner. Kartta görünen kademe S&apos;den değil doğrudan orandan
+                iner. K bir tasarım tercihi: getiriden ya da hacimden
+                türetilmedi, bir tepki tahmini değil. Kartta görünen kademe S&apos;den değil doğrudan orandan
                 gelir; S aşağıdaki &ldquo;benzer duyurular&rdquo;ı gruplamak
                 için kullanılır.
               </p>

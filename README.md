@@ -10,6 +10,13 @@
 > Live site: [kap.calibresolve.com](https://kap.calibresolve.com) · Methodology
 > and validation (Turkish): [/metodoloji](https://kap.calibresolve.com/metodoloji).
 > Identifiers are Turkish; see the glossary at the end.
+>
+> Validation: the volume response was tested across seven years and three
+> monetary regimes (3,091 disclosures, 2020–2026) and against randomly drawn
+> non-event days. Two first-year findings failed out of sample; they stay in
+> the write-up, marked. The score is a size measure, not a return forecast,
+> and the research was deliberately closed once the product's claims were
+> tested.
 
 **KAP bildirimi düşer, ne anlama geldiği ölçülebilir hâle gelir.**
 
@@ -99,11 +106,14 @@ S = clamp(5 · f(r) · K, 0, 5)      f(r) = clamp((log10(r) + 2,602) / 2,602, 0,
 
 `r` = net tutar / TTM hasılat. Logaritmik, çünkü materyallik çarpımsal:
 %0,25 taban, %100 tavan (taban başta %1'di; hacim sınaması o eşiğin altındaki
-bildirimlerin de ilgi gördüğünü gösterince indirildi). `K` güvenilirlik
-çarpanı (karşı taraf açık/gizli × ilk/güncelleme), 1,00'dan 0,50'ye.
+bildirimlerin de ilgi gördüğünü gösterince indirildi).
+
+`K` bilginin netliği: karşı taraf gizliyse ya da duyuru bir güncellemeyse
+skoru aşağı çeker (1,00 → 0,50). Bir tasarım tercihi; getiriden türetilmedi
+ve örneklem dışında bir tepki farkı göstermedi (metodoloji II).
 
 Sitede görünen **kademe S'den değil doğrudan r'den** okunuyor: %5 ve üstü
-"önemli", %15 ve üstü "mega". K bir güvenilirlik ayarı; büyüklük etiketine
+"önemli", %15 ve üstü "mega". K bir doğrulanabilirlik ayarı; büyüklük etiketine
 karışırsa gizli karşı taraflı dev bir iş "rutin" görünebiliyordu.
 
 Skor bir **getiri tahmini değil, büyüklük ölçüsüdür.** Bunun sebebi ölçüldü:
@@ -127,7 +137,7 @@ Gerçek veriden öğrenilen üç tuzak: gelir tablosunun XBRL rolü sabit değil
 yazabiliyor (yükleyici her şirketin kendi serisindeki medyana bakıp aykırı
 raporu almıyor).
 
-## Ölçülen durum
+## Ölçülen durum (ilk sürüm, 19.09.2026)
 
 | | |
 |---|---|
@@ -138,7 +148,10 @@ raporu almıyor).
 | Finansal | 933 dönem kaydı; bildirimlerin %97,4'ünde TTM çözülüyor |
 | Altın küme | 50 bildirim elle etiketli |
 | Çıkarım doğruluğu | 47/50 tam doğru (%94); skor 49/50'de elle etiketle aynı |
-| Test | 221 |
+| Test | 221 (30.09.2026: 434) |
+
+Güncel sayılar canlı sitede: `/proje-hakkinda` sayfası onları her
+tazelemede veritabanından hesaplıyor.
 
 ## Canlı koşu
 

@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Büyüklük skoru — araştırma notu",
   description:
-    "Skorun nasıl kurulduğu, hangi kanıta dayandığı ve ampirik olarak nerede kırıldığı. Beaver hacim testi, spekülatif tahta ayrıştırması ve sınırlar.",
+    "Skorun nasıl kurulduğu, neyi ölçtüğü ve neyi ölçmediği: yedi yıllık hacim sınaması, olay olmayan günlerle kıyas, örneklem dışında çöken bulgular ve sınırlar.",
 };
 
 /**

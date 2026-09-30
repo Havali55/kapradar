@@ -19,6 +19,8 @@
         background:var(--zem); color:var(--ink); font-family:var(--sans);
         font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased; min-height:100vh; }
   .mn *, .mn *::before, .mn *::after { box-sizing:border-box; }
+  /* Çapa hedefleri yapışkan üst bandın altında kalmasın. */
+  .mn [id] { scroll-margin-top:84px; }
   .mn a { color:var(--mavi-k); text-decoration:none; }
   .mn a:hover { color:var(--mavi-kk); text-decoration:underline; }
   .mn a:focus-visible, .mn button:focus-visible, .mn [tabindex]:focus-visible {
@@ -116,6 +118,7 @@
   td.s { font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink-2); }
   td.k { font-family:var(--mono); font-size:12px; color:var(--ink-2); white-space:nowrap; }
   td.v { font-weight:600; color:var(--ink); }
+  .iddia td:first-child { color:var(--ink); font-weight:500; }
   tr.vurgu td { background:var(--mavi-z); }
   .yildiz { color:var(--mavi-kk); font-weight:600; }
 
@@ -231,6 +234,14 @@
     .govde { padding:32px 20px 70px; }
     .formul-ana { font-size:15px; } .hesap-skor { margin-left:0; }
     .ozet { padding:20px; }
+    /* İddia tablosu dar ekranda satır başına bir kart: en önemli sütun
+       yatay kaydırmanın arkasında kalmasın. */
+    .iddia { min-width:0; }
+    .iddia thead { display:none; }
+    .iddia tr { display:block; padding:14px 16px; border-bottom:1px solid var(--ken-2); }
+    .iddia tbody tr:last-child { border-bottom:none; }
+    .iddia td { display:block; padding:0; border:none; }
+    .iddia td + td { margin-top:8px; }
   }
   @media (prefers-reduced-motion:reduce) { .mn * { transition:none !important; } }
 </style>
@@ -274,7 +285,7 @@
     <div class="ozet">
       <h4>Ne iddia ediyoruz, ne iddia etmiyoruz</h4>
       <div class="tablo-sar">
-        <table>
+        <table class="iddia">
           <thead><tr><th>SORU</th><th>DURUM</th><th>NE ÖLÇTÜK</th></tr></thead>
           <tbody>
             <tr><td>Yeni iş bildirimi gerçek bir olay mı?</td><td><span class="cip cip-y">EVET, 7 YILDA</span></td><td>Bildirim günü işlem hacmi her para rejiminde normalin üstünde. Aynı ölçü olay olmayan rastgele günlerde sıfıra yakın; rastgele günlere göre net +%21 … +%34 (3.091 bildirim, 2020–2026).</td></tr>
