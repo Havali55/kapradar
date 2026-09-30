@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Sekme ikonu: üst banttaki radar işaretinin (components/Baslik.tsx)
+       aynısı, 16 px'de kaybolmasın diye çizgiler kalın ve eksenler yok.
+       Koyu sekme çubuğunda marka mavisi okunmadığı için açık ton. -->
+  <style>
+    svg { color: #2952cc; }
+    @media (prefers-color-scheme: dark) { svg { color: #8ea8f5; } }
+  </style>
+  <path d="M20 20 L32.02 7.98 A17 17 0 0 0 18.52 3.06 Z" fill="currentColor" fill-opacity="0.22"/>
+  <circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="3"/>
+  <circle cx="20" cy="20" r="11" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.55"/>
+  <line x1="20" y1="20" x2="32.02" y2="7.98" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="27.78" cy="12.22" r="4" fill="currentColor"/>
+</svg>
