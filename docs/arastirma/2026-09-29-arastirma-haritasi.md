@@ -1,9 +1,13 @@
 # Araştırma haritası: ne sınandı, ne sınanmadı, sıradaki dalgalar (2026-09-29)
 
-**Durum: DALGA 1 TAMAMLANDI (2026-09-29 akşamı).** Dört notun
-çıktısı ve yarın için bekleyen kararlar §8'de. D1-P ve D1-K'nın
-rakamları betikler bağımsız olarak yeniden koşularak doğrulandı. Dalga 2,
-§8'deki kararlardan sonra başlayacak.
+**Durum: ARAŞTIRMA KAPANDI (2026-09-30).** Dalga 1 tamamlandı. Dalga 2 ve
+3 yapılmayacak; proje ürün ve vitrin odağına döndü (§9). Aşağıdaki metin
+29.09'daki hâliyle duruyor.
+
+*(Önceki durum satırı: DALGA 1 TAMAMLANDI, 2026-09-29 akşamı. Dört notun
+çıktısı ve yarın için bekleyen kararlar §8'de. D1-P ve D1-K'nın rakamları
+betikler bağımsız olarak yeniden koşularak doğrulandı. Dalga 2, §8'deki
+kararlardan sonra başlayacak.)*
 
 *(İlk durum satırı: DALGA 1 BAŞLADI, 2026-09-29, Hüseyin: "haritayı yaz,
 sonra dalga 1'i başlat".)* Bu belge iki işe yarıyor. Birincisi 19–28 Eylül
@@ -45,7 +49,7 @@ kayıtlı olanlar ayakta kaldı. Dalga planı (§5) bu derse göre kuruldu.
 | Konu | Hüküm | Kapsam | Kaynak |
 |---|---|---|---|
 | Bildirim günü hacmi (Bulgu 1) | Her rejimde artıyor: A +%28,9 (t 6,4), B +%22,0 (t 3,3), C +%38,8 (t 9,4) | 7 yıl | K1 §4 H1 |
-| Ön hacim (Bulgu 2) | Sızıntı izi yok: temiz olaylarda 7 yıl −%0,8 (t −0,3) | 7 yıl | K1 §4 H2 |
+| Ön hacim (Bulgu 2) | Tabana göre artış yok (temiz, 7 yıl −%0,8, t −0,3). Rastgele günlere göre +%4,9 (t 2,06). Sızıntı ne doğrulanıyor ne dışlanıyor | 7 yıl | K1 §4 H2, D1-P |
 | Ortalama CAR3 | A +1,66 (t 4,9), B +0,85 (t 1,7), C +0,72 (t 3,3). Temiz olaylarda C +0,43 (t 1,70), 7 yıl +0,71 (t 3,77) | 7 yıl | K1 §4 H3, H5 |
 | Oynak tahta (Bulgu 12) | Zayıf tepki genel (1 SS: A −0,70, C −0,85). Eksi ortalama yalnız C'de, fon yoğunluğuyla büyüyor | 7 yıl | K1 §4 H4, §5 |
 | Skor getiri tahmini değil (Bulgu 3, 11) | Tekrarlandı | Yalnız C | metodoloji IV |
@@ -54,7 +58,7 @@ kayıtlı olanlar ayakta kaldı. Dalga planı (§5) bu derse göre kuruldu.
 | Boyut yanlılığı (8) | Yok | Yalnız C | metodoloji IV |
 | Beta (9) | β = 1 yanlış; piyasa modeli + Vasicek | C | metodoloji IV |
 | Yorgunluk (7), tahta ayrışması (10) | Tekrarlanmadı, üründen çıkarıldı | 2 yıl | metodoloji IV |
-| K çarpanı | Sağlama örneklem dışında ters (§3) | 2 yıl | metodoloji `:511` |
+| K çarpanı | Örneklem dışında dört iddianın hiçbiri tekrarlanmadı. Şeffaflık ayarı olarak yeniden konumlandı (§9) | 2 yıl | D1-K |
 | Halka arz, ilk 30 gün | Ort. −%4,01, anlamsız (kümeli t −1,73) | C | metodoloji VII |
 | Fonlar, niş kağıtlar | 10 pay çıkarılınca C bulguları duruyor; o paylarda AV +%20,2 | Yalnız C | K1 §5 |
 | Piyasa havası | Ay tercillerinde fark yok (eğim t −0,1) | 7 yıl | K1 §5 |
@@ -394,3 +398,22 @@ sürdü. Çıktılar bundan etkilenmedi.
    - S1 paketi
    - S2, ÖDA Genel (~2,2–3,4 USD)
    - S8, fon geçmişi (~21.400 istek)
+
+## 9. Kapanış (2026-09-30)
+
+Hüseyin'in yönlendirmesi: proje bir veri ürünü ve bir mühendislik vaka
+çalışması. Akademik makaleye dönüşecek işlerden (uzun çekimler, yeni
+ekonometrik sınavlar) bilinçli olarak geri çekiliniyor. Araştırmanın
+çıktıları siteye ve makaleye yansıtılıyor.
+
+| # | Karar | Sonuç |
+|---|---|---|
+| Ka | K çarpanı | A. Değerler aynı; anlatım düzeltildi. K bir tepki tahmini değil, şeffaflık ayarı |
+| Kb | Makale düzeltmeleri | Uygulandı, metodoloji sürüm 3.0 |
+| Kc | S1 paketi | Red. Makalede "bilerek yapılmadı" |
+| Kd | Dalga 2 | Yapılmıyor. Adaylar makalenin VII "Açık sorular" listesinde |
+| Ke | Dal birleştirme | İçerik revizyonundan sonra |
+| Kf | Fon ve soruşturma bağlamında şirket adları | Makaleden çıktı, araştırma notlarında duruyor |
+| Kg | Eski özet ve K'nın 19.09 tablosu | Makalede açılır "Sürüm geçmişi" kutusunda |
+
+Uygulama planı: `docs/superpowers/plans/2026-09-30-icerik-revizyonu.md`.
