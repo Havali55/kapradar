@@ -25,6 +25,7 @@ const KURAL_SAYISI = 13;
 const ALTIN_KUME = { dogru: 47, toplam: 50, skorAyni: 49 };
 const DENETIM = { taranan: 1272, isaretli: 453, okunan: 150, kesinHata: 10, elleKarar: 23 };
 const GERI_DOLDURMA = { cikarim: 690, usd: 0.487 };
+const DEPO = "https://github.com/Havali55/kapradar";
 
 export default async function ProjeHakkinda() {
   // Canlı sayılar her tazelemede veritabanından: veri büyüdükçe metin
@@ -170,8 +171,9 @@ export default async function ProjeHakkinda() {
         <p>
           Çıkarım, elle etiketlenmiş {ALTIN_KUME.toplam} bildirimlik bir altın
           kümeyle ölçüldü: {ALTIN_KUME.dogru} bildirimde bütün kalemler tam doğru,
-          büyüklük {ALTIN_KUME.skorAyni} bildirimde elle hesaplananla aynı. Ölçüm
-          betiği repoda ve yeniden koşmak için dil modeli gerekmiyor; saklı
+          büyüklük {ALTIN_KUME.skorAyni} bildirimde elle hesaplananla aynı.{" "}
+          <a href={`${DEPO}/blob/master/scripts/dogruluk_olc.py`}>Ölçüm betiği</a>{" "}
+          açık depoda ve yeniden koşmak için dil modeli gerekmiyor; saklı
           çıkarımlar üzerinden çalışıyor.
         </p>
       </section>
@@ -272,10 +274,10 @@ export default async function ProjeHakkinda() {
           TÜFE&apos;ye geçeceği gibi. Her büyük değişiklik önce yazılı bir tasarım ve plan,
           sonra testli küçük adımlar, en sonda tarayıcıda doğrulama olarak
           ilerliyor. Depodaki commit&apos;lerde ortak yazarlık işaretli; tasarım
-          belgeleri ve araştırma notları repoda.
+          belgeleri ve planlar <a href={DEPO}>açık depoda</a>.
         </p>
         <p>
-          Projeyi 50 saniyede anlatan kısa film:{" "}
+          Projeyi 34 saniyede anlatan kısa film:{" "}
           <Link href="/film">KAP·RADAR filmi</Link>.
         </p>
       </section>

@@ -3,40 +3,43 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Film",
   description:
-    "KAP·RADAR'ı 50 saniyede anlatan kısa film: bir KAP haberinin şirket için ne kadar büyük olduğu, bilgi ne kadar net, fiyata bakmak anlamlı mı.",
+    "KAP·RADAR'ı 34 saniyede anlatan kısa film: aynı tutar, iki şirket için bambaşka ağırlık. Yeni iş duyuruları şirketin kendi cirosuna göre.",
 };
 
 /**
- * Tanıtım filmi. Dosya `public/film/` altında: 720p, 49 sn, ~2,8 MB
- * (kaynak 16 MB; crf 27). Tasarım aracının dışa aktarımı sesi yazmıyor;
- * müzik ffmpeg ile sonradan eklendi (AAC 128k, 0,4 sn giriş, son 2,5 sn
- * kısılarak çıkış). Sesli olduğu için `autoPlay` yok — tarayıcılar sesli
- * otomatik oynatmayı zaten engelliyor, kullanıcı `controls` ile başlatır.
+ * Tanıtım filmi. Dosya `public/film/` altında: 720×720, 34 sn, ~4,2 MB.
+ * Remotion ile kodla üretildi. Müziği lisanslı (Epidemic Sound), bu yüzden
+ * film dosyası ve kaynağı açık depoya girmiyor (bkz. `araclar/acik_depo`).
+ * Sesli olduğu için `autoPlay` yok: tarayıcılar sesli otomatik oynatmayı
+ * zaten engelliyor, kullanıcı `controls` ile başlatır.
  */
 export default function FilmSayfasi() {
   return (
     <>
       <main className="govde govde-dar">
         <div className="baslik-blok">
-          <p className="baslik-ust mono">50 SANİYEDE KAP·RADAR</p>
+          <p className="baslik-ust mono">34 SANİYEDE KAP·RADAR</p>
           <h1>Bir KAP haberi, şirket için ne kadar büyük?</h1>
         </div>
         <video
           className="film"
-          src="/film/kap-radar.mp4"
-          poster="/film/kapak.jpg"
+          src="/film/kap-radar-film.mp4"
+          poster="/film/kap-radar-film.jpg"
           controls
           playsInline
           preload="metadata"
-          width={1280}
+          width={720}
           height={720}
+          style={{ maxWidth: 640, marginInline: "auto" }}
         >
           Tarayıcınız video oynatmayı desteklemiyor.{" "}
-          <a href="/film/kap-radar.mp4">Filmi indirin</a>.
+          <a href="/film/kap-radar-film.mp4">Filmi indirin</a>.
         </video>
         <p className="dipnot">
           Filmdeki bütün şirketler, tutarlar ve oranlar gerçek KAP
-          bildirimlerinden. Yatırım tavsiyesi değildir.
+          bildirimlerinden. Film kodla üretildi (Remotion); müzik:
+          &ldquo;Riddle&rdquo;, Shiruky (Epidemic Sound). Yatırım tavsiyesi
+          değildir.
         </p>
       </main>
     </>

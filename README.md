@@ -209,5 +209,6 @@ Yahoo Finance (BIST kapanışları). Ham arşivler depoya girmiyor.
 ## Lisans
 
 Kod MIT lisanslı (`LICENSE`). KAP metinleri ve ham veriler depoda yok ve bu
-lisansın kapsamında değil. `site/public/film/` altındaki tanıtım filmi ve
-içindeki müzik de bu lisansın kapsamında değildir.
+lisansın kapsamında değil. Tanıtım filmi lisanslı müzik içerdiği için depoda
+yok; [sitede](https://kap.calibresolve.com/film) yayınlanıyor ve bu lisansın
+kapsamında değil.
