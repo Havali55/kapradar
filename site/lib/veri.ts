@@ -669,6 +669,8 @@ export type Ozet = {
   /** Skorlu bildirimlerde sözleşme / TTM hasılat medyanı — ana sayfa bunu gösteriyor, S'yi değil. */
   medyanOran: number | null;
   temizOran: number | null;
+  /** Arşivde yeni iş bildirimi olan şirket sayısı. */
+  sirket: number;
   son24: number;
   /** Arşivdeki en yeni bildirimin zamanı — başlıktaki tazelik rozeti. */
   sonBildirim: string | null;
@@ -698,6 +700,7 @@ export function ozetCikar(bildirimler: Bildirim[]): Ozet {
     temizOran: tahtali.length
       ? tahtali.filter((b) => b.tahta === "temiz").length / tahtali.length
       : null,
+    sirket: new Set(bildirimler.map((b) => b.ticker)).size,
     son24: bildirimler.filter(
       (b) => new Date(b.yayin_zamani).getTime() >= esik,
     ).length,

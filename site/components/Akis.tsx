@@ -31,7 +31,6 @@ type Durum = {
       akışta yer kaplıyordu. Saklanmıyorlar — tek tıkla açılıyorlar. */
   skorsuzlar: boolean;
   aralik: Aralik;
-  yalnizTemiz: boolean;
   yalnizAcik: boolean;
   sirala: Siralama;
 };
@@ -41,7 +40,6 @@ const BASLANGIC: Durum = {
   buyukluk: "tum",
   skorsuzlar: false,
   aralik: "tum",
-  yalnizTemiz: false,
   yalnizAcik: false,
   sirala: "yeni",
 };
@@ -98,7 +96,6 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
       } else if (b.ciro_orani < BUYUKLUK_ESIGI[durum.buyukluk]) return false;
       // Aynı iş daha önce duyuruldu: büyüklük filtresinde ikinci kez çıkmasın.
       if (b.oncedenDuyuruldu && durum.buyukluk !== "tum") return false;
-      if (durum.yalnizTemiz && b.tahta !== "temiz") return false;
       if (durum.yalnizAcik && !b.karsiTarafAcik) return false;
       return true;
     });
@@ -204,11 +201,6 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
     cipler.push({
       ad: durum.aralik === "24" ? "Son 24 saat" : "Son 7 gün",
       temizle: () => guncelle({ aralik: "tum" }),
-    });
-  if (durum.yalnizTemiz)
-    cipler.push({
-      ad: "Sakin tahta",
-      temizle: () => guncelle({ yalnizTemiz: false }),
     });
   if (durum.yalnizAcik)
     cipler.push({
@@ -326,14 +318,6 @@ export default function Akis({ bildirimler }: { bildirimler: Bildirim[] }) {
                 title="Şirketin iş yaptığı tarafın adını açıkladığı bildirimler"
               >
                 Karşı tarafı belli
-              </button>
-              <button
-                type="button"
-                aria-pressed={durum.yalnizTemiz}
-                onClick={() => guncelle({ yalnizTemiz: !durum.yalnizTemiz })}
-                title="Bildirim gününde son 90 seansta devre kesici en fazla 4 gün tetiklenmiş, volatilite tedbiri olmayan hisseler"
-              >
-                Sakin tahta
               </button>
               <button
                 type="button"

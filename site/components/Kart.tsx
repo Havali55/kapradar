@@ -22,8 +22,7 @@ const SAAT = new Intl.DateTimeFormat("tr-TR", {
  * Satırda yalnız her iki yılın verisinde de ayakta kalan ve herkesin
  * okuyabileceği olgular var (2026-09-24 sadeleştirmesi): büyüklük (ciroya
  * oran), karşı tarafın adı ya da "adı verilmemiş", bildirim sıklığı
- * (sayım, tepki iddiası yok). Tahta ve tepki paneli bilerek satırda yok:
- * kırmızı/yeşil bir yüzde tahmin gibi okunur; ikisi de ayrıntıda.
+ * (sayım).
  *
  * Satır bir `article`; tıklanabilir alan içindeki tek butonun ::after
  * katmanı. Böylece hem tüm yüzey tıklanabiliyor hem de klavyeyle tek
