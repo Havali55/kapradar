@@ -674,15 +674,6 @@ a:hover {
   margin: 9px 0 12px;
   text-wrap: pretty;
 }
-.panel-uyari {
-  font-size: 11.5px;
-  color: var(--uyari-y);
-  background: var(--uyari-z);
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin: 9px 0 0;
-  text-wrap: pretty;
-}
 
 /* --------------------------------------------- bildirim akışı (site v3) */
 
@@ -2598,39 +2589,6 @@ a:hover {
   margin: 0;
   color: var(--mut);
 }
-.durum {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font: 600 12.5px var(--yazi-sans), system-ui, sans-serif;
-  border-radius: 999px;
-  padding: 2px 10px;
-  white-space: nowrap;
-}
-.durum::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.durum-yes {
-  color: var(--yes);
-  background: var(--yes-z);
-}
-.durum-kehribar {
-  color: var(--kehribar);
-  background: var(--kehribar-z);
-}
-.durum-kir {
-  color: var(--kir);
-  background: var(--kir-z);
-}
-.durum-notr {
-  color: var(--mut);
-  background: var(--kart-2);
-  box-shadow: inset 0 0 0 1px var(--ken-2);
-}
 /* Dizinde ±%200'ü aşan ciro büyümesi: değer duruyor, yanında uyarı. */
 .olagandisi {
   color: var(--kehribar);
@@ -2715,18 +2673,6 @@ a:hover {
 .dizin th[aria-sort="descending"] {
   color: var(--ink);
 }
-.dizin td.dizin-seans {
-  white-space: nowrap;
-}
-.dizin-hareket {
-  display: inline-block;
-  min-width: 4.5ch;
-  margin-right: 10px;
-  text-align: right;
-  font-size: 12.5px;
-  color: var(--mut);
-  font-variant-numeric: tabular-nums;
-}
 .dizin td.sayi {
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -2803,16 +2749,5 @@ a:hover {
   }
   .dizin td[data-et="Hisse"]::before {
     content: none;
-  }
-  /* Hücre ızgara: çip içeriği kadar kalsın, hücre boyunca gerilmesin. */
-  .dizin td .durum {
-    justify-self: start;
-  }
-  .dizin td.dizin-seans {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-  }
-  .dizin td.dizin-seans::before {
-    grid-column: 1 / -1;
   }
 }

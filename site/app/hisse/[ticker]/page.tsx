@@ -7,22 +7,14 @@ import IsListesi, { type IsOgesi } from "@/components/IsListesi";
 import Kiminle from "@/components/Kiminle";
 import SozKarti from "@/components/SozKarti";
 import { karsiTarafMetni, ozetMetni, sayilanIs } from "@/lib/anasayfa";
-import {
-  cirosununKati,
-  gunAy,
-  kalemTutari,
-  tahtaGorunumu,
-  uzunTl,
-} from "@/lib/bicim";
+import { cirosununKati, gunAy, kalemTutari, uzunTl } from "@/lib/bicim";
 import {
   GUN_MS,
   ciroAn,
   gosterilenKalemler,
   gunlukSeri,
   karsiGorunen,
-  hareketMedyani,
   kiminle,
-  seansDurumu,
   seriIliskisi,
   sonOnIkiAy,
   type SeriIliskisi,
@@ -32,7 +24,6 @@ import {
   hisseFonGetir,
   hisseGetir,
   hisseleriGetir,
-  limitGunleriGetir,
   sozVerisiGetir,
 } from "@/lib/veri";
 
@@ -74,12 +65,11 @@ export default async function HisseSayfasi({
   params: Promise<{ ticker: string }>;
 }) {
   const { ticker } = await params;
-  const [bildirimler, fon, ciroSeri, soz, limitler] = await Promise.all([
+  const [bildirimler, fon, ciroSeri, soz] = await Promise.all([
     hisseGetir(ticker),
     hisseFonGetir(ticker),
     ciroSeriGetir(),
     sozVerisiGetir(),
-    limitGunleriGetir(),
   ]);
   if (bildirimler.length === 0) notFound();
 
@@ -137,21 +127,6 @@ export default async function HisseSayfasi({
     }),
   );
 
-  // Tahta hissenin özelliği, bildirimin değil: en yeni ölçüm. Liste
-  // yeniden eskiye sıralı geliyor.
-  const tahtali = bildirimler.find((b) => b.tahta !== null);
-  const tahta = tahtali
-    ? tahtaGorunumu(
-        tahtali.tahta,
-        tahtali.tahta_v90,
-        tahtali.tahta_v5,
-        tahtali.tahta_vbts_kademe,
-        tahtali.tahta_piyasa_orani ?? null,
-      )
-    : null;
-  // Son 20 seans: ortalama hareket ve tahta ölçüsünün kaçırdığı kilitli tahta.
-  const limitSatiri = limitler.find((l) => l.ticker === ticker) ?? null;
-  const limitGunu = limitSatiri ? `${limitSatiri.son_tarih}T12:00:00Z` : null;
   const ilk = bildirimler[bildirimler.length - 1].yayin_zamani;
 
   return (
@@ -256,10 +231,6 @@ export default async function HisseSayfasi({
         <aside className="yan">
           <Kiminle satirlar={kim} />
           <HisseBaglam
-            seans={seansDurumu(limitSatiri, hareketMedyani(limitler))}
-            limitGunu={limitGunu ? `${gunAy(limitGunu, true)} ${limitGunu.slice(0, 4)}` : null}
-            tahta={tahta}
-            tahtaGunu={tahtali ? `${gunAy(tahtali.yayin_zamani, true)} ${tahtali.yayin_zamani.slice(0, 4)}` : null}
             son12Adet={sonOnIkiAy(bildirimler, simdi).length}
             toplam={bildirimler.length}
             fon={fon}
@@ -271,7 +242,7 @@ export default async function HisseSayfasi({
         Sayılar kamuya açık KAP metinleri ve finansal tablolar üzerinden
         hesaplanır; her işin kaynağı satırına tıklayınca açılan kanıt sayfasında.
         Bu sayfa yatırım tavsiyesi içermez, fiyat tahmini üretmez.{" "}
-        <Link href="/metodoloji">Yöntemin tamamı ve sınırları</Link>.
+        <Link href="/metodoloji">Yöntem ve sınırlar</Link>.
       </p>
     </main>
   );

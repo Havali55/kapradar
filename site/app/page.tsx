@@ -134,10 +134,7 @@ export default async function AnaSayfa() {
         </div>
         {bant && (
           <p className="piyasa-satiri">
-            Piyasa bağlamı, son 5 seans ({kisaTarih(bant.son_tarih)} itibarıyla): eşit
-            ağırlıklı BIST{" "}
-            <b className="mono">{bant.ew_5s !== null ? isaretliYuzde(bant.ew_5s, 1) : "—"}</b> ·
-            XU100{" "}
+            Piyasa bağlamı, son 5 seans ({kisaTarih(bant.son_tarih)} itibarıyla): XU100{" "}
             <b className="mono">
               {bant.xu100_5s !== null ? isaretliYuzde(bant.xu100_5s, 1) : "—"}
             </b>

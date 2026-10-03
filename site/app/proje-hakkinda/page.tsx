@@ -10,7 +10,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Proje hakkında",
   description:
-    "Vaka çalışması: KAP yeni iş bildirimlerini şirketin kendi cirosuna göre ölçen veri hattı; ölçülen doğruluğu, enflasyon muhasebesi tuzağı, bir denetimin hikâyesi, sınamalar ve bilerek yapılmayanlar.",
+    "Vaka çalışması: KAP yeni iş bildirimlerini şirketin kendi cirosuna göre ölçen veri hattı; ölçülen doğruluğu, enflasyon muhasebesi tuzağı, bir denetimin hikâyesi ve bilerek yapılmayanlar.",
 };
 
 // Veritabanında olmayan sayılar, kaynağıyla. Hepsi repodaki notlarda:
@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 // docs/arastirma/2026-09-26-veri-denetimi.md; maliyet
 // scripts/rejim_arsivi.py (2024-09 geri doldurma faturası) ve README.
 // Metindeki sabit sayılar: TMS 29 (03) metodoloji II "Paydayı sessizce
-// bozan dört şey"; sınama (06) plasebo ve K notları
-// (docs/arastirma/2026-09-29-*); çekim maliyeti (09) veri envanteri.
+// bozan dört şey" (docs/arastirma/arsiv/); çekim maliyeti (08) veri
+// envanteri.
 // Hiçbir cümle o notlardan güçlü olmamalı.
 const KURAL_SAYISI = 13;
 const ALTIN_KUME = { dogru: 47, toplam: 50, skorAyni: 49 };
@@ -205,55 +205,9 @@ export default async function ProjeHakkinda() {
         </p>
       </section>
 
-      <section>
-        <h2 className="mono">06 · AMPİRİK SINAMA</h2>
-        <h3>Yedi yılda sınandı; ikisi çöktü, biri açık soru</h3>
-        <p>
-          Büyüklük &ldquo;bu iş şirketin ölçeğine göre büyük&rdquo; der,
-          &ldquo;hisse yükselecek&rdquo; demez. Bu yüzden asıl sınavı getiri
-          değil işlem hacmi. Bulgular ilk yılda kuruldu, sonra hiç görülmemiş
-          bir yılda ve 2020&apos;den bu yana üç para rejiminde (3.091
-          bildirim) aynı kodla yeniden koşuldu. Ölçü aletinin kendisi de
-          sınandı: aynı hesap olay olmayan rastgele günlerde çalıştırıldı ve
-          orada sinyal üretmedi.
-        </p>
-        <ul>
-          <li>
-            <strong>Tuttu.</strong> Bildirim günü işlem hacmi her rejimde
-            normalin üstüne çıkıyor; rastgele günlere göre net +%21 ile +%34
-            arası. Büyüklük bir getiri tahmini değil: iki yılda da ilişki
-            bulunamadı. %1&apos;in altındaki işlerde de ilgi var, bu yüzden
-            ölçeğin tabanı %0,25&apos;e indirildi.
-          </li>
-          <li>
-            <strong>Çöktü.</strong> &ldquo;Sık bildirimcide tepki sönük&rdquo; ve
-            &ldquo;tahtaya göre ayrışma&rdquo; örneklem dışında tekrarlanmadı;
-            sitede artık iddia edilmiyor.
-          </li>
-          <li>
-            <strong>Açık kaldı.</strong> Hacmin bildirimden önce yükselmesi önce
-            bir &ldquo;sızıntı&rdquo; gibi okundu, sonra &ldquo;sızıntı
-            yok&rdquo;a döndü. İkisi de fazlaydı: bu ölçü o soruya cevap
-            verecek hassasiyette değil. Ürün bir sızıntı iddiası taşımıyor.
-          </li>
-          <li>
-            <strong>Yeniden konumlandı.</strong> Karşı tarafı gizli ya da
-            güncelleme olan duyuruyu aşağı çeken K çarpanının ilk yıldaki
-            &ldquo;sağlaması&rdquo; örneklem dışında tutmadı. K kalıyor, ama ne
-            olduğu düzeltildi: bir tepki tahmini değil, dışarıdan
-            doğrulanamayan bilgi için bir şeffaflık ayarı. Kartta görünen
-            büyüklüğü etkilemiyor.
-          </li>
-        </ul>
-        <p>
-          Sayıların ve sağlamlık sınavlarının tamamı{" "}
-          <Link href="/metodoloji">araştırma notunda</Link>.
-        </p>
-      </section>
-
       {soz && ozet && (
         <section>
-          <h2 className="mono">07 · SÖZ VE GERÇEK</h2>
+          <h2 className="mono">06 · SÖZ VE GERÇEK</h2>
           <h3>Çok iş duyuranlar gerçekten büyüdü mü?</h3>
           <p>
             Sitenin ölçtüğü şey bir söz: duyurulan iş. Burada ilk kez
@@ -264,9 +218,9 @@ export default async function ProjeHakkinda() {
             <strong>{isaretliYuzde(ozet.gruplar[2].medyanBuyume, 1)}</strong>; alttaki
             iki grupta {isaretliYuzde(ozet.gruplar[0].medyanBuyume, 1)} ve{" "}
             {isaretliYuzde(ozet.gruplar[1].medyanBuyume, 1)} ({ozet.n} şirket).
-            Sıra korelasyonu {sayi(ozet.rho, 2)}; %5 düzeyinde{" "}
-            {anlamliMi(ozet.t, ozet.n) ? "anlamlı" : "anlamlı değil"}. Tek dönem,
-            bir neden-sonuç iddiası değil; sonuç zayıflarsa sitedeki cümle de
+            Fark tek döneme dayanıyor ve istatistiksel olarak{" "}
+            {anlamliMi(ozet.t, ozet.n) ? "anlamlı" : "anlamlı değil"}; bir
+            neden-sonuç iddiası değil. Sonuç değişirse sitedeki cümle de
             kendiliğinden değişiyor.{" "}
             <Link href="/#soz-bas">Grafik ana sayfada</Link>.
           </p>
@@ -274,7 +228,7 @@ export default async function ProjeHakkinda() {
       )}
 
       <section>
-        <h2 className="mono">08 · MALİYET</h2>
+        <h2 className="mono">07 · MALİYET</h2>
         <h3>Bir yıllık geçmişin çıkarımı yarım dolar</h3>
         <p>
           Dil modeli katmanlı çalışıyor: işlerin çoğu küçük modelde, şüpheli
@@ -287,39 +241,28 @@ export default async function ProjeHakkinda() {
       </section>
 
       <section>
-        <h2 className="mono">09 · NEREDE DURDUK</h2>
-        <h3>Araştırmanın da bir kapsamı var</h3>
+        <h2 className="mono">08 · NEREDE DURDUK</h2>
+        <h3>İddia dar tutuldu</h3>
         <p>
           Ürünün iddiası dar: bir işin, şirketin kendi ölçeğine göre
-          büyüklüğü. Bu iddiayı sınamak için yedi yıllık veri, örneklem dışı
-          sınama ve rastgele gün kıyası yetti. Ötesindeki her soru ürünü
-          değiştirmeden bilgi eklerdi; araştırma bu yüzden 30 Eylül 2026&apos;da
-          kapandı. Bilerek yapılmayanlar:
+          büyüklüğü. Bilerek yapılmayanlar:
         </p>
         <ul>
           <li>
-            <strong>2020–24 bildirimlerinden tutar çıkarmak.</strong> Yaklaşık
-            4.400 KAP isteği, KAP&apos;ın izin verdiği hızla ~17 saatlik bir
-            çekim. Skora dayanan sınavları yedi yıla taşırdı; kartta görünen
-            hiçbir şeyi değiştirmezdi.
+            <strong>Arşivi 2024 Eylül&apos;ünden geriye uzatmak.</strong>{" "}
+            Yaklaşık 4.400 KAP isteği, KAP&apos;ın izin verdiği hızla ~17
+            saatlik bir çekim. Bugünkü bir bildirimi okumaya bir şey eklemiyor.
           </li>
           <li>
-            <strong>Yeni sınavlar.</strong> Sızıntının getiri tabanlı sınavı,
-            üç günden uzun ufuk, fonların tuttuğu payların sonraki seyri.
-            Araştırma notunda{" "}
-            <Link href="/metodoloji#acik-sorular">açık sorular</Link> olarak,
-            veri ve maliyet envanteriyle duruyor.
-          </li>
-          <li>
-            <strong>Tahmin.</strong> Site alım-satım sinyali üretmiyor. Bu bir
-            ihtiyat cümlesi değil, ölçümün sonucu: büyüklük 3 günlük tepkiyi
-            bu örneklemde öngörmüyor.
+            <strong>Tahmin.</strong> Site alım-satım sinyali ya da fiyat
+            tahmini üretmez. Bir işin şirket için büyüklüğü hissenin ne
+            yapacağını söylemez.
           </li>
         </ul>
       </section>
 
       <section>
-        <h2 className="mono">10 · NASIL ÇALIŞILDI</h2>
+        <h2 className="mono">09 · NASIL ÇALIŞILDI</h2>
         <h3>Kararlar insanın, kod ortak</h3>
         <p>
           Proje Hüseyin Dinçer&apos;in; kod, analiz ve yazımda Claude ile birlikte
@@ -361,8 +304,7 @@ export default async function ProjeHakkinda() {
             — proje tasarımı, kapsam ve metodoloji kararları, veri hattı mimarisi,
             arayüz tasarımı ve bütün karar onayları.
             <br />
-            <strong>Claude (Anthropic)</strong> — uygulama, istatistiksel analiz ve
-            yazım. Depoda ortak yazarlık <code>Co-Authored-By</code> ile işaretli.
+            <strong>Claude (Anthropic)</strong> — uygulama ve yazım. Depoda ortak yazarlık <code>Co-Authored-By</code> ile işaretli.
           </p>
         </div>
         <p style={{ fontSize: 12.5, color: "var(--mut-2)" }}>

@@ -56,9 +56,9 @@ export default async function AkisSayfasi() {
             <dd className="alt">büyüklüğü bilinen {sayi(ozet.skorlu, 0)} bildirimde</dd>
           </div>
           <div>
-            <dt>sakin tahtadan</dt>
-            <dd>{ozet.temizOran === null ? "—" : yuzde(ozet.temizOran, 0)}</dd>
-            <dd className="alt">bildirim gününde devre kesici seyrek, tedbir yok</dd>
+            <dt>şirket</dt>
+            <dd>{sayi(ozet.sirket, 0)}</dd>
+            <dd className="alt">yeni iş bildirimi yapan</dd>
           </div>
           <div>
             <dt>büyüklüğü bilinmeyen</dt>
@@ -70,10 +70,7 @@ export default async function AkisSayfasi() {
         {bant && (
           // Bağlam: piyasanın geneli. Olgu + tarih, yorum yok.
           <p className="piyasa-satiri">
-            Piyasa bağlamı, son 5 seans ({kisaTarih(bant.son_tarih)} itibarıyla): eşit
-            ağırlıklı BIST{" "}
-            <b className="mono">{bant.ew_5s !== null ? isaretliYuzde(bant.ew_5s, 1) : "—"}</b> ·
-            XU100{" "}
+            Piyasa bağlamı, son 5 seans ({kisaTarih(bant.son_tarih)} itibarıyla): XU100{" "}
             <b className="mono">
               {bant.xu100_5s !== null ? isaretliYuzde(bant.xu100_5s, 1) : "—"}
             </b>
@@ -90,10 +87,9 @@ export default async function AkisSayfasi() {
         <Akis bildirimler={bildirimler} />
 
         <p className="dipnot">
-          KAP·RADAR yatırım tavsiyesi vermez; tekil getiri tahmini üretmez,
-          yalnızca geçmiş bildirimlerin gözlenmiş dağılımını raporlar. Büyüklük
+          KAP·RADAR yatırım tavsiyesi vermez, fiyat tahmini üretmez. Büyüklük
           oranları kamuya açık KAP metinleri ve finansal tablolar üzerinden
-          hesaplanır. <Link href="/metodoloji">Yöntemin tamamı ve sınırları</Link>.
+          hesaplanır. <Link href="/metodoloji">Yöntem ve sınırlar</Link>.
         </p>
       </main>
     </>

@@ -1,65 +1,24 @@
-import { buyukTl, isaretliYuzde, sayi, yuzde, type TahtaGorunumu } from "@/lib/bicim";
-import type { seansDurumu } from "@/lib/hikaye";
+import { buyukTl, isaretliYuzde, sayi, yuzde } from "@/lib/bicim";
 import type { HisseFon } from "@/lib/veri";
 
 type Props = {
-  /** Son 20 seansın durumu: ortalama hareket, taban/tavan serisi. */
-  seans: ReturnType<typeof seansDurumu>;
-  /** Son kapanışın günü, "24 Eylül 2026". */
-  limitGunu: string | null;
-  tahta: TahtaGorunumu | null;
-  /** Tahtanın ölçüldüğü bildirimin günü, "25 Eylül 2026". */
-  tahtaGunu: string | null;
   son12Adet: number;
   toplam: number;
   fon: HisseFon | null;
 };
 
 /**
- * Hisse ve şirket bağlamı: son 20 seansın hareketi, bildirim günündeki
- * tahta, bildirim sıklığı (yalnız sayım), fon sahipliği. Hiçbiri
- * büyüklüğe girmiyor; okuru yanıltmasın diye her biri neyi söylemediğini
- * ve hangi güne ait olduğunu da söylüyor.
+ * Şirket bağlamı: bildirim sıklığı (yalnız sayım) ve fon sahipliği.
+ * Hiçbiri büyüklüğe girmiyor; okuru yanıltmasın diye her biri neyi
+ * söylemediğini de söylüyor.
  */
-export default function HisseBaglam({
-  seans,
-  limitGunu,
-  tahta,
-  tahtaGunu,
-  son12Adet,
-  toplam,
-  fon,
-}: Props) {
+export default function HisseBaglam({ son12Adet, toplam, fon }: Props) {
   return (
     <>
       <section className="yan-kutu" aria-labelledby="baglam-bas">
         <span className="ust-yazi">Bağlam</span>
-        <h3 id="baglam-bas">Hisse ve şirket</h3>
+        <h3 id="baglam-bas">Şirket</h3>
         <dl className="baglam">
-          {seans && (
-            <div>
-              <dt>
-                Son 20 seans <span className={`durum durum-${seans.renk}`}>{seans.metin}</span>
-              </dt>
-              <dd>
-                {seans.aciklama} Günlük kapanışlardan
-                {limitGunu ? ` (son kapanış ${limitGunu})` : ""}; taban −⁠%9,5, tavan
-                +⁠%9,5 ve ötesi. Tabanda kilitli, işlem görmeyen bir hisse devre
-                kesiciyi tetiklemez; aşağıdaki tahta ölçüsü bunu kaçırabilir.
-              </dd>
-            </div>
-          )}
-          <div>
-            <dt>
-              Tahta, son bildirim günü{" "}
-              {tahta && <span className={`durum durum-${tahta.renk}`}>{tahta.ad}</span>}
-            </dt>
-            <dd>
-              {tahta
-                ? `${tahta.not}${tahtaGunu ? ` (${tahtaGunu}.)` : ""}`
-                : "Ölçülemedi."}
-            </dd>
-          </div>
           <div>
             <dt>Bildirim sıklığı</dt>
             <dd>
