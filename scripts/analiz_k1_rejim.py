@@ -377,11 +377,10 @@ def spekulasyon(v: pd.DataFrame, p: pd.DataFrame) -> None:
 
 
 def fon_kirilimi(v: pd.DataFrame) -> None:
-    """C'de fon pompası tezi: bulgular fonların yoğun tuttuğu niş paylardan mı geliyor?
+    """C'de fon yoğunluğu: bulgular fonların yoğun tuttuğu paylardan mı geliyor?
 
-    Hüseyin'in "spekülasyon"u piyasa havası değil, belirli düşük dolaşımlı
-    payların sonradan tasfiye edilen fonlarca
-    yükseltilmesi. Sınıf 27.09 notuyla aynı: tasfiye fonlarının Ağustos 2026
+    Hüseyin'in "spekülasyon"u piyasa havası değil, düşük dolaşımlı bazı
+    paylarda sonradan tasfiye edilen fonların pozisyonlarının yoğunlaşması. Sınıf 27.09 notuyla aynı: tasfiye fonlarının Ağustos 2026
     pozisyonu / payın günlük işlem hacmi (analiz_piyasa_rejimi). Portföy
     olaydan SONRA ölçülüyor: sınıf betimleyici, nedensel değil. 2020–24 için
     fon portföyü yok; bu kırılım yalnız C'de.
@@ -396,7 +395,7 @@ def fon_kirilimi(v: pd.DataFrame) -> None:
     c = donem_olaylari(v, DONEMLER[-1][2], DONEMLER[-1][3]).copy()
     gun = c["ticker"].map(fon.set_index("ticker")["gun"]).fillna(0)
     c["fon"] = np.select([gun == 0, gun < 0.5], ["tutmuyor", "< 0,5 gün"], default="yoğun ≥ 0,5 gün")
-    bas("KEŞİF 7 · C'de fon yoğunluğu (Hüseyin'in fon pompası tezi)")
+    bas("KEŞİF 7 · C'de fon yoğunluğu")
     yogun = c[c["fon"] == "yoğun ≥ 0,5 gün"]
     print("  yoğun gruptaki paylar (olay sayısı):",
           ", ".join(f"{t} {n}" for t, n in yogun["ticker"].value_counts().items()))

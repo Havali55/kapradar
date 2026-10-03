@@ -39,7 +39,7 @@ ekonometrik sınavlar yapılmayacak.
 
 | # | Karar | Seçenekler | Öneri |
 |---|---|---|---|
-| Kf | Fon ve soruşturma bağlamında şirket adları | A: makalede kalsın · B: makaleden çıksın, notlarda kalsın | **B.** Bulguya bir şey eklemiyorlar. Vitrin metninde soruşturmayla aynı paragrafta anılmaları bir ima taşıyor |
+| Kf | Fon ve soruşturma bağlamında sekiz şirketin adı | A: makalede kalsın · B: makaleden çıksın, notlarda kalsın | **B.** Bulguya bir şey eklemiyorlar. Vitrin metninde soruşturmayla aynı paragrafta anılmaları bir ima taşıyor |
 | Kg | Eski üst özet (10 madde) ve K'nın 19.09 tablosu | A: sayfa sonunda `<details>` içinde "Sürüm geçmişi" · B: silinsin, git'te kalır | **A.** "Eski metin silinmiyor" geleneği sürüyor, ama okurun önüne çıkmıyor |
 
 ### Editör kuralları (bütün görevlerde)
@@ -332,18 +332,18 @@ sürümden kalma.
 
 **Dosya:** `site/content/metodoloji.html`
 
-- [ ] **Adım 1: `:669` (bayrağın sınırı).** "[ad] … [ad] …" → "Soruşturmada adı geçen iki şirkette dönemden önceki 90 günde 11 ve 10 devre kesici günü var, dönem içinde 2 ve 2."
+- [ ] **Adım 1: `:669` (bayrağın sınırı).** iki şirket adıyla geçen cümle → "Soruşturmada adı geçen iki şirkette dönemden önceki 90 günde 11 ve 10 devre kesici günü var, dönem içinde 2 ve 2."
 
-- [ ] **Adım 2: `:768`.** "Örneklemde iki sık bildirimci bu türden: OZATD (…) ve ODINE (…)." → "Örneklemde bu gruba giren iki sık bildirimci var: 29 ve 24 yeni iş bildirimi; tasfiye fonlarındaki pozisyonları 27 ve 10 günlük işlem hacmi."
+- [ ] **Adım 2: `:768`.** iki şirket adıyla geçen cümle → "Örneklemde bu gruba giren iki sık bildirimci var: 29 ve 24 yeni iş bildirimi; tasfiye fonlarındaki pozisyonları 27 ve 10 günlük işlem hacmi."
 
-- [ ] **Adım 3: `:840-842`.** Başlık "Fonlarla yükseltilen niş kağıtlar." → "Tasfiye edilen fonların yoğun tuttuğu paylar." Parantezdeki şirket listesi çıkar. "Bu kağıtlarda hacim ilginin temiz bir ölçüsü değil." → "Bu paylarda hacim ilginin temiz bir ölçüsü olmayabilir." "Bulgular bu kağıtlardan gelmiyor." → "Bulgular bu paylardan gelmiyor."
+- [ ] **Adım 3: `:840-842`.** Eski başlık → "Tasfiye edilen fonların yoğun tuttuğu paylar." Parantezdeki şirket listesi çıkar. "Bu kağıtlarda hacim ilginin temiz bir ölçüsü değil." → "Bu paylarda hacim ilginin temiz bir ölçüsü olmayabilir." "Bulgular bu kağıtlardan gelmiyor." → "Bulgular bu paylardan gelmiyor."
 
-- [ ] **Adım 4: `:282` ve `:948`.** "(OZATD, ODINE)" parantezi çıkar. `:282` zaten Görev 2'de özetle birlikte `<details>`'e taşınıyor; orada eski hâli kalır (tarihî metin).
+- [ ] **Adım 4: `:282` ve `:948`.** iki şirket adını içeren parantez çıkar. `:282` zaten Görev 2'de özetle birlikte `<details>`'e taşınıyor; orada eski hâli kalır (tarihî metin).
 
 - [ ] **Adım 5: Kontrol**
 
 ```bash
-grep -n "OZATD\|ODINE\|GESAN\|ALTNY\|EUPWR\|BOBET\|GUNDG\|Destek Faktoring" site/content/metodoloji.html
+grep -n "<Kf'deki sekiz ad>" site/content/metodoloji.html
 ```
 
 Beklenen: yalnız `<details>` içindeki eski metin satırları.
@@ -394,7 +394,7 @@ Beklenen: yalnız `<details>` içindeki eski metin satırları.
 - [ ] **Adım 6: Aşırı iddia taraması**
 
 ```bash
-grep -n "birebir uyumlu\|hiçbir dönemde desteklenmiyor\|hiçbir ilişki yok\|Fonlarla yükseltilen\|daha net görülemezdi\|sızıntı penceresi" site/content/metodoloji.html
+grep -n "birebir uyumlu\|hiçbir dönemde desteklenmiyor\|hiçbir ilişki yok\|daha net görülemezdi\|sızıntı penceresi" site/content/metodoloji.html
 ```
 
 Beklenen: her eşleşme ya `<details>` içinde ya da "İlk hâli:" / tarihli not bağlamında. "sızıntı penceresi" (`:559`) Bulgu 2'nin ilk ölçümünü anlatıyor ve üstünde 27.09 ve 30.09 notları var; kalır.

@@ -40,7 +40,7 @@ bültenlerinden alındı ve hayatta kalan yanlılığı taşımıyor.
 - **Piyasa genelindeki hava da etkileri değiştirmiyor.** 81 ay piyasadaki
   limit-günü yoğunluğuna göre üçe bölündü. Sakin, orta ve spekülatif aylarda
   hacim ve tepki aynı, sürekli ölçüyle eğim sıfır (t −0,1). Bu,
-  Hüseyin'in niş kağıt tezini değil, "piyasa çok hareketliydi" itirazını
+  fon yoğunluğu itirazını değil, "piyasa çok hareketliydi" itirazını
   sınıyor.
 - **Öz-denetim:** Önceki çalışmada dört fazla ya da eskimiş iddia bulundu
   ve düzeltildi (§7).
@@ -55,7 +55,7 @@ rejimden tek gözlem olmamasıydı.
 Hüseyin'in itirazı iki dönemi özellikle ayırıyordu:
 
 - Seçim öncesi negatif reel faizli ralli.
-- Seçim sonrası, düşük dolaşımlı payların fonlarla yükseltildiği dönem.
+- Seçim sonrası, düşük dolaşımlı paylarda fon pozisyonlarının yoğunlaştığı dönem.
 
 Soru: KAP·RADAR'ın dayandığı etkiler bu dönemlerin birinin ürünü mü?
 
@@ -243,18 +243,16 @@ sermaye işlemi gibi diğer türler tepkiyi sistematik olarak büyütmüyor.
 - Ama aynı sonuç ay düzeyinde tutmuyor (aşağıda). Bu yüzden yıllık desen
   bir kanıt değil, not edilen bir gözlem.
 
-### Fonlarla yükseltilen niş kağıtlar (yalnız C)
+### Tasfiye edilen fonların yoğun tuttuğu paylar (yalnız C)
 
 Hüseyin'in "spekülasyon"dan kastı piyasanın genel havası ya da içeriden
-bilgi değil. Kastı, düşük dolaşımlı belirli kağıtların fonlarca
-yükseltilmesi: [ad], [ad], [ad], [ad]. Sınıf 27.09 notuyla aynı:
+bilgi değil; düşük dolaşımlı bazı paylarda fon pozisyonlarının
+yoğunlaşması. Sınıf 27.09 notuyla aynı:
 tasfiye edilen fonların Ağustos 2026 pozisyonu, payın günlük işlem
 hacmine oranla. Portföy olaydan sonra ölçüldüğü için sınıf betimleyici.
 2020–24 için fon portföy verisi yok, bu kırılım yalnız C'de.
 
-Yoğun grup (pozisyon ≥ 0,5 günlük hacim) 10 pay ve 132 olay: OZATD 29,
-ODINE 23, GESAN 23, ALTNY 22, EUPWR 12, BOBET 11, ALKLC 6, ESCAR 5,
-ANELE 1, TEHOL 1. DSTKF ve KTLEV'in "Yeni İş İlişkisi" bildirimi yok.
+Yoğun grup (pozisyon ≥ 0,5 günlük hacim): 10 pay ve 132 olay.
 
 | C, fon sınıfı | AV | CAR3 | CAR3 ~ V90 |
 |---|---|---|---|
@@ -265,7 +263,7 @@ ANELE 1, TEHOL 1. DSTKF ve KTLEV'in "Yeni İş İlişkisi" bildirimi yok.
 
 Okuma:
 
-- **Pompalanan kağıtlarda bildirim daha az hacim yaratıyor.** Etki
+- **Fonların yoğun tuttuğu paylarda bildirim daha az hacim yaratıyor.** Etki
   yarıya yakın. Tabanı fon akışı şişirdiğinde bildirim göze daha az
   çarpıyor. Hacim bu tahtalarda ilginin temiz bir ölçüsü değil.
 - **Bulgular bu kağıtlardan gelmiyor.** Onlar çıkarılınca C'deki üç
@@ -310,8 +308,8 @@ kullandığındaki değişimden gelmiyor.
 |---|---|---|
 | "Bu koşullarda (yüksek faiz, spekülasyon, fonlar) yapılan ölçümler arınmış sayılmaz" | Hacim etkisi üç rejimde de var. Ortalama tepki gevşek parada daha da büyük. Piyasa çapı spekülasyon etkileri değiştirmiyor. | **Ana bulgular için hayır:** dönemin ürünü değiller. Bir alt bulgu için evet: oynak tahtada eksi ortalama tepki yalnız 2024–26'da. |
 | "Seçim öncesi ralli farklı bir piyasaydı" | A2'de ortalama tepki +1,88 puan, C'nin 2,6 katı. Hacim etkisi benzer. | **Doğru.** Rallide duyurular fiyatta daha çok karşılık buldu. Mekanizma (iyimserlik, bireysel talep) bu veriyle ayrışmıyor. |
-| "Seçim sonrası dönemde paylar fonlarla yükseltildi; ölçümler bundan etkilenir." Kastı içeriden bilgi değil, fon yoğunluğu. | Fonların yoğun tuttuğu 10 payda bildirimin hacim etkisi yarıya yakın düşük (+%20,2 / +%41). Oynak tahta etkisi fon yoğunluğuyla büyüyor. Oynak tahtada tepkinin eksiye dönmesi yalnız C'de. Ama o 10 pay çıkarılınca C'nin üç bulgusu da duruyor. 2020–24'te, bu fon dinamiği yokken, ana bulgular var. | **Doğru, etkisi sınırlı.** Fonların yoğun tuttuğu paylar ölçüyü yerel olarak bozuyor: hacim orada ilgiyi ölçmüyor, oynak tahta etkisi büyüyor. Ama bulguları onlar üretmiyor. |
-| (ayrı itiraz) "Piyasa genel olarak çok hareketliydi" | Piyasa çapında limit-günü yoğunluğu tercillerinde hacim ve tepki aynı. Bu ölçüyle en hareketli aylar 2020, 2021 ve 2023'te. | **Etkisi yok.** Bu ölçü pay tezini sınamıyor: fonun kontrollü yükselttiği bir kağıt piyasa geneline limit günü olarak yansımaz. |
+| "Seçim sonrası dönemde düşük dolaşımlı bazı paylarda fon pozisyonları yoğunlaştı; ölçümler bundan etkilenir." | Fonların yoğun tuttuğu 10 payda bildirimin hacim etkisi yarıya yakın düşük (+%20,2 / +%41). Oynak tahta etkisi fon yoğunluğuyla büyüyor. Oynak tahtada tepkinin eksiye dönmesi yalnız C'de. Ama o 10 pay çıkarılınca C'nin üç bulgusu da duruyor. 2020–24'te, bu fon dinamiği yokken, ana bulgular var. | **Doğru, etkisi sınırlı.** Fonların yoğun tuttuğu paylar ölçüyü yerel olarak bozuyor: hacim orada ilgiyi ölçmüyor, oynak tahta etkisi büyüyor. Ama bulguları onlar üretmiyor. |
+| (ayrı itiraz) "Piyasa genel olarak çok hareketliydi" | Piyasa çapında limit-günü yoğunluğu tercillerinde hacim ve tepki aynı. Bu ölçüyle en hareketli aylar 2020, 2021 ve 2023'te. | **Etkisi yok.** Bu ölçü fon yoğunluğu itirazını sınamıyor: fon pozisyonuyla hareket eden bir pay piyasa geneline limit günü olarak yansımaz. |
 
 ## 7. Öz-denetim: önceki çalışmada bulunan hatalar
 
