@@ -4,15 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { eslesir } from "@/lib/arama";
 import { isaretliYuzde, istanbulGunu, kat } from "@/lib/bicim";
-import { dizinSirala, type DizinAnahtari, type DizinSatiri, type seansDurumu } from "@/lib/hikaye";
+import { dizinSirala, type DizinAnahtari, type DizinSatiri } from "@/lib/hikaye";
 import { donemAdi } from "@/lib/soz";
 
-export type DizinOgesi = DizinSatiri & {
-  /** Son 20 seansın durumu; bildirim günündeki tahta değil. */
-  seans: ReturnType<typeof seansDurumu>;
-  /** Son 20 seansın ortalama |günlük getiri|si; sıralama anahtarı. */
-  hareket: number | null;
-};
+export type DizinOgesi = DizinSatiri;
 
 // Bu büyüklükte bir değişim (±%200) çoğu zaman organik büyüme değil:
 // TEHOL'un 6A2026 hasılatı bir yılda 59 milyon TL'den 4,6 milyar TL'ye
@@ -25,12 +20,6 @@ const SUTUNLAR: { k: DizinAnahtari; ad: string; sayi: boolean; ipucu?: string }[
   { k: "sonIs", ad: "Son bildirim", sayi: true },
   { k: "kat", ad: "Duyurulan / ciro", sayi: true, ipucu: "Son 12 ayda duyurulan TL ÷ son 12 aylık ciro" },
   { k: "buyume", ad: "Reel ciro büyümesi", sayi: true, ipucu: "Son dönem raporu, enflasyondan arındırılmış" },
-  {
-    k: "hareket",
-    ad: "Son 20 seans",
-    sayi: false,
-    ipucu: "Günlük ortalama hareket, listedeki hisselerin ortasına göre; süren taban/tavan serisi önce",
-  },
 ];
 
 /** 144 şirketin sıralanabilir, süzülebilir dizini. Telefonda kart listesi. */
@@ -127,22 +116,6 @@ export default function HisseDizini({ satirlar }: { satirlar: DizinOgesi[] }) {
                     {" "}
                     ⚠
                   </span>
-                )}
-              </td>
-              <td data-et="Son 20 seans" className="dizin-seans">
-                {s.seans ? (
-                  <>
-                    <span className="dizin-hareket mono" title="Günlük ortalama hareket">
-                      {s.seans.hareket !== null
-                        ? `%${(s.seans.hareket * 100).toFixed(1).replace(".", ",")}`
-                        : ""}
-                    </span>
-                    <span className={`durum durum-${s.seans.renk}`} title={s.seans.aciklama}>
-                      {s.seans.kisa}
-                    </span>
-                  </>
-                ) : (
-                  "—"
                 )}
               </td>
             </tr>
