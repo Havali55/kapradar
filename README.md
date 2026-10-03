@@ -1,76 +1,63 @@
-# KAP Radar
+# KAP·RADAR
 
-> **In English:** A data pipeline that turns Borsa Istanbul "New Business
-> Relation" disclosures (KAP) into a measurable size: contract value divided
-> by the company's point-in-time trailing-twelve-month revenue, parsed from
-> XBRL filings. An LLM only extracts amounts from free text; every number it
-> returns must quote the source sentence verbatim or the disclosure is
-> withheld (deterministic gate A1–A7, B1–B6). FX conversion, ratios and the
-> score are plain code. Runs daily on GitHub Actions for a few cents a month.
-> Live site: [kap.calibresolve.com](https://kap.calibresolve.com) · Methodology
-> and validation (Turkish): [/metodoloji](https://kap.calibresolve.com/metodoloji).
-> Identifiers are Turkish; see the glossary at the end.
->
-> Validation: the volume response was tested across seven years and three
-> monetary regimes (3,091 disclosures, 2020–2026) and against randomly drawn
-> non-event days. Two first-year findings failed out of sample; they stay in
-> the write-up, marked. The score is a size measure, not a return forecast,
-> and the research was deliberately closed once the product's claims were
-> tested.
+> **In English:** A data product that measures Borsa Istanbul "New Business
+> Relation" disclosures (KAP) against each company's own size: contract value
+> divided by the company's point-in-time trailing-twelve-month revenue. An LLM
+> only extracts amounts from free text; every number must quote its source
+> sentence verbatim, and a 13-rule deterministic gate rejects anything else
+> (including amounts that are not revenue, such as a tender's estimated cost).
+> Measured on a hand-labelled gold set: 47 of 50 disclosures exactly right.
+> Extracting a full year of history cost $0.49. Runs every weekday on GitHub
+> Actions. Live site: [kap.calibresolve.com](https://kap.calibresolve.com) ·
+> case study (Turkish): [/proje-hakkinda](https://kap.calibresolve.com/proje-hakkinda).
+> Built with AI coding tools (Claude Code); scope, architecture and validation
+> decisions are the author's. Identifiers are Turkish; see the glossary.
 
-**KAP bildirimi düşer, ne anlama geldiği ölçülebilir hâle gelir.**
+**KAP'taki her yeni iş duyurusunu şirketin kendi cirosuna göre ölçer.**
 
-KAP bildirimleri ham metindir: *"45.200.000 USD tutarında sözleşme imzalanmıştır."*
-Bu sayının büyük mü küçük mü olduğunu, şirketin cirosuna göre ne ifade ettiğini,
-geçmişte benzer açıklamalardan sonra fiyatın ne yaptığını söyleyen bir yer yok.
-Bu depo o dönüşümü yapan veri hattı.
+Eylül 2026'da ASTOR 1,65 milyar TL'lik bir iş duyurdu: yıllık cirosunun %3,9'u.
+Ağustos'ta SKYLP 84 milyon TL'lik bir iş duyurdu: cirosunun %33,5'i. Manşette 20
+kat büyük olan rakam, şirket için 8 kat daha hafif. KAP metni bu bağlamı vermez;
+bu depo onu her iş günü bütün bildirimler için çıkaran veri hattı ve site.
 
-Kapsam (A sürümü): yalnız **"Yeni İş İlişkisi"** şablonu.
-
-> **Yatırım tavsiyesi değildir.** Üretilen hiçbir sayı alım-satım önerisi değil;
-> kamuya açık KAP bildirimlerinin deterministik bir özetidir. Her çıktı kaynak
-> KAP bildirimine, çekim zamanına ve model/prompt sürümüne bağlıdır.
+> **Yatırım tavsiyesi değildir.** Fiyat tahmini ya da alım-satım sinyali
+> üretmez. Her sayı kaynak KAP bildirimine ve metindeki cümlesine bağlıdır.
 
 ---
 
-## Neden bu bir veritabanı işi
+## Ne gösteriyor
 
-Tek bir bildirimi bir dil modeline yapıştırıp özet istemek mümkün. Üç şey
-istenemez:
-
-1. **Ciroya oran** — şirketin son 4 çeyrek hasılatını (TTM) bilmek ve tutarı
-   bildirim tarihli TCMB kuruyla çevirip bölmek gerekir.
-2. **Geçmiş karne** — "bu şirket son 12 ayda 4 benzer iş açıkladı" ancak
-   bildirim arşiviyle üretilebilir.
-3. **Anormal getiri** — endeksten arındırılmış tepki; fiyat serisi, endeks
-   serisi ve doğru `t0` gerektirir.
-
-Üçü de veri varlığı gerektiriyor. Hattın savunma hattı prompt değil, veritabanı.
+- **Her bildirim için oran ve kademe:** işin TL tutarı ÷ şirketin bildirim
+  anındaki son 12 aylık cirosu. %5 ve üstü önemli, %15 ve üstü mega iş.
+- **Her şirket için son 12 ay:** kaç iş duyurdu, toplamı cirosunun kaç katı,
+  kimlerle; duyurduğu işlerin yanında gerçekleşen, enflasyondan arındırılmış
+  ciro büyümesi.
+- **Her sayının kanıtı:** bildirim sayfasında tutarın çıkarıldığı ham cümle.
 
 ## Hat
 
 ```
-KAP listesi  ──► ham arşiv (disk)  ──► Postgres
-                                        │
-    TCMB kurları ──────────────────────►│
-    Finansal raporlar (TTM) ───────────►│
-    Fiyat + XU100 (CAR) ───────────────►│
-                                        ▼
-                           çıkarım (LLM, katmanlı)
-                                        ▼
-                     doğrulama kapısı  A1–A7 · B1–B6
-                                        ▼
-                          büyüklük skoru + tepki paneli
+KAP listesi ──► ham arşiv (disk) ──► Postgres
+                                      │
+   TCMB kurları ─────────────────────►│
+   Finansal raporlar (XBRL, TTM) ────►│
+                                      ▼
+                         çıkarım (LLM, katmanlı)
+                                      ▼
+                        doğrulama kapısı (13 kural)
+                                      ▼
+                     oran ve kademe ──► site (Next.js)
 ```
 
-**LLM'in tek işi serbest metinden tutarları çıkarmak.** Karşı taraf, başlangıç
-tarihi, güncelleme/düzeltme bayrakları KAP'ın yapılandırılmış XBRL alanlarından
-deterministik geliyor. TL çevrimi, ciro oranı ve skor da koddan — modele hiç
-aritmetik verilmiyor.
+**Dil modelinin tek işi serbest metinden tutarları çıkarmak.** Karşı taraf,
+başlangıç tarihi, güncelleme ve düzeltme bayrakları KAP'ın yapılandırılmış
+alanlarından deterministik geliyor. Kur çevrimi, ciro ve oran düz kod; modele
+hiç aritmetik verilmiyor.
 
 ## Doğrulama kapısı
 
-Kapıdan geçmeyen bildirim yayınlanmaz; kısmi yayın yok.
+Model her tutarı, para birimini ve kalem tipini metindeki birebir alıntısıyla
+vermek zorunda. Kapıdan geçmeyen bildirim yayınlanmaz; kısmi yayın yok.
 
 | Aşama | Kontrol |
 |---|---|
@@ -89,79 +76,56 @@ Kapıdan geçmeyen bildirim yayınlanmaz; kısmi yayın yok.
 | B6 | Bir kalem, başka bir kalem ile metindeki bir sayının toplamı mı (artış ve yeni toplam birlikte) |
 
 A reddi bir üst katman modele **yükseltilir**; B reddi model hatası değil veri
-şüphesidir, doğrudan elle inceleme kuyruğuna düşer. A7 ve B4–B6, 26.09.2026
-veri denetiminden doğdu: A1–A3 sayının metinde **geçtiğini** denetliyor,
-**neyin sayısı olduğunu** denetlemiyordu (bkz.
-`docs/arastirma/2026-09-26-veri-denetimi.md`).
+şüphesidir, doğrudan elle inceleme kuyruğuna düşer. İnsan kararı gerekçesiyle
+kayda geçer ve sitede görünür.
 
-B3 gerçek bir vakadan doğdu: `1.040.400 USD (50.613.963 TL)` — şirket kendi
-çevirisini parantez içinde vermiş. İkisi de kalem sayılırsa net tutar tam iki
-katına çıkar ve A5 bunu göremez, çünkü para birimleri farklı.
+A7 ve B4–B6 bir denetimden doğdu. Eylül 2026'da bir okur, bir belediye
+ihalesinin muhammen bedelinin şirketin geliri gibi ölçüldüğünü fark etti: A1–A3
+sayının metinde **geçtiğini** denetliyor, **neyin sayısı olduğunu**
+denetlemiyordu. Yayındaki 1.272 bildirim kural tabanlı bir tarayıcıdan geçti,
+işaretlenen 453'ün yaklaşık 150'si elle okundu, 10 kesin yanlış büyüklük
+bulundu ve bu hata sınıfı kapıya eklendi. Denetim artık her akşamki koşunun
+sonunda çalışıyor (`docs/arastirma/2026-09-26-veri-denetimi.md`).
 
-## Skor
-
-```
-S = clamp(5 · f(r) · K, 0, 5)      f(r) = clamp((log10(r) + 2,602) / 2,602, 0, 1)
-```
-
-`r` = net tutar / TTM hasılat. Logaritmik, çünkü materyallik çarpımsal:
-%0,25 taban, %100 tavan (taban başta %1'di; hacim sınaması o eşiğin altındaki
-bildirimlerin de ilgi gördüğünü gösterince indirildi).
-
-`K` bilginin netliği: karşı taraf gizliyse ya da duyuru bir güncellemeyse
-skoru aşağı çeker (1,00 → 0,50). Bir tasarım tercihi; getiriden türetilmedi
-ve örneklem dışında bir tepki farkı göstermedi (metodoloji II).
-
-Sitede görünen **kademe S'den değil doğrudan r'den** okunuyor: %5 ve üstü
-"önemli", %15 ve üstü "mega". K bir doğrulanabilirlik ayarı; büyüklük etiketine
-karışırsa gizli karşı taraflı dev bir iş "rutin" görünebiliyordu.
-
-Skor bir **getiri tahmini değil, büyüklük ölçüsüdür.** Bunun sebebi ölçüldü:
-601 bildirimlik örneklemde tüm sinyaller birlikte 3 günlük anormal getirinin
-yalnızca %6,4'ünü açıklıyor. Tepki, tahmin olarak değil betimleyici bir panel
-olarak (medyan, çeyreklikler, n) gösteriliyor.
-
-Tutar yoksa skor **hiç gösterilmiyor** — sıfır ya da varsayılan bir taban değil.
-
-## Point-in-time TTM
+## Payda: bildirim anındaki son 12 aylık ciro
 
 Payda iki şartı birden karşılamak zorunda: son 4 çeyrek **ve** bildirim anında
-açıklanmış olmak. Tek bir ara dönem raporu TTM'in iki bileşenini birden veriyor:
+açıklanmış olmak. Sonradan yayınlanan rapor geçmişe yazılmaz. Tek bir ara
+dönem raporu iki bileşeni birden veriyor:
 
 ```
 TTM = FY(önceki yıl) + YTD(cari) − YTD(geçen yıl aynı dönem)
 ```
 
-Gerçek veriden öğrenilen üç tuzak: gelir tablosunun XBRL rolü sabit değil,
-"Sunum Para Birimi" `1.000 TL` olabiliyor, ve şirket bu beyanı yanlış da
+**Enflasyon muhasebesi (TMS 29) oranı sessizce %7–25 büyütüyordu.** Her rapor
+geçen yılın rakamlarını bugünün satın alma gücüyle yeniden yazıyor; formülün
+iki terimi bugünün TL'siyle, biri geçen yılın TL'siyle geliyordu. Arşivdeki
+rapor çiftlerinin yaklaşık %91'i yeniden ifade edilmişti. Düzeltme dış veri
+kullanmıyor: eski terim, şirketin kendi raporlarından okunan katsayıyla
+bugünün birimine taşınıyor. TMS 29'a geçiş yılında resmî TÜFE kullanılıyor.
+
+Gerçek veriden öğrenilen başka tuzaklar: gelir tablosunun XBRL rolü sabit
+değil, "Sunum Para Birimi" `1.000 TL` olabiliyor ve şirket bu beyanı yanlış da
 yazabiliyor (yükleyici her şirketin kendi serisindeki medyana bakıp aykırı
 raporu almıyor).
 
-## Ölçülen durum (ilk sürüm, 19.09.2026)
+## Ölçülen doğruluk ve maliyet
 
 | | |
 |---|---|
-| Bildirim arşivi | 613 bildirim / 111 şirket (12 ay) |
-| TCMB kur satırı | 5.610 |
-| Fiyat serisi | 27.607 kapanış (111 hisse) + 259 günlük XU100 |
-| Tepki | 612 bildirimde hesaplandı, 601'inde 3 günlük CAR dolu |
-| Finansal | 933 dönem kaydı; bildirimlerin %97,4'ünde TTM çözülüyor |
-| Altın küme | 50 bildirim elle etiketli |
-| Çıkarım doğruluğu | 47/50 tam doğru (%94); skor 49/50'de elle etiketle aynı |
-| Test | 221 (30.09.2026: 434) |
+| Çıkarım doğruluğu | Elle etiketlenmiş 50 bildirimde 47 tam doğru; büyüklük 49'unda elle hesaplananla aynı |
+| Ölçüm | `scripts/dogruluk_olc.py`; saklı çıkarımlar üzerinden koşar, dil modeli gerekmez |
+| Maliyet | 2024-09'a uzanan 690 bildirimlik geçmişin çıkarımı 0,487 USD; günlük koşu ayda birkaç sent |
+| Test | Python 434, site 75 |
 
-Güncel sayılar canlı sitede: `/proje-hakkinda` sayfası onları her
-tazelemede veritabanından hesaplıyor.
+Güncel arşiv sayıları canlı sitede: `/proje-hakkinda` her tazelemede
+veritabanından hesaplıyor.
 
 ## Canlı koşu
 
 `.github/workflows/gunluk.yml` hafta içi her akşam 19:30'da (İstanbul)
-`scripts/gunluk.py`'yi koşar. Orkestratör yeni bir hat değil; yukarıdaki
-betikleri kısa aralıkla ve sırayla çağırır:
-
-```
-liste+detay → DB → kur → finansal → fiyat → faktör → VBTS → çıkarım (LLM) → tepki → bağlam
-```
+`scripts/gunluk.py`'yi koşar. Orkestratör betikleri sırayla çağırır; ücretli
+dil modeli çağrıları katmanlı ve sınırlı.
 
 Üç tasarım kararı:
 
@@ -171,11 +135,20 @@ liste+detay → DB → kur → finansal → fiyat → faktör → VBTS → çık
   gelen yarım bir kapanış kalıcı olurdu.
 - **Soğuk başlangıç korumalı.** Ham arşiv CI önbelleğinde taşınıyor. Önbellek
   yoksa arşiv önce tam aralıkla yeniden kuruluyor (tamamlandığında
-  `data/ham/liste/.tam` yazılır); yarım arşivle bağlam hesabı koşarsa
-  veritabanındaki tahta ve sıklık değerlerini eksik sayımla ezerdi.
+  `data/ham/liste/.tam` yazılır).
 
-Sırlar (`DATABASE_URL`, `GEMINI_API_KEY`) GitHub Secrets'ta; iş akışı koşu
-başında geçici bir `.env` yazar.
+Sırlar GitHub Secrets'ta; iş akışı koşu başında geçici bir `.env` yazar.
+
+## Nasıl çalışıldı
+
+Kod Claude Code ile birlikte yazıldı; commit'lerde `Co-Authored-By` ile
+işaretli. Kapsam, mimari, doğrulama ve yayın kararları Hüseyin Dinçer'in. Her
+büyük değişiklik önce yazılı bir tasarım ve plan (`docs/superpowers/`), sonra
+testli küçük adımlar, en sonda tarayıcıda doğrulama olarak ilerliyor.
+
+Depoda Eylül 2026'da yapılıp kapatılan bir araştırmanın notları ve analiz
+betikleri de duruyor (`docs/arastirma/`, `scripts/analiz_*`). Ürün bunları
+kullanmıyor.
 
 ## Kurulum
 
@@ -185,17 +158,14 @@ python -m venv .venv
 cp .env.example .env                    # sonra .env'i doldur
 ```
 
-Şema `supabase/migrations/` altında. Python 3.13 gerekiyor.
+Şema `supabase/migrations/` altında. Python 3.13 gerekiyor. Site için `site/`
+içinde `npm install` ve `.env.local.example`'dan `.env.local`.
 
 ## Çalıştırma
 
 ```bash
-python scripts/backfill_calistir.py      # KAP bildirim arşivi
-python scripts/kur_cek.py                # TCMB kurları
-python scripts/fiyat_cek.py              # kapanış + XU100
-python scripts/tepki_hesapla.py          # CAR
-python scripts/finansal_cek.py           # finansal raporlar
-python scripts/finansal_yukle.py         # TTM hasılat tablosu
+python scripts/gunluk.py                 # günlük koşunun tamamı (ücretli adım yok)
+python scripts/gunluk.py --llm           # ücretli çıkarım dahil
 
 python scripts/cikarim_kosu.py --adet 20             # KURU: maliyet tahmini
 python scripts/cikarim_kosu.py --adet 20 --calistir  # ücretli çağrı
@@ -210,8 +180,8 @@ harcanmadan yeniden puanlanır.
 ## Test
 
 ```bash
-python -m pytest
-python -m pyflakes scripts src tests   # testler scripts/ altını koşturmuyor
+python -m pytest                    # Python
+cd site && npm test && npm run typecheck   # site
 ```
 
 Ağa çıkan testler ayrı: `scripts/kap_duman_testi.py` zinciri gerçek KAP'a karşı
@@ -219,8 +189,9 @@ doğruluyor.
 
 ## Veri kaynakları
 
-KAP (Kamuyu Aydınlatma Platformu), TCMB günlük döviz kurları, Yahoo Finance
-(BIST kapanışları). Ham arşivler depoya girmiyor.
+KAP (Kamuyu Aydınlatma Platformu), TCMB günlük döviz kurları, TÜİK TÜFE
+(TCMB'nin yayımladığı tablodan), fonların KAP'taki Portföy Dağılım Raporları,
+Yahoo Finance (BIST kapanışları). Ham arşivler depoya girmiyor.
 
 ## Terim sözlüğü
 
@@ -230,8 +201,7 @@ KAP (Kamuyu Aydınlatma Platformu), TCMB günlük döviz kurları, Yahoo Finance
 | çıkarım | extraction (LLM) |
 | kapı | gate (validation) |
 | ciro / hasılat | revenue |
-| tepki | market reaction (CAR) |
-| tahta | trading board state (circuit breakers, VBTS) |
+| kademe | size tier (routine / significant / mega) |
 | sıklık | disclosure frequency |
 | depo / arşiv | repository layer / raw archive |
 | yayına hazır | publishable |
@@ -239,4 +209,5 @@ KAP (Kamuyu Aydınlatma Platformu), TCMB günlük döviz kurları, Yahoo Finance
 ## Lisans
 
 Kod MIT lisanslı (`LICENSE`). KAP metinleri ve ham veriler depoda yok ve bu
-lisansın kapsamında değil.
+lisansın kapsamında değil. `site/public/film/` altındaki tanıtım filmi ve
+içindeki müzik de bu lisansın kapsamında değildir.
