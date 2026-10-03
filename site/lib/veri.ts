@@ -3,8 +3,6 @@ import { ozetle, sozSatirlariKur } from "./soz";
 import { supabase } from "./supabase";
 import {
   buyuklukBul,
-  guvenilirlik,
-  kademeBul,
   siklikBayragi,
   yuzdelik,
   type Kademe,
@@ -15,28 +13,22 @@ import {
 // kullandığı için oradan geçiyorlar. Buradan yeniden dışa vuruluyorlar
 // ki çağıranlar tek bir yerden alabilsin.
 export {
-  F_ORAN_METNI,
-  MEGA_ESIGI,
   MEGA_ORAN,
-  ONEMLI_ESIGI,
   ONEMLI_ORAN,
   TABAN_ORAN,
   TAVAN_ORAN,
   buyuklukBul,
   fOran,
-  guvenilirlik,
-  kademeBul,
   kademeRengi,
   siklikBayragi,
   siklikRenk,
   oranRengi,
-  tahtaRenk,
 } from "./skor";
 
 /**
  * PostgREST sorgu başına en fazla 1.000 satır döndürüyor ve bunu hata
  * olarak BİLDİRMİYOR. Arşiv 2026-09-24'te 1.000 yayına hazır bildirimi
- * aşınca akış, özet sayılar, akran grupları ve `/kap` sayfaları en eski
+ * aşınca akış, özet sayılar ve `/kap` sayfaları en eski
  * bildirimleri sessizce kaybetti. Tabloyu bütün okuyan her sorgu buradan
  * geçer.
  *
@@ -100,12 +92,6 @@ export type AkisSatiri = {
   hap_ozet: string[] | null;
   tutarlar: Tutar[] | null;
   tutar_gizli: boolean;
-  car_1g: number | null;
-  car_3g: number | null;
-  car_5g: number | null;
-  tahta: "temiz" | "hareketli" | "tedbirli" | null;
-  tahta_v90: number | null;
-  tahta_v5: number | null;
   /**
    * Şirketin arşiv penceresindeki (12 ay) toplam bildirim sayısı.
    * `bildirim` tablosunun tamamından sayılıyor — 613'ün hepsi, yayına
@@ -114,25 +100,11 @@ export type AkisSatiri = {
    */
   bildirim_sikligi: number | null;
   /**
-   * car_Ng'nin formülü. ew = Σ r − (α + β·r_ew), kıyas eşit ağırlıklı BIST
-   * (2026-09-22'den beri); piyasa = aynısı XU100'e karşı; beta1 = Σ r − r_m.
-   */
-  tepki_modeli: "ew" | "piyasa" | "beta1" | null;
-  /** CAR'da kullanılan (Vasicek-küçültülmüş) beta. */
-  beta: number | null;
-  /**
-   * evren_ort: hisse yeni halka açıldı, tahmin penceresinde 60 gözlem yok;
-   * beta evren ortalaması, α = 0. Kullanıcıya söylenmesi gereken bir şey.
-   */
-  beta_kaynak: "tahmin" | "evren_ort" | null;
-  /**
    * Bildirim anında yürürlükteki VBTS kademesi: 0 yok, 1 kredili işlem
-   * yasağı, 2 brüt takas, 3 emir paketi, 4 tek fiyat. `tahta_v90/v5`
-   * `tahta_yontem = kap_v1` iken devre kesicinin başladığı ayrı seans günü.
+   * yasağı, 2 brüt takas, 3 emir paketi, 4 tek fiyat.
    */
   tahta_vbts_kademe: number | null;
   tahta_vbts_bitis: string | null;
-  tahta_yontem: string | null;
   /** Bildirimden önceki 12 aydaki tüm KAP özel durum açıklamaları. */
   kap_aciklama_12a: number | null;
   /** 365'ten azsa 12 aylık sayım eksik pencereden (yeni halka arz). */
@@ -161,8 +133,6 @@ export type AkisSatiri = {
   onceki_kap_id?: string | null;
   onceki_tur?: "duzeltme" | "ayni_is" | "guncelleme" | null;
   onceki_yayin?: string | null;
-  /** Bildirim günü piyasadaki hisselerin "çok oynak" kuralını sağlayan payı. */
-  tahta_piyasa_orani?: number | null;
 };
 
 /** Hisse sayfasındaki BUGÜNKÜ fon durumu (`hisse_fon_guncel`). */
@@ -193,7 +163,6 @@ export async function hisseFonGetir(ticker: string): Promise<HisseFon | null> {
 /** Sitenin üstündeki tek satırlık piyasa bandı (`piyasa_bandi` view). */
 export type PiyasaBandi = {
   son_tarih: string;
-  ew_5s: number | null;
   xu100_5s: number | null;
   tasfiye_tarihi: string | null;
   tasfiye_sirket_sayisi: number | null;
@@ -206,32 +175,13 @@ export async function piyasaBandiGetir(): Promise<PiyasaBandi | null> {
   return (data as PiyasaBandi | null) ?? null;
 }
 
-export type TepkiPaneli = {
-  n: number;
-  medyan: number;
-  altCeyrek: number;
-  ustCeyrek: number;
-  pozitifOrani: number;
-  /** Akran grubu neye göre kuruldu — kullanıcıya söylenmesi gereken bir şey. */
-  esas: "skor+tahta" | "skor";
-  /** Bulgu 10–12: tedbirli tahtada panel fiyat oluşumunu değil oynaklığı yansıtır. */
-  guvenilir: boolean;
-};
-
 export type Bildirim = AkisSatiri & {
   /** Sınıflandırılmışsa `karsi_taraf_acik`, değilse eski kural (alan dolu mu). */
   karsiTarafAcik: boolean;
-  /**
-   * Görünen büyüklük kademesi — ciro oranından, S'den değil. Akran
-   * grubu bunu KULLANMIYOR; o `panelleriHesapla` içinde S kademesiyle
-   * ayrıca kuruluyor (metodolojideki tanım).
-   */
+  /** Görünen büyüklük kademesi: ciro oranından. */
   kademe: Kademe | null;
-  /** Güvenilirlik çarpanı K; skordan türetilmiyor, yeniden gösteriliyor. */
-  k: number;
   /** Bildirim yorgunluğu kademesi — skora girmez, bağlam etiketi. */
   siklik: SiklikBayragi | null;
-  panel: TepkiPaneli | null;
   /**
    * İş daha önce aynı tutarla duyurulmuştu (ihale → sözleşme). Kart
    * gösterilir ama yeni iş sayılmaz: büyüklük filtresine, "en büyük iş"
@@ -240,94 +190,7 @@ export type Bildirim = AkisSatiri & {
   oncedenDuyuruldu: boolean;
 };
 
-/**
- * Panelin ihtiyaç duyduğu her şey. Tek bir bildirim sayfası için 597
- * satırın tamamını çekmek gerekmiyor: akran grubu yalnız bu dört alana
- * bakıyor.
- */
-export type PanelGirdi = Pick<
-  AkisSatiri,
-  "kap_id" | "etki_skoru" | "car_3g" | "tahta"
->;
-
-const ESAS_ASGARI_N = 20;
-
-function panelKur(
-  carlar: number[],
-  esas: TepkiPaneli["esas"],
-  guvenilir: boolean,
-): TepkiPaneli | null {
-  if (carlar.length === 0) return null;
-  const s = [...carlar].sort((a, b) => a - b);
-  return {
-    n: s.length,
-    medyan: yuzdelik(s, 0.5),
-    altCeyrek: yuzdelik(s, 0.25),
-    ustCeyrek: yuzdelik(s, 0.75),
-    pozitifOrani: s.filter((c) => c > 0).length / s.length,
-    esas,
-    guvenilir,
-  };
-}
-
-/**
- * Akran grubu: aynı skor kademesi VE aynı tahta kalitesi. Hücre 20'nin
- * altına düşerse yalnız kademeye geriliyor ve bu kullanıcıya söyleniyor.
- *
- * Tahtanın gruba girmesi Bulgu 12'nin sonucu: devre kesici gören
- * tahtada ortalama tepki aşağı yönlü — ilk yılda t=−2,62, örneklem dışı
- * yılda t=−2,85. (İlk gerekçe "oynaklık var, yön yok" idi; o çöktü.)
- * Tahtaları karıştıran bir panel, spekülatif hareketi "benzer bildirimin
- * tepkisi" diye gösterirdi.
- */
-function panelleriHesapla(satirlar: PanelGirdi[]): Map<string, TepkiPaneli> {
-  const kademeli = satirlar.map((s) => ({
-    ...s,
-    kademe: kademeBul(s.etki_skoru),
-  }));
-
-  const grupla = (anahtar: (x: (typeof kademeli)[number]) => string | null) => {
-    const m = new Map<string, number[]>();
-    for (const s of kademeli) {
-      const a = anahtar(s);
-      if (a === null || s.car_3g === null) continue;
-      const liste = m.get(a) ?? [];
-      liste.push(s.car_3g);
-      m.set(a, liste);
-    }
-    return m;
-  };
-
-  const dar = grupla((s) => (s.kademe && s.tahta ? `${s.kademe}|${s.tahta}` : null));
-  const genis = grupla((s) => s.kademe);
-
-  const sonuc = new Map<string, TepkiPaneli>();
-  for (const s of kademeli) {
-    if (!s.kademe) continue;
-    const darAnahtar = s.tahta ? `${s.kademe}|${s.tahta}` : null;
-    const darListe = darAnahtar ? (dar.get(darAnahtar) ?? []) : [];
-    const guvenilir = s.tahta !== "tedbirli";
-
-    // Kendini akran sayma: tek gözlemlik gruplarda panel kendi tepkisini
-    // "benzerlerin tepkisi" diye gösterirdi.
-    const cikar = (liste: number[]) => {
-      if (s.car_3g === null) return liste;
-      const i = liste.indexOf(s.car_3g);
-      return i === -1 ? liste : [...liste.slice(0, i), ...liste.slice(i + 1)];
-    };
-
-    let panel: TepkiPaneli | null;
-    if (darListe.length >= ESAS_ASGARI_N) {
-      panel = panelKur(cikar(darListe), "skor+tahta", guvenilir);
-    } else {
-      panel = panelKur(cikar(genis.get(s.kademe) ?? []), "skor", guvenilir);
-    }
-    if (panel) sonuc.set(s.kap_id, panel);
-  }
-  return sonuc;
-}
-
-/** Tüm yayına hazır bildirimleri getirir ve panelleri iliştirir. */
+/** Tüm yayına hazır bildirimleri getirir. */
 export async function bildirimleriGetir(): Promise<Bildirim[]> {
   const satirlar = await hepsiniOku<AkisSatiri>("Akış", (bas, son) =>
     supabase
@@ -337,23 +200,14 @@ export async function bildirimleriGetir(): Promise<Bildirim[]> {
       .order("kap_id")
       .range(bas, son),
   );
-  const paneller = panelleriHesapla(satirlar);
-
-  return satirlar.map((s) => zenginlestir(s, paneller.get(s.kap_id) ?? null));
+  return satirlar.map(zenginlestir);
 }
 
 /**
- * Akran grubu girdileri — süreç ömrü boyunca saatlik önbellekte.
- *
- * Neden gerekli: `/kap/[kap_id]` 597 sayfa statik üretiliyor ve her biri
- * akran grubunu kurmak için tüm arşivin skor/tepki/tahta üçlüsüne
- * bakmak zorunda. Önbelleksiz 597 kez aynı sorgu koşardı.
- *
- * Neden modül düzeyinde: derleme tek bir Node süreci, orada bir kez
- * çekiliyor. Çalışma anında ise TTL sayfaların `revalidate = 3600`
- * değeriyle aynı — yani önbellek sayfadan daha uzun yaşamıyor.
+ * Süreç düzeyindeki önbelleklerin ömrü: sayfaların `revalidate = 3600`
+ * değeriyle aynı, yani önbellek sayfadan daha uzun yaşamıyor.
  */
-const PANEL_TTL_MS = 3600_000;
+const ONBELLEK_TTL_MS = 3600_000;
 
 /**
  * Süreç düzeyinde, sayfaların `revalidate` süresi kadar yaşayan önbellek.
@@ -364,7 +218,7 @@ const PANEL_TTL_MS = 3600_000;
 function onbellekli<T>(yukle: () => Promise<T>): () => Promise<T> {
   let bellek: { zaman: number; veri: Promise<T> } | null = null;
   return () => {
-    if (!bellek || Date.now() - bellek.zaman >= PANEL_TTL_MS) {
+    if (!bellek || Date.now() - bellek.zaman >= ONBELLEK_TTL_MS) {
       const veri = yukle();
       bellek = { zaman: Date.now(), veri };
       veri.catch(() => {
@@ -375,24 +229,7 @@ function onbellekli<T>(yukle: () => Promise<T>): () => Promise<T> {
   };
 }
 
-let panelBellek: { zaman: number; veri: PanelGirdi[] } | null = null;
-
-async function panelGirdileriGetir(): Promise<PanelGirdi[]> {
-  if (panelBellek && Date.now() - panelBellek.zaman < PANEL_TTL_MS) {
-    return panelBellek.veri;
-  }
-  const veri = await hepsiniOku<PanelGirdi>("Akran grubu", (bas, son) =>
-    supabase
-      .from("akis")
-      .select("kap_id, etki_skoru, car_3g, tahta")
-      .order("kap_id")
-      .range(bas, son),
-  );
-  panelBellek = { zaman: Date.now(), veri };
-  return veri;
-}
-
-function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
+function zenginlestir(satir: AkisSatiri): Bildirim {
   // `!= null`: sütun yoksa undefined, sınıflandırılmamışsa null gelir.
   const acik =
     satir.karsi_taraf_acik != null
@@ -402,47 +239,39 @@ function zenginlestir(satir: AkisSatiri, panel: TepkiPaneli | null): Bildirim {
     ...satir,
     kademe: buyuklukBul(satir.ciro_orani),
     karsiTarafAcik: acik,
-    k: guvenilirlik(acik, satir.guncelleme_mi),
     siklik: siklikBayragi(satir.bildirim_sikligi),
-    panel,
     oncedenDuyuruldu: satir.onceki_tur === "ayni_is",
   };
 }
 
 /** Tek bir bildirim — `/kap/[kap_id]` sayfasının kaynağı. */
 export async function bildirimGetir(kapId: string): Promise<Bildirim | null> {
-  const [{ data, error }, girdiler] = await Promise.all([
-    supabase.from("akis").select("*").eq("kap_id", kapId).maybeSingle(),
-    panelGirdileriGetir(),
-  ]);
+  const { data, error } = await supabase
+    .from("akis")
+    .select("*")
+    .eq("kap_id", kapId)
+    .maybeSingle();
 
   if (error) {
     throw new Error(`Bildirim okunamadı: ${error.message}`);
   }
   if (!data) return null;
 
-  const satir = data as AkisSatiri;
-  return zenginlestir(satir, panelleriHesapla(girdiler).get(kapId) ?? null);
+  return zenginlestir(data as AkisSatiri);
 }
 
 /** Bir hissenin tüm bildirimleri, yeniden eskiye. */
 export async function hisseGetir(ticker: string): Promise<Bildirim[]> {
-  const [{ data, error }, girdiler] = await Promise.all([
-    supabase
-      .from("akis")
-      .select("*")
-      .eq("ticker", ticker)
-      .order("yayin_zamani", { ascending: false }),
-    panelGirdileriGetir(),
-  ]);
+  const { data, error } = await supabase
+    .from("akis")
+    .select("*")
+    .eq("ticker", ticker)
+    .order("yayin_zamani", { ascending: false });
 
   if (error) {
     throw new Error(`Hisse okunamadı: ${error.message}`);
   }
-  const paneller = panelleriHesapla(girdiler);
-  return ((data ?? []) as AkisSatiri[]).map((s) =>
-    zenginlestir(s, paneller.get(s.kap_id) ?? null),
-  );
+  return ((data ?? []) as AkisSatiri[]).map(zenginlestir);
 }
 
 export type HisseOzeti = {
@@ -451,7 +280,6 @@ export type HisseOzeti = {
   adet: number;
   medyanSkor: number | null;
   sonBildirim: string;
-  tahta: AkisSatiri["tahta"];
 };
 
 /**
@@ -461,11 +289,11 @@ export type HisseOzeti = {
  */
 export async function hisseleriGetir(): Promise<HisseOzeti[]> {
   const satirlar = await hepsiniOku<
-    Pick<AkisSatiri, "ticker" | "sirket" | "etki_skoru" | "yayin_zamani" | "tahta">
+    Pick<AkisSatiri, "ticker" | "sirket" | "etki_skoru" | "yayin_zamani">
   >("Hisse listesi", (bas, son) =>
     supabase
       .from("akis")
-      .select("ticker, sirket, etki_skoru, yayin_zamani, tahta")
+      .select("ticker, sirket, etki_skoru, yayin_zamani")
       .order("yayin_zamani", { ascending: false })
       .order("kap_id")
       .range(bas, son),
@@ -477,8 +305,6 @@ export async function hisseleriGetir(): Promise<HisseOzeti[]> {
     if (mevcut) {
       mevcut.adet += 1;
       if (s.etki_skoru !== null) mevcut.skorlar.push(s.etki_skoru);
-      // Sorgu yeniden eskiye sıralı: ilk görülen en yeni olan.
-      if (mevcut.tahta === null) mevcut.tahta = s.tahta;
     } else {
       gruplar.set(s.ticker, {
         ticker: s.ticker,
@@ -486,7 +312,6 @@ export async function hisseleriGetir(): Promise<HisseOzeti[]> {
         adet: 1,
         medyanSkor: null,
         sonBildirim: s.yayin_zamani,
-        tahta: s.tahta,
         skorlar: s.etki_skoru !== null ? [s.etki_skoru] : [],
       });
     }
@@ -504,13 +329,13 @@ export async function hisseleriGetir(): Promise<HisseOzeti[]> {
 
 /**
  * Başlıktaki arama listesi. Layout her statik sayfada koşuyor (1.400+
- * sayfa), bu yüzden `panelGirdileriGetir` gibi süreç düzeyinde ve aynı
- * TTL ile önbellekte.
+ * sayfa), bu yüzden diğer önbelleklerle aynı biçimde süreç düzeyinde ve
+ * aynı TTL ile önbellekte.
  */
 let aramaBellek: { zaman: number; veri: HisseSecenek[] } | null = null;
 
 export async function hisseSecenekleriGetir(): Promise<HisseSecenek[]> {
-  if (aramaBellek && Date.now() - aramaBellek.zaman < PANEL_TTL_MS) {
+  if (aramaBellek && Date.now() - aramaBellek.zaman < ONBELLEK_TTL_MS) {
     return aramaBellek.veri;
   }
   const veri = (await hisseleriGetir()).map((h) => ({
@@ -524,13 +349,12 @@ export async function hisseSecenekleriGetir(): Promise<HisseSecenek[]> {
 
 /**
  * Ana sayfanın, dizinin ve bildirim sayfası eklentisinin okuduğu
- * sütunlar. `bildirimleriGetir` 60 sütun çekip her satıra akran paneli
- * kuruyor; bunlara hiçbiri gerekmiyor.
+ * sütunlar. `bildirimleriGetir` bütün sütunları çekiyor; bunlara hepsi
+ * gerekmiyor.
  */
 const ANA_SUTUNLAR =
   "kap_id, ticker, sirket, yayin_zamani, hap_ozet, is_tanimi, ciro_orani, " +
-  "net_tutar_tl, karsi_taraf, karsi_taraf_acik, onceki_tur, ttm_hasilat, elle_karar, " +
-  "tahta, tahta_v90, tahta_v5, tahta_vbts_kademe";
+  "net_tutar_tl, karsi_taraf, karsi_taraf_acik, onceki_tur, ttm_hasilat, elle_karar";
 
 export type AnaSatir = Pick<
   AkisSatiri,
@@ -547,10 +371,6 @@ export type AnaSatir = Pick<
   | "onceki_tur"
   | "ttm_hasilat"
   | "elle_karar"
-  | "tahta"
-  | "tahta_v90"
-  | "tahta_v5"
-  | "tahta_vbts_kademe"
 >;
 
 /**
@@ -627,24 +447,6 @@ export const ciroSeriGetir = onbellekli(async () => {
 });
 
 /**
- * Son 20 seansın taban/tavan sayımı ve ortalama hareketi, hisse başına
- * (`hisse_limit_gunleri`, 2026-09-27). Fiyatın kendisi açık değil.
- */
-export type LimitGunleriSatiri = import("./hikaye").LimitGunleri & { ticker: string };
-
-export const limitGunleriGetir = onbellekli(() =>
-  hepsiniOku<LimitGunleriSatiri>("Taban/tavan", (bas, son) =>
-    supabase
-      .from("hisse_limit_gunleri")
-      .select(
-        "ticker, son_tarih, seans, taban_gun, tavan_gun, son_taban_serisi, son_tavan_serisi, ort_hareket, gecersiz_gun",
-      )
-      .order("ticker")
-      .range(bas, son),
-  ),
-);
-
-/**
  * Söz ve gerçek, bütün şirketler için bir kez: ana sayfanın modülü ve 144
  * hisse sayfasının kartı aynı gruplardan okuyor.
  */
@@ -668,7 +470,6 @@ export type Ozet = {
   medyanSkor: number | null;
   /** Skorlu bildirimlerde sözleşme / TTM hasılat medyanı — ana sayfa bunu gösteriyor, S'yi değil. */
   medyanOran: number | null;
-  temizOran: number | null;
   /** Arşivde yeni iş bildirimi olan şirket sayısı. */
   sirket: number;
   son24: number;
@@ -689,7 +490,6 @@ export function ozetCikar(bildirimler: Bildirim[]): Ozet {
     .map((b) => b.ciro_orani as number)
     .sort((a, b) => a - b);
 
-  const tahtali = bildirimler.filter((b) => b.tahta !== null);
   const esik = Date.now() - 24 * 3600 * 1000;
 
   return {
@@ -697,9 +497,6 @@ export function ozetCikar(bildirimler: Bildirim[]): Ozet {
     skorlu: skorlar.length,
     medyanSkor: skorlar.length ? yuzdelik(skorlar, 0.5) : null,
     medyanOran: oranlar.length ? yuzdelik(oranlar, 0.5) : null,
-    temizOran: tahtali.length
-      ? tahtali.filter((b) => b.tahta === "temiz").length / tahtali.length
-      : null,
     sirket: new Set(bildirimler.map((b) => b.ticker)).size,
     son24: bildirimler.filter(
       (b) => new Date(b.yayin_zamani).getTime() >= esik,

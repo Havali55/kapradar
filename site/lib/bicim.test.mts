@@ -14,7 +14,6 @@ import {
   kat,
   isaretliYuzde,
   istanbulGunu,
-  tahtaGorunumu,
   uzunTl,
   yilda,
   yuzdeIyelik,
@@ -49,15 +48,6 @@ test("negatif yüzde işareti yüzde işaretinin önünde, eksi karakteriyle", (
   assert.equal(isaretliYuzde(-0.0448), "−%4,48");
   assert.equal(isaretliYuzde(0.03), "+%3,00");
   assert.equal(isaretliYuzde(0), "%0,00");
-});
-
-test("tahta notuna aynı günün piyasa taban oranı eklenir", () => {
-  const cok = tahtaGorunumu("tedbirli", 20, 3, 0, 0.44);
-  assert.ok(cok?.not.endsWith("Aynı gün piyasadaki hisselerin %44'ü de bu durumdaydı."));
-  const sakin = tahtaGorunumu("temiz", 1, 0, 0, 0.3);
-  assert.ok(sakin?.not.endsWith("Aynı gün piyasadaki hisselerin %30'u çok oynaktı."));
-  const yok = tahtaGorunumu("temiz", 1, 0, 0);
-  assert.ok(!yok?.not.includes("piyasadaki"));
 });
 
 test("İstanbul günü UTC gününden farklı olabilir", () => {

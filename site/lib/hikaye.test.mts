@@ -21,10 +21,8 @@ import {
   isleriSuz,
   karsiGorunen,
   kiminle,
-  hareketMedyani,
   kisaAd,
   onIkiAyAraligi,
-  seansDurumu,
   seriIliskisi,
   sonOnIkiAy,
   tabloSatirlari,
@@ -232,58 +230,6 @@ test("gün değişimi: pencereye giren ve 12 ay sonra çıkan iş", () => {
   const giris = s.findIndex((n) => n.t === SIMDI - 10 * GUN_MS);
   assert.deepEqual(gunDegisimi(s, giris, isler), { giren: [isler[0]], cikan: [] });
   assert.deepEqual(gunDegisimi(s, 0, isler), { giren: [], cikan: [] });
-});
-
-test("seans durumu: süren seri önce, sonra ortalama hareketin kademesi", () => {
-  const l = (taban: number, tavan: number, st: number, sv: number, ort: number | null, gecersiz = 0) => ({
-    son_tarih: "2026-09-24",
-    seans: 20,
-    taban_gun: taban,
-    tavan_gun: tavan,
-    son_taban_serisi: st,
-    son_tavan_serisi: sv,
-    ort_hareket: ort,
-    gecersiz_gun: gecersiz,
-  });
-  const m = 0.029;
-  assert.deepEqual(seansDurumu(l(7, 1, 7, 0, 0.0557), m), {
-    kisa: "7 seanstır tabanda",
-    metin: "Son 7 seanstır tabanda",
-    aciklama:
-      "Günde ortalama %5,6 hareket; listedeki hisselerin ortası %2,9, bu onun 1,9 katı. Son 20 seansta 7 taban, 1 tavan günü.",
-    renk: "kir",
-    hareket: 0.0557,
-  });
-  assert.equal(seansDurumu(l(1, 3, 0, 2, 0.05), m)!.kisa, "2 seanstır tavanda");
-  // Seri yoksa kademe; sınırlar yarı açık: tam 0,75 × orta "Olağan"a girer.
-  assert.equal(seansDurumu(l(0, 0, 0, 0, 0.0123), m)!.kisa, "Sakin");
-  assert.equal(seansDurumu(l(0, 0, 0, 0, 0.75 * m), m)!.kisa, "Olağan");
-  assert.equal(seansDurumu(l(2, 0, 1, 0, 0.044), m)!.renk, "kehribar");
-  assert.equal(seansDurumu(l(3, 2, 0, 0, 0.07), m)!.kisa, "Çok oynak");
-  assert.match(
-    seansDurumu(l(0, 2, 0, 0, 0.037, 1), m)!.aciklama,
-    /1 gün, fiyat marjını aşan bir sıçrama \(bedelsiz ya da veri hatası\) olduğu için sayılmadı\.$/,
-  );
-  // Hareket ölçülemediyse ve seri yoksa etiket yok.
-  assert.equal(seansDurumu(l(0, 0, 0, 0, null), m), null);
-  assert.equal(seansDurumu(null, m), null);
-});
-
-test("hareket medyanı: boşlar atlanır, çift sayıda ortalama", () => {
-  const r = (v: number | null) => ({ ort_hareket: v });
-  assert.equal(hareketMedyani([r(0.03), r(null), r(0.01), r(0.02)]), 0.02);
-  assert.equal(hareketMedyani([r(0.01), r(0.04)]), 0.025);
-  assert.equal(hareketMedyani([r(null)]), null);
-});
-
-test("dizin sıralaması: ortalama harekete göre, boş sonda", () => {
-  const r = [
-    { ticker: "A", adet12: 0, sonIs: "2026-01-01", kat: null, buyume: null, hareket: 0.02 },
-    { ticker: "B", adet12: 0, sonIs: "2026-01-01", kat: null, buyume: null, hareket: null },
-    { ticker: "C", adet12: 0, sonIs: "2026-01-01", kat: null, buyume: null, hareket: 0.09 },
-  ];
-  assert.deepEqual(dizinSirala(r, "hareket", true).map((x) => x.ticker), ["C", "A", "B"]);
-  assert.deepEqual(dizinSirala(r, "hareket", false).map((x) => x.ticker), ["A", "C", "B"]);
 });
 
 test("gün ipucunun çıkanları: 12 ay önceki iş, çizginin indiği gün", () => {
