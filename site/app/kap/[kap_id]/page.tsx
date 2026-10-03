@@ -4,15 +4,11 @@ import type { Metadata } from "next";
 import BildirimDetayi from "@/components/BildirimDetayi";
 import IsSatiri from "@/components/IsSatiri";
 import { anaSatirlariGetir, bildirimGetir, kapIdleriGetir } from "@/lib/veri";
-import { KADEME_ADI, sayi, tamTarih, yuzdeIyelik } from "@/lib/bicim";
+import { KADEME_ADI, tamTarih, yuzdeIyelik } from "@/lib/bicim";
 
 export const revalidate = 3600;
 
-/**
- * 597 bildirimin tamamı build anında üretiliyor. Akran grubu girdileri
- * `lib/veri.ts` içinde süreç ömrü boyunca önbellekte, yani 597 sayfa
- * için tek sorgu koşuyor.
- */
+/** Bildirimlerin tamamı build anında üretiliyor. */
 export async function generateStaticParams() {
   const idler = await kapIdleriGetir();
   return idler.map((kap_id) => ({ kap_id }));
@@ -27,11 +23,10 @@ export async function generateMetadata({
   const b = await bildirimGetir(kap_id);
   if (!b) return { title: "Bildirim bulunamadı" };
 
-  // Kademe ciro oranından (kart ve filtreyle aynı kaynak); S yalnız ek bilgi.
+  // Kademe ciro oranından (kart ve filtreyle aynı kaynak).
   const buyukluk =
     b.ciro_orani !== null && b.kademe
-      ? `Hasılatın ${yuzdeIyelik(b.ciro_orani, 2)} · ${KADEME_ADI[b.kademe]}` +
-        (b.etki_skoru !== null ? ` (S ${sayi(b.etki_skoru)}/5)` : "")
+      ? `Hasılatın ${yuzdeIyelik(b.ciro_orani, 2)} · ${KADEME_ADI[b.kademe]}`
       : "Büyüklük hesaplanamadı (tutar ya da hasılat çözülemedi)";
 
   return {
