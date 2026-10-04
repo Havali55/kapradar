@@ -30,6 +30,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  // Paylaşım kartlarının mutlak adresi: Vercel'in kendi alan adı değil.
+  metadataBase: new URL("https://kap.calibresolve.com"),
   title: {
     default: "KAP·RADAR — BIST yeni iş ilişkisi bildirimleri",
     template: "%s · KAP·RADAR",
@@ -37,6 +39,9 @@ export const metadata: Metadata = {
   description:
     "Borsa İstanbul'daki 'yeni iş ilişkisi' bildirimlerini şirketin kendi cirosuna göre boyutlandıran deterministik bir analiz katmanı. Fiyat tahmini üretmez.",
   robots: { index: true, follow: true },
+  // Kart görselleri app/**/opengraph-image.png'den (film/src/og/OgKartlar.tsx).
+  openGraph: { siteName: "KAP·RADAR", locale: "tr_TR", type: "website" },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({
