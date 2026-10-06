@@ -464,7 +464,7 @@ def kp_rbar(ids, K) -> tuple[float, int, float, int]:
     """
     idx = sorted(ids, key=lambda i: K[i]["i0"])
     i0 = np.array([K[i]["i0"] for i in idx])
-    cift, rho, ayni = [], [], 0
+    cift, ayni = [], 0
     for a in range(len(idx)):
         b = a + 1
         while b < len(idx) and i0[b] - i0[a] < OLAY_PENCERE:
