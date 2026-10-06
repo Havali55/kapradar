@@ -78,12 +78,14 @@ jobs:
             echo "X_ACCESS_TOKEN_SECRET=$X_ACCESS_TOKEN_SECRET"
           } > .env
 
+      # X paylaşımı 2026-10-06'dan beri gerçek (film açılışından sonra).
+      # Çıkarımsız elle koşu yeni bildirim üretmez, X'e de dokunmaz.
       - name: koşu
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.llm }}" != "true" ]; then
             python scripts/gunluk.py
           else
-            python scripts/gunluk.py --llm
+            python scripts/gunluk.py --llm --x-gonder
           fi
 
       # Koşu düşse de kaydet: soğuk başlangıcın yarısı bir sonraki koşuya kalsın.
