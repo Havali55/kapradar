@@ -111,24 +111,50 @@ def _kiminle(karsi_taraf: str | None, acik: bool | None) -> str:
     return ad if len(ad) <= AD_SINIRI else ad[: AD_SINIRI - 1].rstrip() + "…"
 
 
+def _sayi(deger: Decimal, ondalik: int) -> str:
+    """Türkçe sayı: binlik nokta, ondalık virgül. 1234.56 → "1.234,6"."""
+    deger = deger.quantize(Decimal(1).scaleb(-ondalik), rounding=ROUND_HALF_UP)
+    return f"{deger:,.{ondalik}f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+
+def _uzun_tl(tl: Decimal) -> str:
+    """Sitedeki `uzunTl`: "55,8 milyar TL", "75,9 milyon TL", "850.000 TL"."""
+    if tl >= Decimal("1e9"):
+        return f"{_sayi(tl / Decimal('1e9'), 1)} milyar TL"
+    if tl >= Decimal("1e6"):
+        return f"{_sayi(tl / Decimal('1e6'), 1)} milyon TL"
+    return f"{_sayi(tl, 0)} TL"
+
+
 def tweet_metni(
     *,
     kap_id: str,
     ticker: str,
     ciro_orani: Decimal,
+    net_tutar_tl: Decimal | None,
     karsi_taraf: str | None,
     karsi_taraf_acik: bool | None,
 ) -> str:
-    """$ORGE · Cirosunun %6,2'si · Önemli iş · Kiminle: … · link · künye"""
+    """$ORGE · 75,9 milyon TL'lik yeni iş = cirosunun %6,2'si · Önemli iş · Kiminle: … · künye
+
+    Link yok: X'te linkli gönderi 0,20 $, linksiz 0,015 $ (2026-10-03
+    kararı). Okur sayfaya gidemediği için tutar metinde. Site profilde;
+    `kap_id` yalnız hata mesajı için.
+    """
     if ciro_orani is None or ciro_orani <= 0:
         raise ValueError(f"{kap_id}: ciro oranı yok, tweet metni kurulamaz")
     kademe = _KADEME_METNI[buyukluk_kademesi(Decimal(ciro_orani))]
+    yuzde = _yuzde_iyelik(Decimal(ciro_orani))
+    buyukluk = (
+        f"{_uzun_tl(Decimal(net_tutar_tl))}'lik yeni iş = cirosunun {yuzde}"
+        if net_tutar_tl and net_tutar_tl > 0
+        else f"Cirosunun {yuzde}"
+    )
     parcalar = [
         f"${ticker}",
-        f"Cirosunun {_yuzde_iyelik(Decimal(ciro_orani))}",
+        buyukluk,
         kademe,
         f"Kiminle: {_kiminle(karsi_taraf, karsi_taraf_acik)}",
-        f"{SITE_KOKU}/kap/{kap_id}",
         KUNYE,
     ]
     return unicodedata.normalize("NFC", " · ".join(parcalar))
@@ -155,7 +181,7 @@ def x_uzunlugu(metin: str) -> int:
 # --- aday seçimi ------------------------------------------------------------
 
 _ADAY_SORGUSU = """
-select a.kap_id, a.ticker, a.ciro_orani, a.karsi_taraf, a.karsi_taraf_acik,
+select a.kap_id, a.ticker, a.ciro_orani, a.net_tutar_tl, a.karsi_taraf, a.karsi_taraf_acik,
        a.yayin_zamani
 from public.akis a
 where a.yayin_zamani >= %(en_eski)s

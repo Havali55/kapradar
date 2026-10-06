@@ -22,14 +22,19 @@ from kap_radar.x_paylasim import (
 )
 
 KAP_ID = "4028328d9f52dddd01a043a00a8b03ff"
-LINK = f"https://kap.calibresolve.com/kap/{KAP_ID}"
 
 
-def metin(oran: str, karsi_taraf: str | None = "Turkcell İletişim Hizmetleri A.Ş.", acik: bool | None = True) -> str:
+def metin(
+    oran: str,
+    karsi_taraf: str | None = "Turkcell İletişim Hizmetleri A.Ş.",
+    acik: bool | None = True,
+    tutar: str | None = None,
+) -> str:
     return tweet_metni(
         kap_id=KAP_ID,
         ticker="ORGE",
         ciro_orani=Decimal(oran),
+        net_tutar_tl=None if tutar is None else Decimal(tutar),
         karsi_taraf=karsi_taraf,
         karsi_taraf_acik=acik,
     )
@@ -39,10 +44,35 @@ def metin(oran: str, karsi_taraf: str | None = "Turkcell İletişim Hizmetleri A
 
 
 def test_onaylanan_bicim():
-    assert metin("0.0615") == (
-        "$ORGE · Cirosunun %6,2'si · Önemli iş · Kiminle: Turkcell İletişim Hizmetleri A.Ş. · "
-        f"{LINK} · Yatırım tavsiyesi değildir"
+    assert metin("0.0615", tutar="75903345.00") == (
+        "$ORGE · 75,9 milyon TL'lik yeni iş = cirosunun %6,2'si · Önemli iş · "
+        "Kiminle: Turkcell İletişim Hizmetleri A.Ş. · Yatırım tavsiyesi değildir"
     )
+
+
+def test_tutar_yoksa_yalniz_oran():
+    assert metin("0.0615").startswith("$ORGE · Cirosunun %6,2'si · Önemli iş ·")
+    assert metin("0.0615", tutar="0").startswith("$ORGE · Cirosunun %6,2'si ·")
+
+
+@pytest.mark.parametrize(
+    "tutar, beklenen",
+    [
+        ("55766721950.00", "55,8 milyar TL'lik"),
+        ("1101522675.00", "1,1 milyar TL'lik"),
+        ("1234567890123", "1.234,6 milyar TL'lik"),
+        ("180000000.00", "180,0 milyon TL'lik"),
+        ("41682654.15", "41,7 milyon TL'lik"),
+        ("850000", "850.000 TL'lik"),
+    ],
+)
+def test_tutar_sitedeki_uzun_tl_bicimiyle(tutar, beklenen):
+    assert f"$ORGE · {beklenen} yeni iş = cirosunun " in metin("0.02", tutar=tutar)
+
+
+def test_link_yok():
+    # Linkli gönderi 13 kat pahalı (0,20 $ / 0,015 $); bot linksiz.
+    assert "http" not in metin("0.0615")
 
 
 @pytest.mark.parametrize(
@@ -85,7 +115,7 @@ def test_harfsiz_deger_isim_sayilmaz():
 
 def test_uzun_ad_kisaltilir_ve_tweet_sinirda_kalir():
     ad = "Çok Uzun Adlı Uluslararası Mühendislik ve Taahhüt Anonim Şirketi Türkiye Şubesi Konsorsiyumu İş Ortaklığı"
-    t = metin("0.02", ad, acik=True)
+    t = metin("12.345", ad, acik=True, tutar="1234567890123")
     assert "…" in t and ad not in t
     assert x_uzunlugu(t) <= MAKS_UZUNLUK
 

@@ -6,7 +6,10 @@ requires-python = ">=3.13"
 dependencies = [
     "httpx>=0.28",
     "pydantic>=2.13",
-    "selectolax>=0.4",
+    # 1.0 Modest ayrıştırıcısını kaldırdı (`selectolax.parser` ImportError);
+    # 2026-10-05 koşusu bütün adımlarda bu yüzden düştü. Lexbor'a geçiş
+    # ayrıştırma sonucunu değiştirebilir, arşivle karşılaştırılmadan açılmaz.
+    "selectolax>=0.4,<1",
     "psycopg[binary]>=3.3",
     "python-dotenv>=1.2",
     "yfinance>=1.7",

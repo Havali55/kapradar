@@ -11,7 +11,7 @@ Günlük koşu (scripts/gunluk.py) bunu `--x-gonder` verilmedikçe kuru çağır
 Aday kuralları `kap_radar.x_paylasim` içinde (başlangıç tarihi, yaş
 sınırı, büyüklüğü bilinmeyenin atlanması). Her aday için sıra:
   1. Sitedeki sayfası 200 dönmüyorsa atlanır; kayıt yazılmaz, sonraki
-     koşu yeniden dener. Tweet'in linki boşa çıkmasın.
+     koşu yeniden dener. Tweet'i okuyan sitede bulabilsin.
   2. Satır "gonderiliyor" olarak yazılıp commit edilir.
   3. Tweet atılır, sonuç satıra yazılır.
 İlk hatada koşu durur: anahtar ya da kota sorunu her adaya aynı hatayı verir.
@@ -46,7 +46,7 @@ from kap_radar.x_paylasim import (  # noqa: E402
 )
 
 ISTANBUL = ZoneInfo("Europe/Istanbul")
-METIN_ALANLARI = ("kap_id", "ticker", "ciro_orani", "karsi_taraf", "karsi_taraf_acik")
+METIN_ALANLARI = ("kap_id", "ticker", "ciro_orani", "net_tutar_tl", "karsi_taraf", "karsi_taraf_acik")
 EKSIK_ANAHTAR = "X anahtarları eksik (.env ya da ortam: X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET)"
 
 
@@ -90,11 +90,11 @@ def dogrula() -> int:
 
 def onizle(db: psycopg.Connection, adet: int) -> int:
     satirlar = db.execute(
-        "select kap_id, ticker, ciro_orani, karsi_taraf, karsi_taraf_acik, yayin_zamani"
+        "select kap_id, ticker, ciro_orani, net_tutar_tl, karsi_taraf, karsi_taraf_acik, yayin_zamani"
         " from public.akis where ciro_orani > 0 order by yayin_zamani desc limit %s",
         (adet,),
     ).fetchall()
-    sutunlar = ("kap_id", "ticker", "ciro_orani", "karsi_taraf", "karsi_taraf_acik", "yayin_zamani")
+    sutunlar = (*METIN_ALANLARI, "yayin_zamani")
     for satir in (dict(zip(sutunlar, s)) for s in satirlar):
         satir_bas(satir, tweet_metni(**{k: satir[k] for k in METIN_ALANLARI}))
     print("\nÖNİZLEME: başlangıç/yaş/tekrar süzgeci uygulanmadı, hiçbir şey gönderilmedi.")
