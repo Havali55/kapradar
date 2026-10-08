@@ -43,8 +43,7 @@ export default function Baslik() {
         {/* Telefonda tek satıra sığsın diye kısa hâli; tam künye altbilgide. */}
         <div className="ibare-ic">
           <span className="ibare-genis">
-            Kişisel araştırma projesi · yatırım tavsiyesi değildir · fiyat
-            tahmini üretmez
+            Yatırım tavsiyesi değildir · fiyat tahmini üretmez
           </span>
           <span className="ibare-dar">
             Yatırım tavsiyesi değildir · fiyat tahmini üretmez

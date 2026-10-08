@@ -40,15 +40,40 @@ from kap_radar.cikarim import katmanli_cikar, prompt_kur  # noqa: E402
 from kap_radar.degerlendirme import degerlendir_bildirim  # noqa: E402
 from kap_radar.depo import Depo  # noqa: E402
 from kap_radar.dogruluk import karsilastir, ozetle  # noqa: E402
+from kap_radar.claude import ClaudeCikarici, ClaudeHatasi  # noqa: E402
 from kap_radar.gemini import GeminiCikarici, GeminiHatasi  # noqa: E402
 
 VARSAYILAN_KUME = KOK / "data" / "altin_kume.json"
+
+# `CIKARIM_SAGLAYICI` hangi adaptörün koşacağını seçer; varsayılan
+# Gemini. Claude'a geçiş altın kümede en az 47/50 şartına bağlı, ölçüm
+# yapılmadan varsayılan değişmez.
+SAGLAYICILAR = {
+    "gemini": (
+        GeminiCikarici,
+        "GEMINI_API_KEY",
+        "GEMINI_KATMAN1_MODEL",
+        "gemini-3.1-flash-lite",
+        "GEMINI_KATMAN2_MODEL",
+        "gemini-3.8-flash",
+    ),
+    "claude": (
+        ClaudeCikarici,
+        "ANTHROPIC_API_KEY",
+        "CLAUDE_KATMAN1_MODEL",
+        "claude-sonnet-5",
+        "CLAUDE_KATMAN2_MODEL",
+        "claude-opus-5",
+    ),
+}
 
 # USD / 1M token (Eylül 2026). 3.8 Flash'ın tanıtım fiyatı 31.12.2026'da
 # bitiyor ve ikiye katlanıyor; tablo o zaman güncellenmeli.
 FIYATLAR: dict[str, tuple[Decimal, Decimal]] = {
     "gemini-3.1-flash-lite": (Decimal("0.25"), Decimal("1.50")),
     "gemini-3.8-flash": (Decimal("0.75"), Decimal("3.75")),
+    "claude-sonnet-5": (Decimal("2.00"), Decimal("10.00")),
+    "claude-opus-5": (Decimal("5.00"), Decimal("25.00")),
 }
 
 # Türkçe metinde ölçülen yaklaşık oran; yalnız KURU koşu tahmininde
@@ -147,9 +172,16 @@ def main() -> int:
     secenek = ayristirici.parse_args()
 
     env = env_oku(KOK / ".env")
-    anahtar = env.get("GEMINI_API_KEY", "")
-    katman1_model = env.get("GEMINI_KATMAN1_MODEL", "gemini-3.1-flash-lite")
-    katman2_model = env.get("GEMINI_KATMAN2_MODEL", "gemini-3.8-flash")
+    saglayici = env.get("CIKARIM_SAGLAYICI", "gemini")
+    if saglayici not in SAGLAYICILAR:
+        print(f"CIKARIM_SAGLAYICI bilinmiyor: {saglayici}", file=sys.stderr)
+        return 1
+    sinif, anahtar_adi, k1_adi, k1_varsayilan, k2_adi, k2_varsayilan = SAGLAYICILAR[
+        saglayici
+    ]
+    anahtar = env.get(anahtar_adi, "")
+    katman1_model = env.get(k1_adi, k1_varsayilan)
+    katman2_model = env.get(k2_adi, k2_varsayilan)
 
     dsn = dsn_bul()
     if dsn is None:
@@ -159,6 +191,7 @@ def main() -> int:
     with psycopg.connect(dsn, connect_timeout=20) as baglanti:
         bildirimler = bildirimleri_sec(baglanti, secenek.kaynak, secenek.adet)
         print(f"kaynak   : {secenek.kaynak} ({len(bildirimler)} bildirim)")
+        print(f"saglayici: {saglayici}")
         print(f"katman 1 : {katman1_model}")
         print(f"katman 2 : {katman2_model if secenek.katman2 else '(kapalı)'}")
 
@@ -167,15 +200,13 @@ def main() -> int:
             return 0
 
         if not anahtar or "<" in anahtar:
-            print("GEMINI_API_KEY boş ya da yer tutucu", file=sys.stderr)
+            print(f"{anahtar_adi} boş ya da yer tutucu", file=sys.stderr)
             return 1
 
-        cikaricilar = [
-            GeminiCikarici(api_anahtari=anahtar, model=katman1_model, katman=1)
-        ]
+        cikaricilar = [sinif(api_anahtari=anahtar, model=katman1_model, katman=1)]
         if secenek.katman2:
             cikaricilar.append(
-                GeminiCikarici(api_anahtari=anahtar, model=katman2_model, katman=2)
+                sinif(api_anahtari=anahtar, model=katman2_model, katman=2)
             )
 
         depo = Depo(baglanti)
@@ -190,7 +221,7 @@ def main() -> int:
                 kap_id, ticker, metin, an, guncelleme_mi, karsi_taraf, nitelik = satir
                 try:
                     sonuc = katmanli_cikar(metin, cikaricilar)
-                except GeminiHatasi as hata:
+                except (GeminiHatasi, ClaudeHatasi) as hata:
                     hatalar.append(f"{ticker} {kap_id[:8]}: {hata}")
                     continue
 

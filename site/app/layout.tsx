@@ -57,8 +57,7 @@ export default function RootLayout({
         <footer className="altbilgi">
           <div className="altbilgi-ic">
             <span>
-              KAP·RADAR · Kişisel araştırma projesi. Yatırım tavsiyesi değildir,
-              fiyat tahmini üretmez.
+              KAP·RADAR · Yatırım tavsiyesi değildir, fiyat tahmini üretmez.
             </span>
             <span>
               Kaynak: KAP, TCMB · <Link href="/metodoloji">Yöntem ve sınırlar</Link>
